@@ -18,6 +18,8 @@
 html, body {
   height: 100%;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body {
@@ -27,6 +29,7 @@ body {
   min-height: 100vh;
   color: #333;
   position: relative;
+  max-width: 100vw;
 }
 
 body::before {
@@ -180,6 +183,8 @@ main {
   gap: 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .filters {
@@ -794,70 +799,50 @@ main {
     // Initialize when page loads
     document.addEventListener('DOMContentLoaded', function() {
       console.log('Page loaded, initializing...');
-      checkForPhantom();
-      renderRaffles();
-      bindEvents();
+      initializeApp();
     });
 
-    function checkForPhantom() {
-      console.log('Checking for Phantom wallet...');
+    function initializeApp() {
+      // Setup wallet connection
+      document.getElementById('connectWallet').onclick = simulateWalletConnection;
       
-      if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
-        console.log('Phantom wallet detected');
-        document.getElementById('connectWallet').onclick = connectWallet;
-        
-        // Check if already connected
-        window.solana.connect({ onlyIfTrusted: true })
-          .then(response => {
-            if (response.publicKey) {
-              handleWalletConnected(response.publicKey);
-            }
-          })
-          .catch(err => {
-            console.log('Not previously connected:', err.message);
-          });
-      } else {
-        console.log('Phantom wallet not detected');
-        document.getElementById('connectWallet').textContent = 'Install Phantom';
-        document.getElementById('connectWallet').onclick = function() {
-          showNotification('Please install Phantom wallet to connect', 'error');
-          setTimeout(() => {
-            window.open('https://phantom.app/', '_blank');
-          }, 1000);
-        };
-      }
+      // Render initial raffles
+      renderRaffles();
+      
+      // Setup smooth scrolling
+      document.querySelector('.cta-button').onclick = function(e) {
+        e.preventDefault();
+        document.querySelector('#raffles').scrollIntoView({
+          behavior: 'smooth'
+        });
+      };
     }
 
-    async function connectWallet() {
-      console.log('Attempting to connect wallet...');
-      
-      if (typeof window.solana === 'undefined' || !window.solana.isPhantom) {
-        showNotification('Phantom wallet not found. Please install it first.', 'error');
-        return;
-      }
-
+    // Simulate wallet connection for demo
+    function simulateWalletConnection() {
       const connectBtn = document.getElementById('connectWallet');
       
-      try {
-        connectBtn.textContent = 'Connecting...';
-        connectBtn.disabled = true;
-        
-        const response = await window.solana.connect();
-        console.log('Wallet connected:', response.publicKey.toString());
-        handleWalletConnected(response.publicKey);
-        
-      } catch (err) {
-        console.error('Wallet connection failed:', err);
-        showNotification('Failed to connect wallet: ' + err.message, 'error');
-        connectBtn.textContent = 'Connect Wallet';
-        connectBtn.disabled = false;
+      if (walletConnected) {
+        disconnectWallet();
+        return;
       }
+      
+      connectBtn.textContent = 'Connecting...';
+      connectBtn.disabled = true;
+      
+      // Simulate connection delay
+      setTimeout(() => {
+        // Generate a fake wallet address for demo
+        const fakeAddress = '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU';
+        const fakePublicKey = { toString: () => fakeAddress };
+        
+        handleWalletConnected(fakePublicKey);
+      }, 1500);
     }
 
     function handleWalletConnected(publicKey) {
       walletConnected = true;
       walletAddress = publicKey.toString();
-      provider = window.solana;
       
       console.log('Wallet connected successfully:', walletAddress);
       
@@ -869,12 +854,11 @@ main {
       
       connectBtn.textContent = 'Disconnect';
       connectBtn.disabled = false;
-      connectBtn.onclick = disconnectWallet;
       
       addressElement.textContent = `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
       walletInfo.style.display = 'flex';
       
-      // Simulate balance (in production, fetch real balance)
+      // Simulate balance
       updateWalletBalance();
       
       showNotification('Wallet connected successfully!', 'success');
@@ -890,20 +874,14 @@ main {
     }
 
     function disconnectWallet() {
-      if (provider && provider.disconnect) {
-        provider.disconnect();
-      }
-      
       walletConnected = false;
       walletAddress = null;
       walletBalance = 0;
-      provider = null;
       
       const connectBtn = document.getElementById('connectWallet');
       const walletInfo = document.getElementById('walletInfo');
       
       connectBtn.textContent = 'Connect Wallet';
-      connectBtn.onclick = connectWallet;
       walletInfo.style.display = 'none';
       
       showNotification('Wallet disconnected', 'info');
@@ -943,4 +921,27 @@ main {
             </div>
             
             <div class="shipping-indicator shipping-${raffle.shippingType}">
-              ${shippingInfo.icon
+              ${shippingInfo.icon} ${shippingInfo.text}
+            </div>
+            
+            <div class="location-info">
+              📍 ${raffle.location}
+            </div>
+            
+            <div class="shipping-details">
+              ${raffle.shippingInfo}
+            </div>
+            
+            <div class="entry-fee">Entry Fee: <strong>${raffle.entryFee}</strong></div>
+            
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${progress}%"></div>
+            </div>
+            
+            <div class="raffle-stats">
+              <span><strong>${raffle.entries}</strong> / ${raffle.maxEntries} entries</span>
+              <span>⏰ ${raffle.endsIn} left</span>
+            </div>
+            
+            <button class="enter-btn" onclick="enterRaffle(${raffle.id})" ${!canEnter ? 'disabled' : ''}>
+              ${!
