@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +7,6 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-```
 * {
   margin: 0;
   padding: 0;
@@ -213,27 +211,29 @@ main {
 
 .filters input, .filters select {
   width: 100%;
+  box-sizing: border-box;
   padding: 0.75rem;
   border: 2px solid #e1e5e9;
   border-radius: 6px;
-  margin-bottom: 0.5rem;
-  transition: border-color 0.3s ease;
+  margin-bottom: 1rem;
   font-size: 0.9rem;
-}
-
-.filters input:focus, .filters select:focus {
-  outline: none;
-  border-color: #667eea;
 }
 
 .price-range {
   display: flex;
-  gap: 0.5rem;
+  gap: 4%;
   align-items: center;
+  margin-bottom: 1rem;
 }
 
 .price-range input {
-  width: 40%;
+  width: 48%;
+  margin-bottom: 0;
+}
+
+.price-range span {
+  width: 4%;
+  text-align: center;
 }
 
 .filter-btn {
@@ -565,8 +565,6 @@ main {
     grid-template-columns: 1fr;
   }
 }
-```
-
   </style>
 </head>
 <body>
@@ -595,114 +593,106 @@ main {
     <aside class="filters">
       <h3>🔍 Filters</h3>
 
-```
-  <label>Entry Price Range</label>
-  <div class="price-range">
-    <input type="number" placeholder="Min" id="minPrice" step="0.01">
-    <span>–</span>
-    <input type="number" placeholder="Max" id="maxPrice" step="0.01">
-  </div>
-  
-  <label>Payment Type</label>
-  <select id="typeFilter">
-    <option value="all">All Types</option>
-    <option value="SOL">SOL Only</option>
-    <option value="GIVE">$GIVE Only</option>
-  </select>
-  
-  <label>Shipping Options</label>
-  <select id="shippingFilter">
-    <option value="all">All Shipping</option>
-    <option value="digital">Digital Only</option>
-    <option value="worldwide">Worldwide Shipping</option>
-    <option value="pickup">Pickup Only</option>
-    <option value="regional">Regional Shipping</option>
-  </select>
-  
-  <label>
-    <input type="checkbox" id="trustedOnly" style="width: auto; margin-right: 0.5rem;"> Trusted Hosts Only
-  </label>
-  
-  <button class="filter-btn apply-filters" onclick="applyFilters()">Apply Filters</button>
-  <button class="filter-btn clear-filters" onclick="clearFilters()">Clear All</button>
-</aside>
+      <label>Entry Price Range</label>
+      <div class="price-range">
+        <input type="number" placeholder="Min" id="minPrice" step="0.01">
+        <span>–</span>
+        <input type="number" placeholder="Max" id="maxPrice" step="0.01">
+      </div>
+      
+      <label>Payment Type</label>
+      <select id="typeFilter">
+        <option value="all">All Types</option>
+        <option value="SOL">SOL Only</option>
+        <option value="GIVE">$GIVE Only</option>
+      </select>
+      
+      <label>Shipping Options</label>
+      <select id="shippingFilter">
+        <option value="all">All Shipping</option>
+        <option value="digital">Digital Only</option>
+        <option value="worldwide">Worldwide Shipping</option>
+        <option value="pickup">Pickup Only</option>
+        <option value="regional">Regional Shipping</option>
+      </select>
+      
+      <label>
+        <input type="checkbox" id="trustedOnly" style="width: auto; margin-right: 0.5rem;"> Trusted Hosts Only
+      </label>
+      
+      <button class="filter-btn apply-filters" onclick="applyFilters()">Apply Filters</button>
+      <button class="filter-btn clear-filters" onclick="clearFilters()">Clear All</button>
+    </aside>
 
-<section class="raffle-feed" id="raffleFeed">
-  <!-- Raffle cards will be inserted here -->
-</section>
-```
-
+    <section class="raffle-feed" id="raffleFeed">
+      <!-- Raffle cards will be inserted here -->
+    </section>
   </main>
 
   <!-- Launch Form Modal -->
-
   <div id="launchForm" class="form-container">
     <h2>🚀 Launch a New Raffle</h2>
 
-```
-<div class="form-group">
-  <label>Prize Title</label>
-  <input type="text" id="raffleTitle" placeholder="Ex: Rare Solana NFT Collection" required>
-</div>
+    <div class="form-group">
+      <label>Prize Title</label>
+      <input type="text" id="raffleTitle" placeholder="Ex: Rare Solana NFT Collection" required>
+    </div>
 
-<div class="form-group">
-  <label>Prize Image URL</label>
-  <input type="url" id="prizeImage" placeholder="https://example.com/image.png" required>
-</div>
+    <div class="form-group">
+      <label>Prize Image URL</label>
+      <input type="url" id="prizeImage" placeholder="https://example.com/image.png" required>
+    </div>
 
-<div class="form-group">
-  <label>Entry Fee</label>
-  <input type="number" id="entryFee" step="0.01" placeholder="0.5" min="0.01" required>
-</div>
+    <div class="form-group">
+      <label>Entry Fee</label>
+      <input type="number" id="entryFee" step="0.01" placeholder="0.5" min="0.01" required>
+    </div>
 
-<div class="form-group">
-  <label>Entry Payment Type</label>
-  <select id="entryType">
-    <option value="SOL">SOL</option>
-    <option value="GIVE">$GIVE Token</option>
-  </select>
-</div>
+    <div class="form-group">
+      <label>Entry Payment Type</label>
+      <select id="entryType">
+        <option value="SOL">SOL</option>
+        <option value="GIVE">$GIVE Token</option>
+      </select>
+    </div>
 
-<div class="form-group">
-  <label>Maximum Participants</label>
-  <input type="number" id="maxParticipants" placeholder="300" min="2" required>
-</div>
+    <div class="form-group">
+      <label>Maximum Participants</label>
+      <input type="number" id="maxParticipants" placeholder="300" min="2" required>
+    </div>
 
-<div class="form-group">
-  <label>Duration (days)</label>
-  <input type="number" id="raffleDuration" placeholder="30" min="1" max="30" required>
-</div>
+    <div class="form-group">
+      <label>Duration (days)</label>
+      <input type="number" id="raffleDuration" placeholder="30" min="1" max="30" required>
+    </div>
 
-<div class="form-group">
-  <label>Prize Location</label>
-  <input type="text" id="prizeLocation" placeholder="Ex: New York, NY or Digital/NFT" required>
-</div>
+    <div class="form-group">
+      <label>Prize Location</label>
+      <input type="text" id="prizeLocation" placeholder="Ex: New York, NY or Digital/NFT" required>
+    </div>
 
-<div class="form-group">
-  <label>Shipping/Delivery Type</label>
-  <select id="shippingType" onchange="updateShippingInfo()">
-    <option value="digital">💻 Digital Delivery (NFTs, codes, etc.)</option>
-    <option value="pickup">📍 Pick-up Only (Local collection required)</option>
-    <option value="worldwide">🌍 Worldwide Shipping (Free shipping included)</option>
-    <option value="regional">🌐 Regional Shipping (Limited regions)</option>
-  </select>
-</div>
+    <div class="form-group">
+      <label>Shipping/Delivery Type</label>
+      <select id="shippingType" onchange="updateShippingInfo()">
+        <option value="digital">💻 Digital Delivery (NFTs, codes, etc.)</option>
+        <option value="pickup">📍 Pick-up Only (Local collection required)</option>
+        <option value="worldwide">🌍 Worldwide Shipping (Free shipping included)</option>
+        <option value="regional">🌐 Regional Shipping (Limited regions)</option>
+      </select>
+    </div>
 
-<div class="form-group">
-  <label>Shipping Details</label>
-  <input type="text" id="shippingInfo" placeholder="Ex: Free worldwide shipping included" required>
-</div>
+    <div class="form-group">
+      <label>Shipping Details</label>
+      <input type="text" id="shippingInfo" placeholder="Ex: Free worldwide shipping included" required>
+    </div>
 
-<div class="form-actions">
-  <button type="button" class="submit-btn" onclick="submitRaffleForm()">Launch Raffle</button>
-  <button type="button" class="cancel-btn" onclick="hideLaunchForm()">Cancel</button>
-</div>
-```
-
+    <div class="form-actions">
+      <button type="button" class="submit-btn" onclick="submitRaffleForm()">Launch Raffle</button>
+      <button type="button" class="cancel-btn" onclick="hideLaunchForm()">Cancel</button>
+    </div>
   </div>
 
   <!-- Notification -->
-
   <div id="notification" class="notification"></div>
 
   <script>
@@ -796,15 +786,15 @@ main {
       }
     ];
 
-    // Initialize when page loads
+    // Ensure DOM is fully loaded before binding
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('Page loaded, initializing...');
       initializeApp();
     });
 
     function initializeApp() {
       // Setup wallet connection
-      document.getElementById('connectWallet').onclick = simulateWalletConnection;
+      const connectBtn = document.getElementById('connectWallet');
+      connectBtn.onclick = simulateWalletConnection;
       
       // Render initial raffles
       renderRaffles();
@@ -843,9 +833,7 @@ main {
     function handleWalletConnected(publicKey) {
       walletConnected = true;
       walletAddress = publicKey.toString();
-      
-      console.log('Wallet connected successfully:', walletAddress);
-      
+
       // Update UI
       const connectBtn = document.getElementById('connectWallet');
       const walletInfo = document.getElementById('walletInfo');
@@ -882,10 +870,26 @@ main {
       const walletInfo = document.getElementById('walletInfo');
       
       connectBtn.textContent = 'Connect Wallet';
+      connectBtn.disabled = false;
       walletInfo.style.display = 'none';
       
       showNotification('Wallet disconnected', 'info');
       renderRaffles();
+    }
+
+    function getShippingInfo(type) {
+      switch (type) {
+        case 'digital':
+          return { icon: '💻', text: 'Digital Delivery' };
+        case 'pickup':
+          return { icon: '📍', text: 'Pick-up Only' };
+        case 'worldwide':
+          return { icon: '🌍', text: 'Worldwide Shipping' };
+        case 'regional':
+          return { icon: '🌐', text: 'Regional Shipping' };
+        default:
+          return { icon: '', text: '' };
+      }
     }
 
     function renderRaffles(filteredRaffles = null) {
@@ -906,9 +910,7 @@ main {
       rafflesToRender.forEach(raffle => {
         const progress = (raffle.entries / raffle.maxEntries) * 100;
         const canEnter = walletConnected && (raffle.entryType === 'SOL' ? walletBalance >= raffle.entryFeeValue : true);
-        
         const shippingInfo = getShippingInfo(raffle.shippingType);
-        
         const card = document.createElement('div');
         card.className = 'raffle-card';
         card.innerHTML = `
@@ -944,4 +946,145 @@ main {
             </div>
             
             <button class="enter-btn" onclick="enterRaffle(${raffle.id})" ${!canEnter ? 'disabled' : ''}>
-              ${!
+              ${canEnter ? 'Enter Raffle' : (walletConnected ? 'Insufficient Balance' : 'Connect Wallet')}
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function showNotification(message, type = 'info') {
+      const notif = document.getElementById('notification');
+      notif.textContent = message;
+      notif.className = `notification show ${type}`;
+      setTimeout(() => {
+        notif.className = `notification ${type}`;
+      }, 3000);
+    }
+
+    // Filter logic
+    function applyFilters() {
+      const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+      const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+      const typeFilter = document.getElementById('typeFilter').value;
+      const shippingFilter = document.getElementById('shippingFilter').value;
+      const trustedOnly = document.getElementById('trustedOnly').checked;
+
+      let filtered = raffles.filter(r => 
+        r.entryFeeValue >= minPrice &&
+        r.entryFeeValue <= maxPrice &&
+        (typeFilter === 'all' || r.entryType === typeFilter) &&
+        (shippingFilter === 'all' || r.shippingType === shippingFilter) &&
+        (!trustedOnly || r.trusted)
+      );
+
+      renderRaffles(filtered);
+    }
+
+    function clearFilters() {
+      document.getElementById('minPrice').value = '';
+      document.getElementById('maxPrice').value = '';
+      document.getElementById('typeFilter').value = 'all';
+      document.getElementById('shippingFilter').value = 'all';
+      document.getElementById('trustedOnly').checked = false;
+      renderRaffles();
+    }
+
+    // Launch Raffle Modal Logic
+    function showLaunchForm() {
+      document.getElementById('launchForm').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function hideLaunchForm() {
+      document.getElementById('launchForm').style.display = 'none';
+      // Optionally reset form
+    }
+
+    function updateShippingInfo() {
+      const shippingType = document.getElementById('shippingType').value;
+      const shippingInfo = document.getElementById('shippingInfo');
+      switch (shippingType) {
+        case 'digital':
+          shippingInfo.value = "Delivered instantly to your wallet";
+          break;
+        case 'pickup':
+          shippingInfo.value = "Pick-up only at specified location";
+          break;
+        case 'worldwide':
+          shippingInfo.value = "Free worldwide shipping included";
+          break;
+        case 'regional':
+          shippingInfo.value = "Ships to limited regions";
+          break;
+        default:
+          shippingInfo.value = "";
+      }
+    }
+
+    // Demo: Add new raffle to feed (would be blockchain interaction in prod)
+    function submitRaffleForm() {
+      const title = document.getElementById('raffleTitle').value;
+      const image = document.getElementById('prizeImage').value;
+      const entryFeeValue = parseFloat(document.getElementById('entryFee').value);
+      const entryType = document.getElementById('entryType').value;
+      const maxEntries = parseInt(document.getElementById('maxParticipants').value);
+      const days = parseInt(document.getElementById('raffleDuration').value);
+      const location = document.getElementById('prizeLocation').value;
+      const shippingType = document.getElementById('shippingType').value;
+      const shippingInfo = document.getElementById('shippingInfo').value;
+
+      if (!title || !image || !entryFeeValue || !maxEntries || !days || !location || !shippingType || !shippingInfo) {
+        showNotification("Please fill out all fields.", "error");
+        return;
+      }
+
+      raffles.unshift({
+        id: Date.now(),
+        host: walletConnected ? `@${walletAddress.slice(0, 6)}` : "@demo_user",
+        trusted: walletConnected,
+        entryFee: `${entryFeeValue} ${entryType}`,
+        entryFeeValue,
+        entryType,
+        entries: 0,
+        maxEntries,
+        endsIn: `${days}d 0h`,
+        image,
+        title,
+        location,
+        shippingType,
+        shippingInfo
+      });
+
+      hideLaunchForm();
+      showNotification("Raffle launched successfully!", "success");
+      renderRaffles();
+    }
+
+    function enterRaffle(id) {
+      if (!walletConnected) {
+        showNotification("Please connect your wallet to enter.", "error");
+        return;
+      }
+
+      const raffle = raffles.find(r => r.id === id);
+      if (!raffle) return;
+
+      if (raffle.entryType === "SOL" && walletBalance < raffle.entryFeeValue) {
+        showNotification("Insufficient balance for entry.", "error");
+        return;
+      }
+
+      raffle.entries += 1;
+      if (raffle.entryType === "SOL") {
+        walletBalance -= raffle.entryFeeValue;
+        updateWalletBalance();
+      }
+
+      showNotification("Successfully entered the raffle!", "success");
+      renderRaffles();
+    }
+  </script>
+</body>
+</html>
