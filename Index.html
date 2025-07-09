@@ -289,7 +289,12 @@ main {
 .raffle-card img {
   width: 100%;
   height: 200px;
+  aspect-ratio: 16 / 10;
   object-fit: cover;
+  display: block;
+  background: #eee;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .raffle-content {
@@ -592,21 +597,18 @@ main {
   <main id="raffles">
     <aside class="filters">
       <h3>🔍 Filters</h3>
-
       <label>Entry Price Range</label>
       <div class="price-range">
         <input type="number" placeholder="Min" id="minPrice" step="0.01">
         <span>–</span>
         <input type="number" placeholder="Max" id="maxPrice" step="0.01">
       </div>
-      
       <label>Payment Type</label>
       <select id="typeFilter">
         <option value="all">All Types</option>
         <option value="SOL">SOL Only</option>
         <option value="GIVE">$GIVE Only</option>
       </select>
-      
       <label>Shipping Options</label>
       <select id="shippingFilter">
         <option value="all">All Shipping</option>
@@ -615,15 +617,12 @@ main {
         <option value="pickup">Pickup Only</option>
         <option value="regional">Regional Shipping</option>
       </select>
-      
       <label>
         <input type="checkbox" id="trustedOnly" style="width: auto; margin-right: 0.5rem;"> Trusted Hosts Only
       </label>
-      
       <button class="filter-btn apply-filters" onclick="applyFilters()">Apply Filters</button>
       <button class="filter-btn clear-filters" onclick="clearFilters()">Clear All</button>
     </aside>
-
     <section class="raffle-feed" id="raffleFeed">
       <!-- Raffle cards will be inserted here -->
     </section>
@@ -632,22 +631,18 @@ main {
   <!-- Launch Form Modal -->
   <div id="launchForm" class="form-container">
     <h2>🚀 Launch a New Raffle</h2>
-
     <div class="form-group">
       <label>Prize Title</label>
       <input type="text" id="raffleTitle" placeholder="Ex: Rare Solana NFT Collection" required>
     </div>
-
     <div class="form-group">
       <label>Prize Image URL</label>
       <input type="url" id="prizeImage" placeholder="https://example.com/image.png" required>
     </div>
-
     <div class="form-group">
       <label>Entry Fee</label>
       <input type="number" id="entryFee" step="0.01" placeholder="0.5" min="0.01" required>
     </div>
-
     <div class="form-group">
       <label>Entry Payment Type</label>
       <select id="entryType">
@@ -655,22 +650,18 @@ main {
         <option value="GIVE">$GIVE Token</option>
       </select>
     </div>
-
     <div class="form-group">
       <label>Maximum Participants</label>
       <input type="number" id="maxParticipants" placeholder="300" min="2" required>
     </div>
-
     <div class="form-group">
       <label>Duration (days)</label>
       <input type="number" id="raffleDuration" placeholder="30" min="1" max="30" required>
     </div>
-
     <div class="form-group">
       <label>Prize Location</label>
       <input type="text" id="prizeLocation" placeholder="Ex: New York, NY or Digital/NFT" required>
     </div>
-
     <div class="form-group">
       <label>Shipping/Delivery Type</label>
       <select id="shippingType" onchange="updateShippingInfo()">
@@ -680,12 +671,10 @@ main {
         <option value="regional">🌐 Regional Shipping (Limited regions)</option>
       </select>
     </div>
-
     <div class="form-group">
       <label>Shipping Details</label>
       <input type="text" id="shippingInfo" placeholder="Ex: Free worldwide shipping included" required>
     </div>
-
     <div class="form-actions">
       <button type="button" class="submit-btn" onclick="submitRaffleForm()">Launch Raffle</button>
       <button type="button" class="cancel-btn" onclick="hideLaunchForm()">Cancel</button>
@@ -786,20 +775,13 @@ main {
       }
     ];
 
-    // Ensure DOM is fully loaded before binding
     document.addEventListener('DOMContentLoaded', function() {
       initializeApp();
     });
 
     function initializeApp() {
-      // Setup wallet connection
-      const connectBtn = document.getElementById('connectWallet');
-      connectBtn.onclick = simulateWalletConnection;
-      
-      // Render initial raffles
+      document.getElementById('connectWallet').onclick = simulateWalletConnection;
       renderRaffles();
-      
-      // Setup smooth scrolling
       document.querySelector('.cta-button').onclick = function(e) {
         e.preventDefault();
         document.querySelector('#raffles').scrollIntoView({
@@ -808,24 +790,17 @@ main {
       };
     }
 
-    // Simulate wallet connection for demo
     function simulateWalletConnection() {
       const connectBtn = document.getElementById('connectWallet');
-      
       if (walletConnected) {
         disconnectWallet();
         return;
       }
-      
       connectBtn.textContent = 'Connecting...';
       connectBtn.disabled = true;
-      
-      // Simulate connection delay
       setTimeout(() => {
-        // Generate a fake wallet address for demo
         const fakeAddress = '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU';
         const fakePublicKey = { toString: () => fakeAddress };
-        
         handleWalletConnected(fakePublicKey);
       }, 1500);
     }
@@ -833,31 +808,21 @@ main {
     function handleWalletConnected(publicKey) {
       walletConnected = true;
       walletAddress = publicKey.toString();
-
-      // Update UI
       const connectBtn = document.getElementById('connectWallet');
       const walletInfo = document.getElementById('walletInfo');
       const addressElement = document.getElementById('walletAddress');
-      const balanceElement = document.getElementById('walletBalance');
-      
       connectBtn.textContent = 'Disconnect';
       connectBtn.disabled = false;
-      
       addressElement.textContent = `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
       walletInfo.style.display = 'flex';
-      
-      // Simulate balance
       updateWalletBalance();
-      
       showNotification('Wallet connected successfully!', 'success');
       renderRaffles();
     }
 
     function updateWalletBalance() {
-      // Simulate getting balance
       const mockBalance = (Math.random() * 10 + 2).toFixed(2);
       walletBalance = parseFloat(mockBalance);
-      
       document.getElementById('walletBalance').textContent = `${walletBalance} SOL`;
     }
 
@@ -865,14 +830,11 @@ main {
       walletConnected = false;
       walletAddress = null;
       walletBalance = 0;
-      
       const connectBtn = document.getElementById('connectWallet');
       const walletInfo = document.getElementById('walletInfo');
-      
       connectBtn.textContent = 'Connect Wallet';
       connectBtn.disabled = false;
       walletInfo.style.display = 'none';
-      
       showNotification('Wallet disconnected', 'info');
       renderRaffles();
     }
@@ -895,9 +857,7 @@ main {
     function renderRaffles(filteredRaffles = null) {
       const container = document.getElementById('raffleFeed');
       const rafflesToRender = filteredRaffles || raffles;
-      
       container.innerHTML = '';
-      
       if (rafflesToRender.length === 0) {
         container.innerHTML = `
           <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: white;">
@@ -906,7 +866,6 @@ main {
           </div>`;
         return;
       }
-      
       rafflesToRender.forEach(raffle => {
         const progress = (raffle.entries / raffle.maxEntries) * 100;
         const canEnter = walletConnected && (raffle.entryType === 'SOL' ? walletBalance >= raffle.entryFeeValue : true);
@@ -914,37 +873,32 @@ main {
         const card = document.createElement('div');
         card.className = 'raffle-card';
         card.innerHTML = `
-          <img src="${raffle.image}" alt="${raffle.title}" loading="lazy">
+          <img src="${raffle.image}" alt="${raffle.title}" loading="lazy"
+               style="aspect-ratio:16/10;object-fit:cover;width:100%;height:200px;border-radius:8px 8px 0 0;box-shadow:0 2px 8px rgba(0,0,0,0.06);background:#eee;"
+               onerror="this.onerror=null;this.src='https://via.placeholder.com/320x200?text=No+Image';">
           <div class="raffle-content">
             <h3>${raffle.title}</h3>
             <div class="host-info">
               <span><strong>Hosted by ${raffle.host}</strong></span>
               ${raffle.trusted ? '<span class="trusted-badge">✓ Trusted</span>' : ''}
             </div>
-            
             <div class="shipping-indicator shipping-${raffle.shippingType}">
               ${shippingInfo.icon} ${shippingInfo.text}
             </div>
-            
             <div class="location-info">
               📍 ${raffle.location}
             </div>
-            
             <div class="shipping-details">
               ${raffle.shippingInfo}
             </div>
-            
             <div class="entry-fee">Entry Fee: <strong>${raffle.entryFee}</strong></div>
-            
             <div class="progress-bar">
               <div class="progress-fill" style="width: ${progress}%"></div>
             </div>
-            
             <div class="raffle-stats">
               <span><strong>${raffle.entries}</strong> / ${raffle.maxEntries} entries</span>
               <span>⏰ ${raffle.endsIn} left</span>
             </div>
-            
             <button class="enter-btn" onclick="enterRaffle(${raffle.id})" ${!canEnter ? 'disabled' : ''}>
               ${canEnter ? 'Enter Raffle' : (walletConnected ? 'Insufficient Balance' : 'Connect Wallet')}
             </button>
@@ -963,14 +917,12 @@ main {
       }, 3000);
     }
 
-    // Filter logic
     function applyFilters() {
       const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
       const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
       const typeFilter = document.getElementById('typeFilter').value;
       const shippingFilter = document.getElementById('shippingFilter').value;
       const trustedOnly = document.getElementById('trustedOnly').checked;
-
       let filtered = raffles.filter(r => 
         r.entryFeeValue >= minPrice &&
         r.entryFeeValue <= maxPrice &&
@@ -978,7 +930,6 @@ main {
         (shippingFilter === 'all' || r.shippingType === shippingFilter) &&
         (!trustedOnly || r.trusted)
       );
-
       renderRaffles(filtered);
     }
 
@@ -991,7 +942,6 @@ main {
       renderRaffles();
     }
 
-    // Launch Raffle Modal Logic
     function showLaunchForm() {
       document.getElementById('launchForm').style.display = 'block';
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -999,7 +949,6 @@ main {
 
     function hideLaunchForm() {
       document.getElementById('launchForm').style.display = 'none';
-      // Optionally reset form
     }
 
     function updateShippingInfo() {
@@ -1023,7 +972,6 @@ main {
       }
     }
 
-    // Demo: Add new raffle to feed (would be blockchain interaction in prod)
     function submitRaffleForm() {
       const title = document.getElementById('raffleTitle').value;
       const image = document.getElementById('prizeImage').value;
@@ -1034,12 +982,10 @@ main {
       const location = document.getElementById('prizeLocation').value;
       const shippingType = document.getElementById('shippingType').value;
       const shippingInfo = document.getElementById('shippingInfo').value;
-
       if (!title || !image || !entryFeeValue || !maxEntries || !days || !location || !shippingType || !shippingInfo) {
         showNotification("Please fill out all fields.", "error");
         return;
       }
-
       raffles.unshift({
         id: Date.now(),
         host: walletConnected ? `@${walletAddress.slice(0, 6)}` : "@demo_user",
@@ -1056,7 +1002,6 @@ main {
         shippingType,
         shippingInfo
       });
-
       hideLaunchForm();
       showNotification("Raffle launched successfully!", "success");
       renderRaffles();
@@ -1067,21 +1012,17 @@ main {
         showNotification("Please connect your wallet to enter.", "error");
         return;
       }
-
       const raffle = raffles.find(r => r.id === id);
       if (!raffle) return;
-
       if (raffle.entryType === "SOL" && walletBalance < raffle.entryFeeValue) {
         showNotification("Insufficient balance for entry.", "error");
         return;
       }
-
       raffle.entries += 1;
       if (raffle.entryType === "SOL") {
         walletBalance -= raffle.entryFeeValue;
         updateWalletBalance();
       }
-
       showNotification("Successfully entered the raffle!", "success");
       renderRaffles();
     }
