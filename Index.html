@@ -3,38 +3,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GiveFi - Decentralized Raffle Platform</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 ```
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #667eea;
+  background: -webkit-linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
   color: #333;
+  position: relative;
 }
 
-.bg-pattern {
+body::before {
+  content: '';
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
   z-index: -1;
+  pointer-events: none;
 }
 
 header {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
-  padding: 1rem;
+  -webkit-backdrop-filter: blur(10px);
+  padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -46,67 +59,119 @@ header {
 
 .logo {
   font-size: 1.8rem;
-  font-weight: bold;
+  font-weight: 700;
   color: white;
   text-decoration: none;
 }
 
+nav {
+  display: flex;
+  gap: 2rem;
+}
+
 nav a {
-  margin: 0 1rem;
-  text-decoration: none;
   color: white;
+  text-decoration: none;
   font-weight: 500;
-  transition: opacity 0.3s;
+  transition: opacity 0.3s ease;
 }
 
 nav a:hover {
   opacity: 0.8;
 }
 
-.wallet-info {
+.wallet-section {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
+.wallet-info {
+  display: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
 .wallet-address {
   background: rgba(255, 255, 255, 0.2);
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
   color: white;
-  font-family: monospace;
-  font-size: 0.9rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
 }
 
 .wallet-balance {
   background: rgba(255, 255, 255, 0.2);
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
   color: white;
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 0.85rem;
 }
 
-button {
+#connectWallet {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
   padding: 0.75rem 1.5rem;
-  cursor: pointer;
-  border: none;
   border-radius: 8px;
-  background: #6f42c1;
-  color: white;
-  font-weight: bold;
-  transition: all 0.3s;
-  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-button:hover {
-  background: #5a339a;
+#connectWallet:hover {
+  background: rgba(255, 255, 255, 0.3);
   transform: translateY(-1px);
 }
 
-button:disabled {
-  background: #ccc;
+#connectWallet:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+.hero {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: white;
+}
+
+.hero h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+}
+
+.cta-button {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 8px;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
 }
 
 main {
@@ -119,9 +184,9 @@ main {
 
 .filters {
   width: 280px;
-  padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.95);
+  background: white;
   border-radius: 12px;
+  padding: 1.5rem;
   height: fit-content;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
@@ -130,6 +195,7 @@ main {
   margin-bottom: 1.5rem;
   color: #333;
   font-size: 1.2rem;
+  font-weight: 600;
 }
 
 .filters label {
@@ -137,20 +203,22 @@ main {
   margin: 1rem 0 0.5rem;
   font-weight: 600;
   color: #555;
+  font-size: 0.9rem;
 }
 
 .filters input, .filters select {
   width: 100%;
   padding: 0.75rem;
-  border: 2px solid #ddd;
+  border: 2px solid #e1e5e9;
   border-radius: 6px;
   margin-bottom: 0.5rem;
-  transition: border-color 0.3s;
+  transition: border-color 0.3s ease;
+  font-size: 0.9rem;
 }
 
 .filters input:focus, .filters select:focus {
   outline: none;
-  border-color: #6f42c1;
+  border-color: #667eea;
 }
 
 .price-range {
@@ -160,14 +228,44 @@ main {
 }
 
 .price-range input {
-  width: 45%;
+  width: 40%;
+}
+
+.filter-btn {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.apply-filters {
+  background: #667eea;
+  color: white;
+}
+
+.apply-filters:hover {
+  background: #5a6fd8;
+}
+
+.clear-filters {
+  background: #6c757d;
+  color: white;
+  margin-top: 0.5rem;
+}
+
+.clear-filters:hover {
+  background: #5a6268;
 }
 
 .raffle-feed {
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.5rem;
-  flex-grow: 1;
 }
 
 .raffle-card {
@@ -175,7 +273,7 @@ main {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: all 0.3s ease;
 }
 
 .raffle-card:hover {
@@ -194,36 +292,38 @@ main {
 }
 
 .raffle-card h3 {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.75rem;
   color: #333;
   font-size: 1.2rem;
+  font-weight: 600;
 }
 
 .host-info {
-  margin: 0.5rem 0;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.badge {
-  background: #ffd700;
-  color: #333;
-  padding: 2px 8px;
+.trusted-badge {
+  background: #28a745;
+  color: white;
+  padding: 0.2rem 0.6rem;
   font-size: 0.75rem;
-  border-radius: 4px;
-  font-weight: bold;
+  border-radius: 12px;
+  font-weight: 600;
 }
 
 .shipping-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: bold;
-  margin: 0.5rem 0;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
 }
 
 .shipping-digital {
@@ -264,6 +364,14 @@ main {
   color: #777;
   font-style: italic;
   margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.entry-fee {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
 }
 
 .progress-bar {
@@ -289,56 +397,75 @@ main {
   color: #666;
 }
 
-.raffle-card button {
+.enter-btn {
   width: 100%;
   padding: 1rem;
-  margin-top: 1rem;
-  background: #28a745;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
   font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.raffle-card button:hover {
+.enter-btn:enabled {
+  background: #28a745;
+  color: white;
+}
+
+.enter-btn:enabled:hover {
   background: #218838;
+  transform: translateY(-1px);
+}
+
+.enter-btn:disabled {
+  background: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
 }
 
 .form-container {
   display: none;
-  padding: 2rem;
   background: white;
   max-width: 600px;
   margin: 2rem auto;
+  padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
 .form-container h2 {
-  color: #333;
   text-align: center;
   margin-bottom: 2rem;
+  color: #333;
+  font-weight: 600;
 }
 
-.form-container label {
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
   display: block;
-  margin: 1.5rem 0 0.5rem;
-  font-weight: bold;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
   color: #555;
 }
 
-.form-container input,
-.form-container select {
+.form-group input,
+.form-group select {
   width: 100%;
   padding: 0.75rem;
-  border: 2px solid #ddd;
+  border: 2px solid #e1e5e9;
   border-radius: 6px;
   font-size: 1rem;
-  transition: border-color 0.3s;
-  box-sizing: border-box;
+  transition: border-color 0.3s ease;
 }
 
-.form-container input:focus,
-.form-container select:focus {
+.form-group input:focus,
+.form-group select:focus {
   outline: none;
-  border-color: #6f42c1;
+  border-color: #667eea;
 }
 
 .form-actions {
@@ -353,10 +480,11 @@ main {
   background: #28a745;
   color: white;
   border: none;
-  border-radius: 6px;
-  font-weight: bold;
+  border-radius: 8px;
+  font-weight: 600;
   font-size: 1.1rem;
   cursor: pointer;
+  transition: background 0.3s ease;
 }
 
 .submit-btn:hover {
@@ -368,9 +496,10 @@ main {
   background: #6c757d;
   color: white;
   border: none;
-  border-radius: 6px;
-  font-weight: bold;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.3s ease;
 }
 
 .cancel-btn:hover {
@@ -384,11 +513,11 @@ main {
   padding: 1rem 1.5rem;
   border-radius: 8px;
   color: white;
-  font-weight: bold;
+  font-weight: 600;
   z-index: 1000;
+  max-width: 300px;
   transform: translateX(400px);
   transition: transform 0.3s ease;
-  max-width: 300px;
 }
 
 .notification.show {
@@ -407,44 +536,17 @@ main {
   background: #17a2b8;
 }
 
-.hero {
-  text-align: center;
-  padding: 3rem 2rem;
-  color: white;
-}
-
-.hero h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, #fff, #f1f2f6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hero p {
-  font-size: 1.2rem;
-  opacity: 0.9;
-  max-width: 600px;
-  margin: 0 auto 2rem;
-}
-
-.cta-button {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-  color: white;
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
-  text-decoration: none;
-  border-radius: 8px;
-  display: inline-block;
-  transition: transform 0.3s;
-}
-
-.cta-button:hover {
-  transform: translateY(-2px);
-}
-
 @media (max-width: 768px) {
+  header {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .hero h1 {
+    font-size: 2.5rem;
+  }
+
   main {
     flex-direction: column;
     padding: 1rem;
@@ -457,31 +559,20 @@ main {
   .raffle-feed {
     grid-template-columns: 1fr;
   }
-  
-  .hero h1 {
-    font-size: 2rem;
-  }
-  
-  .wallet-info {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
 }
 ```
 
   </style>
 </head>
 <body>
-  <div class="bg-pattern"></div>
-
   <header>
     <div class="logo">GiveFi 🎲</div>
     <nav>
       <a href="#raffles">Browse Raffles</a>
       <a href="#" onclick="showLaunchForm()">Launch Raffle</a>
     </nav>
-    <div class="wallet-info">
-      <div id="walletDisplay" style="display: none;">
+    <div class="wallet-section">
+      <div class="wallet-info" id="walletInfo">
         <div class="wallet-address" id="walletAddress"></div>
         <div class="wallet-balance" id="walletBalance"></div>
       </div>
@@ -491,92 +582,115 @@ main {
 
   <section class="hero">
     <h1>Decentralized Raffles</h1>
-    <p>Enter raffles, win prizes, launch campaigns. Powered by Solana blockchain for transparent and fair gaming.</p>
+    <p>Enter raffles, win amazing prizes, and launch your own campaigns. Powered by Solana blockchain for transparent and fair gaming.</p>
     <a href="#raffles" class="cta-button">Explore Raffles</a>
   </section>
 
   <main id="raffles">
     <aside class="filters">
       <h3>🔍 Filters</h3>
-      <label>Entry Price Range</label>
-      <div class="price-range">
-        <input type="number" placeholder="Min" id="minPrice" step="0.01">
-        <span>–</span>
-        <input type="number" placeholder="Max" id="maxPrice" step="0.01">
-      </div>
-      <label>Payment Type</label>
-      <select id="typeFilter">
-        <option value="all">All Types</option>
-        <option value="SOL">SOL Only</option>
-        <option value="GIVE">$GIVE Only</option>
-      </select>
-      <label>Shipping</label>
-      <select id="shippingFilter">
-        <option value="all">All Shipping</option>
-        <option value="digital">Digital Only</option>
-        <option value="worldwide">Worldwide Shipping</option>
-        <option value="pickup">Pickup Only</option>
-        <option value="regional">Regional Shipping</option>
-      </select>
-      <label>
-        <input type="checkbox" id="trustedOnly"> Trusted Hosts Only
-      </label>
-      <button onclick="applyFilters()" style="width: 100%; margin-top: 1rem;">Apply Filters</button>
-      <button onclick="clearFilters()" style="width: 100%; margin-top: 0.5rem; background: #6c757d;">Clear Filters</button>
-    </aside>
 
 ```
+  <label>Entry Price Range</label>
+  <div class="price-range">
+    <input type="number" placeholder="Min" id="minPrice" step="0.01">
+    <span>–</span>
+    <input type="number" placeholder="Max" id="maxPrice" step="0.01">
+  </div>
+  
+  <label>Payment Type</label>
+  <select id="typeFilter">
+    <option value="all">All Types</option>
+    <option value="SOL">SOL Only</option>
+    <option value="GIVE">$GIVE Only</option>
+  </select>
+  
+  <label>Shipping Options</label>
+  <select id="shippingFilter">
+    <option value="all">All Shipping</option>
+    <option value="digital">Digital Only</option>
+    <option value="worldwide">Worldwide Shipping</option>
+    <option value="pickup">Pickup Only</option>
+    <option value="regional">Regional Shipping</option>
+  </select>
+  
+  <label>
+    <input type="checkbox" id="trustedOnly" style="width: auto; margin-right: 0.5rem;"> Trusted Hosts Only
+  </label>
+  
+  <button class="filter-btn apply-filters" onclick="applyFilters()">Apply Filters</button>
+  <button class="filter-btn clear-filters" onclick="clearFilters()">Clear All</button>
+</aside>
+
 <section class="raffle-feed" id="raffleFeed">
-  <!-- Raffle Cards will be injected here -->
+  <!-- Raffle cards will be inserted here -->
 </section>
 ```
 
   </main>
 
-  <!-- Raffle Launch Form -->
+  <!-- Launch Form Modal -->
 
   <div id="launchForm" class="form-container">
     <h2>🚀 Launch a New Raffle</h2>
 
 ```
-<label>Prize Title</label>
-<input type="text" id="raffleTitle" placeholder="Ex: Rare Solana NFT Collection" required>
+<div class="form-group">
+  <label>Prize Title</label>
+  <input type="text" id="raffleTitle" placeholder="Ex: Rare Solana NFT Collection" required>
+</div>
 
-<label>Prize Image URL</label>
-<input type="url" id="prizeImage" placeholder="https://example.com/image.png" required>
+<div class="form-group">
+  <label>Prize Image URL</label>
+  <input type="url" id="prizeImage" placeholder="https://example.com/image.png" required>
+</div>
 
-<label>Entry Fee</label>
-<input type="number" id="entryFee" step="0.01" placeholder="0.5" min="0.01" required>
+<div class="form-group">
+  <label>Entry Fee</label>
+  <input type="number" id="entryFee" step="0.01" placeholder="0.5" min="0.01" required>
+</div>
 
-<label>Entry Payment Type</label>
-<select id="entryType">
-  <option value="SOL">SOL</option>
-  <option value="GIVE">$GIVE Token</option>
-</select>
+<div class="form-group">
+  <label>Entry Payment Type</label>
+  <select id="entryType">
+    <option value="SOL">SOL</option>
+    <option value="GIVE">$GIVE Token</option>
+  </select>
+</div>
 
-<label>Maximum Participants</label>
-<input type="number" id="minParticipants" placeholder="300" min="2" required>
+<div class="form-group">
+  <label>Maximum Participants</label>
+  <input type="number" id="maxParticipants" placeholder="300" min="2" required>
+</div>
 
-<label>Duration (days)</label>
-<input type="number" id="raffleDuration" placeholder="30" min="1" max="30" required>
+<div class="form-group">
+  <label>Duration (days)</label>
+  <input type="number" id="raffleDuration" placeholder="30" min="1" max="30" required>
+</div>
 
-<label>Prize Location</label>
-<input type="text" id="prizeLocation" placeholder="Ex: New York, NY or Digital/NFT" required>
+<div class="form-group">
+  <label>Prize Location</label>
+  <input type="text" id="prizeLocation" placeholder="Ex: New York, NY or Digital/NFT" required>
+</div>
 
-<label>Shipping/Delivery Type</label>
-<select id="shippingType" onchange="updateShippingInfo()">
-  <option value="digital">💻 Digital Delivery (NFTs, codes, etc.)</option>
-  <option value="pickup">📍 Pick-up Only (Local collection required)</option>
-  <option value="worldwide">🌍 Worldwide Shipping (Free shipping included)</option>
-  <option value="regional">🌐 Regional Shipping (Limited regions)</option>
-</select>
+<div class="form-group">
+  <label>Shipping/Delivery Type</label>
+  <select id="shippingType" onchange="updateShippingInfo()">
+    <option value="digital">💻 Digital Delivery (NFTs, codes, etc.)</option>
+    <option value="pickup">📍 Pick-up Only (Local collection required)</option>
+    <option value="worldwide">🌍 Worldwide Shipping (Free shipping included)</option>
+    <option value="regional">🌐 Regional Shipping (Limited regions)</option>
+  </select>
+</div>
 
-<label>Shipping Details</label>
-<input type="text" id="shippingInfo" placeholder="Ex: Free worldwide shipping included" required>
+<div class="form-group">
+  <label>Shipping Details</label>
+  <input type="text" id="shippingInfo" placeholder="Ex: Free worldwide shipping included" required>
+</div>
 
 <div class="form-actions">
-  <button onclick="submitRaffleForm()" class="submit-btn">Launch Raffle</button>
-  <button onclick="hideLaunchForm()" class="cancel-btn">Cancel</button>
+  <button type="button" class="submit-btn" onclick="submitRaffleForm()">Launch Raffle</button>
+  <button type="button" class="cancel-btn" onclick="hideLaunchForm()">Cancel</button>
 </div>
 ```
 
@@ -587,13 +701,13 @@ main {
   <div id="notification" class="notification"></div>
 
   <script>
-    // Global variables
+    // Global state
     let walletConnected = false;
     let walletAddress = null;
     let walletBalance = 0;
     let provider = null;
 
-    // Sample raffle data with shipping info
+    // Sample raffle data
     const raffles = [
       {
         id: 1,
@@ -677,108 +791,102 @@ main {
       }
     ];
 
-    // Initialize app when page loads
+    // Initialize when page loads
     document.addEventListener('DOMContentLoaded', function() {
-      initializeWallet();
+      console.log('Page loaded, initializing...');
+      checkForPhantom();
       renderRaffles();
-      bindFilterEvents();
-      checkWalletConnection();
+      bindEvents();
     });
 
-    // Wallet connection functions
-    async function initializeWallet() {
-      const connectButton = document.getElementById('connectWallet');
+    function checkForPhantom() {
+      console.log('Checking for Phantom wallet...');
       
       if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
-        connectButton.addEventListener('click', connectWallet);
+        console.log('Phantom wallet detected');
+        document.getElementById('connectWallet').onclick = connectWallet;
         
         // Check if already connected
-        try {
-          const response = await window.solana.connect({ onlyIfTrusted: true });
-          if (response.publicKey) {
-            await handleWalletConnected(response.publicKey);
-          }
-        } catch (err) {
-          console.log('User not previously connected');
-        }
+        window.solana.connect({ onlyIfTrusted: true })
+          .then(response => {
+            if (response.publicKey) {
+              handleWalletConnected(response.publicKey);
+            }
+          })
+          .catch(err => {
+            console.log('Not previously connected:', err.message);
+          });
       } else {
-        connectButton.textContent = 'Install Phantom Wallet';
-        connectButton.addEventListener('click', () => {
-          showNotification('Phantom wallet not detected. Redirecting to install page...', 'info');
+        console.log('Phantom wallet not detected');
+        document.getElementById('connectWallet').textContent = 'Install Phantom';
+        document.getElementById('connectWallet').onclick = function() {
+          showNotification('Please install Phantom wallet to connect', 'error');
           setTimeout(() => {
             window.open('https://phantom.app/', '_blank');
           }, 1000);
-        });
-      }
-    }
-
-    async function checkWalletConnection() {
-      if (typeof window.solana !== 'undefined' && window.solana.isPhantom) {
-        try {
-          const response = await window.solana.connect({ onlyIfTrusted: true });
-          if (response.publicKey) {
-            await handleWalletConnected(response.publicKey);
-          }
-        } catch (err) {
-          console.log('Wallet not connected');
-        }
+        };
       }
     }
 
     async function connectWallet() {
-      const connectButton = document.getElementById('connectWallet');
+      console.log('Attempting to connect wallet...');
       
       if (typeof window.solana === 'undefined' || !window.solana.isPhantom) {
-        showNotification('Phantom wallet not detected. Please install Phantom wallet.', 'error');
+        showNotification('Phantom wallet not found. Please install it first.', 'error');
         return;
       }
 
+      const connectBtn = document.getElementById('connectWallet');
+      
       try {
-        connectButton.textContent = 'Connecting...';
-        connectButton.disabled = true;
+        connectBtn.textContent = 'Connecting...';
+        connectBtn.disabled = true;
         
         const response = await window.solana.connect();
-        await handleWalletConnected(response.publicKey);
+        console.log('Wallet connected:', response.publicKey.toString());
+        handleWalletConnected(response.publicKey);
         
       } catch (err) {
+        console.error('Wallet connection failed:', err);
         showNotification('Failed to connect wallet: ' + err.message, 'error');
-        connectButton.textContent = 'Connect Wallet';
-        connectButton.disabled = false;
+        connectBtn.textContent = 'Connect Wallet';
+        connectBtn.disabled = false;
       }
     }
 
-    async function handleWalletConnected(publicKey) {
+    function handleWalletConnected(publicKey) {
       walletConnected = true;
       walletAddress = publicKey.toString();
       provider = window.solana;
       
+      console.log('Wallet connected successfully:', walletAddress);
+      
       // Update UI
-      const connectButton = document.getElementById('connectWallet');
-      const walletDisplay = document.getElementById('walletDisplay');
-      const walletAddressElement = document.getElementById('walletAddress');
+      const connectBtn = document.getElementById('connectWallet');
+      const walletInfo = document.getElementById('walletInfo');
+      const addressElement = document.getElementById('walletAddress');
+      const balanceElement = document.getElementById('walletBalance');
       
-      connectButton.textContent = 'Disconnect';
-      connectButton.disabled = false;
-      connectButton.onclick = disconnectWallet;
+      connectBtn.textContent = 'Disconnect';
+      connectBtn.disabled = false;
+      connectBtn.onclick = disconnectWallet;
       
-      // Show wallet info
-      walletAddressElement.textContent = `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
-      walletDisplay.style.display = 'flex';
+      addressElement.textContent = `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
+      walletInfo.style.display = 'flex';
       
-      // Simulate balance (in real app, fetch from blockchain)
-      await updateWalletBalance();
+      // Simulate balance (in production, fetch real balance)
+      updateWalletBalance();
       
       showNotification('Wallet connected successfully!', 'success');
       renderRaffles();
     }
 
-    async function updateWalletBalance() {
-      // Simulate getting balance (in production, fetch real balance)
+    function updateWalletBalance() {
+      // Simulate getting balance
       const mockBalance = (Math.random() * 10 + 2).toFixed(2);
       walletBalance = parseFloat(mockBalance);
       
-      const walletBalanceElement = document.getElementById('walletBalance');
-      walletBalanceElement.textContent = `${walletBalance} SOL`;
+      document.getElementById('walletBalance').textContent = `${walletBalance} SOL`;
     }
 
     function disconnectWallet() {
@@ -791,27 +899,29 @@ main {
       walletBalance = 0;
       provider = null;
       
-      // Update UI
-      const connectButton = document.getElementById('connectWallet');
-      const walletDisplay = document.getElementById('walletDisplay');
+      const connectBtn = document.getElementById('connectWallet');
+      const walletInfo = document.getElementById('walletInfo');
       
-      connectButton.textContent = 'Connect Wallet';
-      connectButton.onclick = connectWallet;
-      walletDisplay.style.display = 'none';
+      connectBtn.textContent = 'Connect Wallet';
+      connectBtn.onclick = connectWallet;
+      walletInfo.style.display = 'none';
       
       showNotification('Wallet disconnected', 'info');
       renderRaffles();
     }
 
-    // Raffle rendering and interaction
     function renderRaffles(filteredRaffles = null) {
-      const container = document.getElementById("raffleFeed");
+      const container = document.getElementById('raffleFeed');
       const rafflesToRender = filteredRaffles || raffles;
       
       container.innerHTML = '';
       
       if (rafflesToRender.length === 0) {
-        container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: #666;"><h3>No raffles match your filters</h3><p>Try adjusting your search criteria</p></div>';
+        container.innerHTML = `
+          <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: white;">
+            <h3>No raffles match your filters</h3>
+            <p>Try adjusting your search criteria</p>
+          </div>`;
         return;
       }
       
@@ -819,29 +929,7 @@ main {
         const progress = (raffle.entries / raffle.maxEntries) * 100;
         const canEnter = walletConnected && (raffle.entryType === 'SOL' ? walletBalance >= raffle.entryFeeValue : true);
         
-        // Determine shipping indicator
-        const shippingClass = `shipping-${raffle.shippingType}`;
-        let shippingIcon = '';
-        let shippingText = '';
-        
-        switch(raffle.shippingType) {
-          case 'digital':
-            shippingIcon = '💻';
-            shippingText = 'Digital Delivery';
-            break;
-          case 'pickup':
-            shippingIcon = '📍';
-            shippingText = 'Pick-up Only';
-            break;
-          case 'worldwide':
-            shippingIcon = '🌍';
-            shippingText = 'Worldwide Shipping';
-            break;
-          case 'regional':
-            shippingIcon = '🌐';
-            shippingText = 'Regional Shipping';
-            break;
-        }
+        const shippingInfo = getShippingInfo(raffle.shippingType);
         
         const card = document.createElement('div');
         card.className = 'raffle-card';
@@ -850,72 +938,9 @@ main {
           <div class="raffle-content">
             <h3>${raffle.title}</h3>
             <div class="host-info">
-              <strong>Hosted by ${raffle.host}</strong>
-              ${raffle.trusted ? '<span class="badge">✓ Trusted</span>' : ''}
+              <span><strong>Hosted by ${raffle.host}</strong></span>
+              ${raffle.trusted ? '<span class="trusted-badge">✓ Trusted</span>' : ''}
             </div>
             
-            <div class="shipping-indicator ${shippingClass}">
-              ${shippingIcon} ${shippingText}
-            </div>
-            
-            <div class="location-info">
-              📍 ${raffle.location}
-            </div>
-            
-            <div class="shipping-details">
-              ${raffle.shippingInfo}
-            </div>
-            
-            <p style="margin: 0.5rem 0; color: #666; font-weight: bold;">Entry Fee: ${raffle.entryFee}</p>
-            
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${progress}%"></div>
-            </div>
-            
-            <div class="raffle-stats">
-              <span><strong>${raffle.entries}</strong> / ${raffle.maxEntries} entries</span>
-              <span>⏰ ${raffle.endsIn} left</span>
-            </div>
-            
-            <button onclick="enterRaffle(${raffle.id})" ${!canEnter ? 'disabled' : ''}>
-              ${!walletConnected ? 'Connect Wallet to Enter' : 
-                (!canEnter ? 'Insufficient Balance' : 'ENTER RAFFLE')}
-            </button>
-          </div>
-        `;
-        
-        container.appendChild(card);
-      });
-    }
-
-    async function enterRaffle(raffleId) {
-      if (!walletConnected) {
-        showNotification('Please connect your wallet first', 'error');
-        return;
-      }
-      
-      const raffle = raffles.find(r => r.id === raffleId);
-      if (!raffle) return;
-      
-      // Check balance
-      if (raffle.entryType === 'SOL' && walletBalance < raffle.entryFeeValue) {
-        showNotification('Insufficient SOL balance', 'error');
-        return;
-      }
-      
-      try {
-        showNotification('Processing raffle entry...', 'info');
-        
-        // Simulate transaction delay
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Update raffle data
-        raffle.entries += 1;
-        
-        // Update balance
-        if (raffle.entryType === 'SOL') {
-          walletBalance -= raffle.entryFeeValue;
-          document.getElementById('walletBalance').textContent = `${walletBalance.toFixed(2)} SOL`;
-        }
-        
-        showNotification(`Successfully entered "${raffle.title}"
+            <div class="shipping-indicator shipping-${raffle.shippingType}">
+              ${shippingInfo.icon
