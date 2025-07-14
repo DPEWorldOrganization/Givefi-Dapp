@@ -860,6 +860,30 @@ main {
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.15);
   }
+
+  /* Raffle Detail Page Mobile Styles */
+  #raffleDetailPage > div {
+    margin: 1rem !important;
+    padding: 1rem !important;
+  }
+
+  #raffleDetailPage > div > div:nth-child(2) {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  #raffleDetailPage #detailImage {
+    height: 200px !important;
+    font-size: 80px !important;
+  }
+
+  #raffleDetailPage h1 {
+    font-size: 1.5rem !important;
+  }
+
+  #raffleDetailPage h3 {
+    font-size: 1.1rem !important;
+  }
 }
   </style>
 </head>
@@ -993,33 +1017,33 @@ main {
       </div>
 
       <!-- Original Filters -->
-      <div style="background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
-        <h3 style="color: white;">🔍 Filters</h3>
-        <label style="color: #ccc;">Entry Price Range</label>
+      <div>
+        <h3>🔍 Filters</h3>
+        <label>Entry Price Range</label>
         <div class="price-range">
-          <input type="number" placeholder="Min" id="minPrice" step="0.01" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: white;">
-          <span style="color: #ccc;">–</span>
-          <input type="number" placeholder="Max" id="maxPrice" step="0.01" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: white;">
+          <input type="number" placeholder="Min" id="minPrice" step="0.01">
+          <span>–</span>
+          <input type="number" placeholder="Max" id="maxPrice" step="0.01">
         </div>
-        <label style="color: #ccc;">Payment Type</label>
-        <select id="typeFilter" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: white;">
+        <label>Payment Type</label>
+        <select id="typeFilter">
           <option value="all">All Types</option>
           <option value="SOL">SOL Only</option>
           <option value="GIVE">$GIVE Only</option>
         </select>
-        <label style="color: #ccc;">Shipping Options</label>
-        <select id="shippingFilter" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: white;">
+        <label>Shipping Options</label>
+        <select id="shippingFilter">
           <option value="all">All Shipping</option>
           <option value="digital">Digital Only</option>
           <option value="worldwide">Worldwide Shipping</option>
           <option value="pickup">Pickup Only</option>
           <option value="regional">Regional Shipping</option>
         </select>
-        <label style="color: #ccc;">
+        <label>
           <input type="checkbox" id="trustedOnly" style="width: auto; margin-right: 0.5rem;"> Trusted Hosts Only
         </label>
-        <button class="filter-btn apply-filters" onclick="applyFilters()" style="background: linear-gradient(45deg, #00f5ff, #ff00e6); color: white; border: none;">Apply Filters</button>
-        <button class="filter-btn clear-filters" onclick="clearFilters()" style="background: #6c757d; color: white; border: none;">Clear All</button>
+        <button class="filter-btn apply-filters" onclick="applyFilters()">Apply Filters</button>
+        <button class="filter-btn clear-filters" onclick="clearFilters()">Clear All</button>
       </div>
     </aside>
 
