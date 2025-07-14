@@ -1,1031 +1,697 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GiveFi - Decentralized Raffle Platform</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body {
-  height: 100%;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  overflow-x: hidden;
-  width: 100%;
-}
-
-body {
-  background: #667eea;
-  background: -webkit-linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  color: #333;
-  position: relative;
-  max-width: 100vw;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-  z-index: -1;
-  pointer-events: none;
-}
-
-header {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.logo {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: white;
-  text-decoration: none;
-}
-
-nav {
-  display: flex;
-  gap: 2rem;
-}
-
-nav a {
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
-  transition: opacity 0.3s ease;
-}
-
-nav a:hover {
-  opacity: 0.8;
-}
-
-.wallet-section {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.wallet-info {
-  display: none;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.25rem;
-}
-
-.wallet-address {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  color: white;
-  font-family: 'Courier New', monospace;
-  font-size: 0.85rem;
-}
-
-.wallet-balance {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  color: white;
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-
-#connectWallet {
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-#connectWallet:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
-}
-
-#connectWallet:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.hero {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: white;
-}
-
-.hero h1 {
-  font-size: 3.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, #ffffff, #f8f9fa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hero p {
-  font-size: 1.2rem;
-  opacity: 0.9;
-  max-width: 600px;
-  margin: 0 auto 2rem;
-  line-height: 1.6;
-}
-
-.cta-button {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-  color: white;
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  text-decoration: none;
-  border-radius: 8px;
-  display: inline-block;
-  transition: all 0.3s ease;
-}
-
-.cta-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
-}
-
-main {
-  display: flex;
-  padding: 2rem;
-  gap: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.filters {
-  width: 280px;
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  height: fit-content;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.filters h3 {
-  margin-bottom: 1.5rem;
-  color: #333;
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.filters label {
-  display: block;
-  margin: 1rem 0 0.5rem;
-  font-weight: 600;
-  color: #555;
-  font-size: 0.9rem;
-}
-
-.filters input, .filters select {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0.75rem;
-  border: 2px solid #e1e5e9;
-  border-radius: 6px;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-}
-
-.price-range {
-  display: flex;
-  gap: 4%;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.price-range input {
-  width: 48%;
-  margin-bottom: 0;
-}
-
-.price-range span {
-  width: 4%;
-  text-align: center;
-}
-
-.filter-btn {
-  width: 100%;
-  padding: 0.75rem;
-  margin-top: 1rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.apply-filters {
-  background: #667eea;
-  color: white;
-}
-
-.apply-filters:hover {
-  background: #5a6fd8;
-}
-
-.clear-filters {
-  background: #6c757d;
-  color: white;
-  margin-top: 0.5rem;
-}
-
-.clear-filters:hover {
-  background: #5a6268;
-}
-
-.raffle-feed {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
-}
-
-.raffle-card {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.raffle-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-}
-
-.raffle-card img {
-  width: 100%;
-  height: 200px;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-  display: block;
-  background: #eee;
-  border-radius: 8px 8px 0 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-.raffle-content {
-  padding: 1.5rem;
-}
-
-.raffle-card h3 {
-  margin: 0 0 0.75rem;
-  color: #333;
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.host-info {
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.trusted-badge {
-  background: #28a745;
-  color: white;
-  padding: 0.2rem 0.6rem;
-  font-size: 0.75rem;
-  border-radius: 12px;
-  font-weight: 600;
-}
-
-.shipping-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-}
-
-.shipping-digital {
-  background: #e3f2fd;
-  color: #1976d2;
-  border: 1px solid #bbdefb;
-}
-
-.shipping-pickup {
-  background: #fff3e0;
-  color: #f57c00;
-  border: 1px solid #ffcc02;
-}
-
-.shipping-worldwide {
-  background: #e8f5e8;
-  color: #2e7d32;
-  border: 1px solid #a5d6a7;
-}
-
-.shipping-regional {
-  background: #f3e5f5;
-  color: #7b1fa2;
-  border: 1px solid #ce93d8;
-}
-
-.location-info {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.shipping-details {
-  font-size: 0.85rem;
-  color: #777;
-  font-style: italic;
-  margin-bottom: 1rem;
-  line-height: 1.4;
-}
-
-.entry-fee {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background: #e9ecef;
-  border-radius: 4px;
-  overflow: hidden;
-  margin: 1rem 0;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #28a745, #20c997);
-  transition: width 0.5s ease;
-}
-
-.raffle-stats {
-  display: flex;
-  justify-content: space-between;
-  margin: 1rem 0;
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.enter-btn {
-  width: 100%;
-  padding: 1rem;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.enter-btn:enabled {
-  background: #28a745;
-  color: white;
-}
-
-.enter-btn:enabled:hover {
-  background: #218838;
-  transform: translateY(-1px);
-}
-
-.enter-btn:disabled {
-  background: #e9ecef;
-  color: #6c757d;
-  cursor: not-allowed;
-}
-
-.form-container {
-  display: none;
-  background: white;
-  max-width: 600px;
-  margin: 2rem auto;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.form-container h2 {
-  text-align: center;
-  margin-bottom: 2rem;
-  color: #333;
-  font-weight: 600;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #555;
-}
-
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e1e5e9;
-  border-radius: 6px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: #667eea;
-}
-
-.form-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.submit-btn {
-  flex: 1;
-  padding: 1rem;
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.submit-btn:hover {
-  background: #218838;
-}
-
-.cancel-btn {
-  padding: 1rem 2rem;
-  background: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.cancel-btn:hover {
-  background: #5a6268;
-}
-
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  color: white;
-  font-weight: 600;
-  z-index: 1000;
-  max-width: 300px;
-  transform: translateX(400px);
-  transition: transform 0.3s ease;
-}
-
-.notification.show {
-  transform: translateX(0);
-}
-
-.notification.success {
-  background: #28a745;
-}
-
-.notification.error {
-  background: #dc3545;
-}
-
-.notification.info {
-  background: #17a2b8;
-}
-
-@media (max-width: 768px) {
-  header {
-    padding: 1rem;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .hero h1 {
-    font-size: 2.5rem;
-  }
-
-  main {
-    flex-direction: column;
-    padding: 1rem;
-  }
-  
-  .filters {
-    width: 100%;
-  }
-  
-  .raffle-feed {
-    grid-template-columns: 1fr;
-  }
-}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GiveFi - Win Big, Play Smart</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(45deg, #00f5ff, #ff00e6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #00f5ff;
+        }
+
+        .connect-wallet {
+            background: linear-gradient(45deg, #00f5ff, #ff00e6);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .connect-wallet:hover {
+            transform: scale(1.05);
+        }
+
+        /* Live Stats Ticker */
+        .live-ticker {
+            background: rgba(0, 245, 255, 0.1);
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            padding: 10px 0;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .ticker-content {
+            display: flex;
+            animation: scroll 30s linear infinite;
+            white-space: nowrap;
+        }
+
+        .ticker-item {
+            margin-right: 50px;
+            font-weight: 500;
+        }
+
+        .ticker-value {
+            color: #00f5ff;
+            font-weight: 700;
+        }
+
+        @keyframes scroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        /* Raffle Cards Section */
+        .raffles-section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ffffff, #00f5ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .view-all {
+            color: #00f5ff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .raffles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .raffle-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .raffle-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(45deg, #00f5ff, #ff00e6);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .raffle-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 245, 255, 0.3);
+        }
+
+        .raffle-card:hover::before {
+            opacity: 1;
+        }
+
+        .raffle-image {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+
+        .raffle-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .raffle-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 2px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #00f5ff;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #00f5ff, #ff00e6);
+            width: 65%;
+            transition: width 0.3s;
+        }
+
+        .enter-button {
+            width: 100%;
+            background: linear-gradient(45deg, #00f5ff, #ff00e6);
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .enter-button:hover {
+            transform: scale(1.02);
+        }
+
+        /* Right Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        /* Recent Winners */
+        .winner-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .winner-item:last-child {
+            border-bottom: none;
+        }
+
+        .winner-info {
+            flex: 1;
+        }
+
+        .winner-wallet {
+            font-family: monospace;
+            font-size: 12px;
+            color: #00f5ff;
+        }
+
+        .winner-prize {
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .winner-amount {
+            font-size: 16px;
+            font-weight: 700;
+            color: #00ff88;
+        }
+
+        /* Live Activity Feed */
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00f5ff, #ff00e6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .activity-text {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .activity-wallet {
+            font-family: monospace;
+            color: #00f5ff;
+        }
+
+        .activity-time {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* Hot Badge */
+        .hot-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(45deg, #ff4757, #ff3838);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .raffles-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Pulse animation for new entries */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 245, 255, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 245, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 245, 255, 0); }
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <div class="logo">GiveFi 🎲</div>
-    <nav>
-      <a href="#raffles">Browse Raffles</a>
-      <a href="#" onclick="showLaunchForm()">Launch Raffle</a>
-    </nav>
-    <div class="wallet-section">
-      <div class="wallet-info" id="walletInfo">
-        <div class="wallet-address" id="walletAddress"></div>
-        <div class="wallet-balance" id="walletBalance"></div>
-      </div>
-      <button id="connectWallet">Connect Wallet</button>
-    </div>
-  </header>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <div class="logo">GiveFi</div>
+                <ul class="nav-links">
+                    <li><a href="#raffles">Raffles</a></li>
+                    <li><a href="#winners">Winners</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                </ul>
+                <button class="connect-wallet">Connect Wallet</button>
+            </nav>
+        </div>
+    </header>
 
-  <section class="hero">
-    <h1>Decentralized Raffles</h1>
-    <p>Enter raffles, win amazing prizes, and launch your own campaigns. Powered by Solana blockchain for transparent and fair gaming.</p>
-    <a href="#raffles" class="cta-button">Explore Raffles</a>
-  </section>
+    <!-- Live Ticker -->
+    <div class="container">
+        <div class="live-ticker">
+            <div class="ticker-content">
+                <div class="ticker-item">🔥 Total Prize Pool: <span class="ticker-value">$124,567</span></div>
+                <div class="ticker-item">👥 Active Players: <span class="ticker-value">2,341</span></div>
+                <div class="ticker-item">🏆 Winners Today: <span class="ticker-value">87</span></div>
+                <div class="ticker-item">⚡ Entries Last Hour: <span class="ticker-value">456</span></div>
+                <div class="ticker-item">💎 Biggest Win: <span class="ticker-value">$12,340</span></div>
+                <div class="ticker-item">🚀 New Raffle Starting: <span class="ticker-value">2:34</span></div>
+            </div>
+        </div>
+    </div>
 
-  <main id="raffles">
-    <aside class="filters">
-      <h3>🔍 Filters</h3>
-      <label>Entry Price Range</label>
-      <div class="price-range">
-        <input type="number" placeholder="Min" id="minPrice" step="0.01">
-        <span>–</span>
-        <input type="number" placeholder="Max" id="maxPrice" step="0.01">
-      </div>
-      <label>Payment Type</label>
-      <select id="typeFilter">
-        <option value="all">All Types</option>
-        <option value="SOL">SOL Only</option>
-        <option value="GIVE">$GIVE Only</option>
-      </select>
-      <label>Shipping Options</label>
-      <select id="shippingFilter">
-        <option value="all">All Shipping</option>
-        <option value="digital">Digital Only</option>
-        <option value="worldwide">Worldwide Shipping</option>
-        <option value="pickup">Pickup Only</option>
-        <option value="regional">Regional Shipping</option>
-      </select>
-      <label>
-        <input type="checkbox" id="trustedOnly" style="width: auto; margin-right: 0.5rem;"> Trusted Hosts Only
-      </label>
-      <button class="filter-btn apply-filters" onclick="applyFilters()">Apply Filters</button>
-      <button class="filter-btn clear-filters" onclick="clearFilters()">Clear All</button>
-    </aside>
-    <section class="raffle-feed" id="raffleFeed">
-      <!-- Raffle cards will be inserted here -->
-    </section>
-  </main>
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content">
+            <!-- Raffles Section -->
+            <div class="raffles-section">
+                <div class="section-header">
+                    <h2 class="section-title">🔥 Hot Raffles</h2>
+                    <a href="#" class="view-all">View All →</a>
+                </div>
+                
+                <div class="raffles-grid">
+                    <!-- Raffle Card 1 -->
+                    <div class="raffle-card pulse">
+                        <div class="hot-badge">🔥 HOT</div>
+                        <div class="raffle-image">🏎️</div>
+                        <h3 class="raffle-title">Tesla Model S Raffle</h3>
+                        <div class="raffle-stats">
+                            <div class="stat">
+                                <div class="stat-label">Entries</div>
+                                <div class="stat-value">1,247</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Entry Cost</div>
+                                <div class="stat-value">$25</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 85%"></div>
+                        </div>
+                        <button class="enter-button">Enter Raffle - $25</button>
+                    </div>
 
-  <!-- Launch Form Modal -->
-  <div id="launchForm" class="form-container">
-    <h2>🚀 Launch a New Raffle</h2>
-    <div class="form-group">
-      <label>Prize Title</label>
-      <input type="text" id="raffleTitle" placeholder="Ex: Rare Solana NFT Collection" required>
-    </div>
-    <div class="form-group">
-      <label>Prize Image URL</label>
-      <input type="url" id="prizeImage" placeholder="https://example.com/image.png" required>
-    </div>
-    <div class="form-group">
-      <label>Entry Fee</label>
-      <input type="number" id="entryFee" step="0.01" placeholder="0.5" min="0.01" required>
-    </div>
-    <div class="form-group">
-      <label>Entry Payment Type</label>
-      <select id="entryType">
-        <option value="SOL">SOL</option>
-        <option value="GIVE">$GIVE Token</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Maximum Participants</label>
-      <input type="number" id="maxParticipants" placeholder="300" min="2" required>
-    </div>
-    <div class="form-group">
-      <label>Duration (days)</label>
-      <input type="number" id="raffleDuration" placeholder="30" min="1" max="30" required>
-    </div>
-    <div class="form-group">
-      <label>Prize Location</label>
-      <input type="text" id="prizeLocation" placeholder="Ex: New York, NY or Digital/NFT" required>
-    </div>
-    <div class="form-group">
-      <label>Shipping/Delivery Type</label>
-      <select id="shippingType" onchange="updateShippingInfo()">
-        <option value="digital">💻 Digital Delivery (NFTs, codes, etc.)</option>
-        <option value="pickup">📍 Pick-up Only (Local collection required)</option>
-        <option value="worldwide">🌍 Worldwide Shipping (Free shipping included)</option>
-        <option value="regional">🌐 Regional Shipping (Limited regions)</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Shipping Details</label>
-      <input type="text" id="shippingInfo" placeholder="Ex: Free worldwide shipping included" required>
-    </div>
-    <div class="form-actions">
-      <button type="button" class="submit-btn" onclick="submitRaffleForm()">Launch Raffle</button>
-      <button type="button" class="cancel-btn" onclick="hideLaunchForm()">Cancel</button>
-    </div>
-  </div>
+                    <!-- Raffle Card 2 -->
+                    <div class="raffle-card">
+                        <div class="raffle-image">💎</div>
+                        <h3 class="raffle-title">$50K Cash Prize</h3>
+                        <div class="raffle-stats">
+                            <div class="stat">
+                                <div class="stat-label">Entries</div>
+                                <div class="stat-value">892</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Entry Cost</div>
+                                <div class="stat-value">$50</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%"></div>
+                        </div>
+                        <button class="enter-button">Enter Raffle - $50</button>
+                    </div>
 
-  <!-- Notification -->
-  <div id="notification" class="notification"></div>
+                    <!-- Raffle Card 3 -->
+                    <div class="raffle-card">
+                        <div class="raffle-image">🏠</div>
+                        <h3 class="raffle-title">Dream House Giveaway</h3>
+                        <div class="raffle-stats">
+                            <div class="stat">
+                                <div class="stat-label">Entries</div>
+                                <div class="stat-value">3,456</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Entry Cost</div>
+                                <div class="stat-value">$100</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 45%"></div>
+                        </div>
+                        <button class="enter-button">Enter Raffle - $100</button>
+                    </div>
 
-  <script>
-    // Global state
-    let walletConnected = false;
-    let walletAddress = null;
-    let walletBalance = 0;
-    let provider = null;
+                    <!-- Raffle Card 4 -->
+                    <div class="raffle-card">
+                        <div class="raffle-image">📱</div>
+                        <h3 class="raffle-title">iPhone 15 Pro Max</h3>
+                        <div class="raffle-stats">
+                            <div class="stat">
+                                <div class="stat-label">Entries</div>
+                                <div class="stat-value">567</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Entry Cost</div>
+                                <div class="stat-value">$10</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 30%"></div>
+                        </div>
+                        <button class="enter-button">Enter Raffle - $10</button>
+                    </div>
+                </div>
+            </div>
 
-    // Sample raffle data
-    const raffles = [
-      {
-        id: 1,
-        host: "@cryptowhale",
-        trusted: true,
-        entryFee: "0.5 SOL",
-        entryFeeValue: 0.5,
-        entryType: "SOL",
-        entries: 128,
-        maxEntries: 300,
-        endsIn: "1d 22h",
-        image: "https://via.placeholder.com/320x200/6f42c1/ffffff?text=Premium+NFT+Collection",
-        title: "Rare Solana NFT Collection",
-        location: "Digital/NFT",
-        shippingType: "digital",
-        shippingInfo: "Delivered instantly to your wallet"
-      },
-      {
-        id: 2,
-        host: "@gamercollector",
-        trusted: false,
-        entryFee: "1.3 SOL",
-        entryFeeValue: 1.3,
-        entryType: "SOL",
-        entries: 58,
-        maxEntries: 150,
-        endsIn: "10h 5m",
-        image: "https://via.placeholder.com/320x200/28a745/ffffff?text=Gaming+Setup",
-        title: "Epic Gaming Setup Bundle",
-        location: "Los Angeles, CA",
-        shippingType: "pickup",
-        shippingInfo: "Pick-up only in LA metro area"
-      },
-      {
-        id: 3,
-        host: "@luxurydealer",
-        trusted: true,
-        entryFee: "2.0 SOL",
-        entryFeeValue: 2.0,
-        entryType: "SOL",
-        entries: 245,
-        maxEntries: 500,
-        endsIn: "3d 8h",
-        image: "https://via.placeholder.com/320x200/dc3545/ffffff?text=Luxury+Watch",
-        title: "Rolex Submariner Watch",
-        location: "New York, NY",
-        shippingType: "worldwide",
-        shippingInfo: "Free worldwide shipping included"
-      },
-      {
-        id: 4,
-        host: "@artcollector",
-        trusted: true,
-        entryFee: "0.8 SOL",
-        entryFeeValue: 0.8,
-        entryType: "SOL",
-        entries: 67,
-        maxEntries: 200,
-        endsIn: "2d 14h",
-        image: "https://via.placeholder.com/320x200/17a2b8/ffffff?text=Digital+Artwork",
-        title: "Original Digital Art Piece",
-        location: "London, UK",
-        shippingType: "regional",
-        shippingInfo: "Ships to UK & EU only"
-      },
-      {
-        id: 5,
-        host: "@techguru",
-        trusted: true,
-        entryFee: "1.5 SOL",
-        entryFeeValue: 1.5,
-        entryType: "SOL",
-        entries: 89,
-        maxEntries: 250,
-        endsIn: "5d 12h",
-        image: "https://via.placeholder.com/320x200/ff6b6b/ffffff?text=iPhone+15+Pro",
-        title: "iPhone 15 Pro Max",
-        location: "Tokyo, Japan",
-        shippingType: "regional",
-        shippingInfo: "Ships to Japan, Korea, and Singapore"
-      }
-    ];
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Recent Winners -->
+                <div class="sidebar-card">
+                    <h3 class="section-title">🏆 Recent Winners</h3>
+                    <div class="winner-item">
+                        <div class="winner-info">
+                            <div class="winner-wallet">0x8f2a...6d9e</div>
+                            <div class="winner-prize">Tesla Model S</div>
+                        </div>
+                        <div class="winner-amount">$89,000</div>
+                    </div>
+                    <div class="winner-item">
+                        <div class="winner-info">
+                            <div class="winner-wallet">0x3b4c...8a1f</div>
+                            <div class="winner-prize">Cash Prize</div>
+                        </div>
+                        <div class="winner-amount">$25,000</div>
+                    </div>
+                    <div class="winner-item">
+                        <div class="winner-info">
+                            <div class="winner-wallet">0x7e9d...2b5c</div>
+                            <div class="winner-prize">iPhone 15</div>
+                        </div>
+                        <div class="winner-amount">$1,200</div>
+                    </div>
+                    <div class="winner-item">
+                        <div class="winner-info">
+                            <div class="winner-wallet">0xa6f1...4c8d</div>
+                            <div class="winner-prize">Gaming Setup</div>
+                        </div>
+                        <div class="winner-amount">$3,500</div>
+                    </div>
+                </div>
 
-    document.addEventListener('DOMContentLoaded', function() {
-      initializeApp();
-    });
+                <!-- Live Activity Feed -->
+                <div class="sidebar-card">
+                    <h3 class="section-title">⚡ Live Activity</h3>
+                    <div class="activity-item">
+                        <div class="activity-icon">🎯</div>
+                        <div class="activity-text">
+                            <span class="activity-wallet">0x4d2a...9f8e</span> entered Tesla raffle
+                        </div>
+                        <div class="activity-time">2s ago</div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">💎</div>
+                        <div class="activity-text">
+                            <span class="activity-wallet">0x1b7c...3e9a</span> won $5,000!
+                        </div>
+                        <div class="activity-time">15s ago</div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">🚀</div>
+                        <div class="activity-text">
+                            New raffle launched: Gaming PC
+                        </div>
+                        <div class="activity-time">1m ago</div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">🎯</div>
+                        <div class="activity-text">
+                            <span class="activity-wallet">0x9e5f...7d2b</span> entered House raffle
+                        </div>
+                        <div class="activity-time">2m ago</div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">🔥</div>
+                        <div class="activity-text">
+                            Tesla raffle 85% full!
+                        </div>
+                        <div class="activity-time">3m ago</div>
+                    </div>
+                </div>
 
-    function initializeApp() {
-      document.getElementById('connectWallet').onclick = simulateWalletConnection;
-      renderRaffles();
-      document.querySelector('.cta-button').onclick = function(e) {
-        e.preventDefault();
-        document.querySelector('#raffles').scrollIntoView({
-          behavior: 'smooth'
+                <!-- Platform Stats -->
+                <div class="sidebar-card">
+                    <h3 class="section-title">📊 Platform Stats</h3>
+                    <div class="raffle-stats">
+                        <div class="stat">
+                            <div class="stat-label">Total Paid Out</div>
+                            <div class="stat-value">$2.4M</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Active Raffles</div>
+                            <div class="stat-value">24</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Players Online</div>
+                            <div class="stat-value">1,847</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Success Rate</div>
+                            <div class="stat-value">99.9%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate real-time updates
+        function updateLiveData() {
+            // Update ticker numbers randomly
+            const tickerValues = document.querySelectorAll('.ticker-value');
+            tickerValues.forEach(value => {
+                if (value.textContent.includes('$')) {
+                    const current = parseInt(value.textContent.replace(/[^\d]/g, ''));
+                    const change = Math.floor(Math.random() * 100) - 50;
+                    const newValue = Math.max(0, current + change);
+                    value.textContent = '$' + newValue.toLocaleString();
+                } else {
+                    const current = parseInt(value.textContent.replace(/[^\d]/g, ''));
+                    const change = Math.floor(Math.random() * 10) - 5;
+                    const newValue = Math.max(0, current + change);
+                    value.textContent = newValue.toLocaleString();
+                }
+            });
+
+            // Simulate new activity
+            addNewActivity();
+        }
+
+        function addNewActivity() {
+            const activities = [
+                { icon: '🎯', text: 'entered Tesla raffle', type: 'entry' },
+                { icon: '💎', text: 'won $5,000!', type: 'win' },
+                { icon: '🎯', text: 'entered House raffle', type: 'entry' },
+                { icon: '🚀', text: 'entered iPhone raffle', type: 'entry' }
+            ];
+
+            const randomActivity = activities[Math.floor(Math.random() * activities.length)];
+            const activityFeed = document.querySelector('.sidebar-card:nth-child(2)');
+            const activityItems = activityFeed.querySelectorAll('.activity-item');
+            
+            // Remove last item
+            if (activityItems.length > 4) {
+                activityItems[activityItems.length - 1].remove();
+            }
+
+            // Add new item at top
+            const newActivity = document.createElement('div');
+            newActivity.className = 'activity-item';
+            newActivity.innerHTML = `
+                <div class="activity-icon">${randomActivity.icon}</div>
+                <div class="activity-text">
+                    <span class="activity-wallet">0x${Math.random().toString(16).substr(2, 4)}...${Math.random().toString(16).substr(2, 4)}</span> ${randomActivity.text}
+                </div>
+                <div class="activity-time">just now</div>
+            `;
+            
+            activityFeed.insertBefore(newActivity, activityFeed.children[1]);
+        }
+
+        // Update data every 3 seconds
+        setInterval(updateLiveData, 3000);
+
+        // Add click handlers for buttons
+        document.querySelectorAll('.enter-button').forEach(button => {
+            button.addEventListener('click', function() {
+                this.textContent = 'Processing...';
+                this.style.background = 'linear-gradient(45deg, #00ff88, #00f5ff)';
+                
+                setTimeout(() => {
+                    this.textContent = this.textContent.replace('Processing...', 'Entered! ✓');
+                    
+                    // Add new activity
+                    addNewActivity();
+                }, 1500);
+            });
         });
-      };
-    }
 
-    function simulateWalletConnection() {
-      const connectBtn = document.getElementById('connectWallet');
-      if (walletConnected) {
-        disconnectWallet();
-        return;
-      }
-      connectBtn.textContent = 'Connecting...';
-      connectBtn.disabled = true;
-      setTimeout(() => {
-        const fakeAddress = '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU';
-        const fakePublicKey = { toString: () => fakeAddress };
-        handleWalletConnected(fakePublicKey);
-      }, 1500);
-    }
-
-    function handleWalletConnected(publicKey) {
-      walletConnected = true;
-      walletAddress = publicKey.toString();
-      const connectBtn = document.getElementById('connectWallet');
-      const walletInfo = document.getElementById('walletInfo');
-      const addressElement = document.getElementById('walletAddress');
-      connectBtn.textContent = 'Disconnect';
-      connectBtn.disabled = false;
-      addressElement.textContent = `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
-      walletInfo.style.display = 'flex';
-      updateWalletBalance();
-      showNotification('Wallet connected successfully!', 'success');
-      renderRaffles();
-    }
-
-    function updateWalletBalance() {
-      const mockBalance = (Math.random() * 10 + 2).toFixed(2);
-      walletBalance = parseFloat(mockBalance);
-      document.getElementById('walletBalance').textContent = `${walletBalance} SOL`;
-    }
-
-    function disconnectWallet() {
-      walletConnected = false;
-      walletAddress = null;
-      walletBalance = 0;
-      const connectBtn = document.getElementById('connectWallet');
-      const walletInfo = document.getElementById('walletInfo');
-      connectBtn.textContent = 'Connect Wallet';
-      connectBtn.disabled = false;
-      walletInfo.style.display = 'none';
-      showNotification('Wallet disconnected', 'info');
-      renderRaffles();
-    }
-
-    function getShippingInfo(type) {
-      switch (type) {
-        case 'digital':
-          return { icon: '💻', text: 'Digital Delivery' };
-        case 'pickup':
-          return { icon: '📍', text: 'Pick-up Only' };
-        case 'worldwide':
-          return { icon: '🌍', text: 'Worldwide Shipping' };
-        case 'regional':
-          return { icon: '🌐', text: 'Regional Shipping' };
-        default:
-          return { icon: '', text: '' };
-      }
-    }
-
-    function renderRaffles(filteredRaffles = null) {
-      const container = document.getElementById('raffleFeed');
-      const rafflesToRender = filteredRaffles || raffles;
-      container.innerHTML = '';
-      if (rafflesToRender.length === 0) {
-        container.innerHTML = `
-          <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: white;">
-            <h3>No raffles match your filters</h3>
-            <p>Try adjusting your search criteria</p>
-          </div>`;
-        return;
-      }
-      rafflesToRender.forEach(raffle => {
-        const progress = (raffle.entries / raffle.maxEntries) * 100;
-        const canEnter = walletConnected && (raffle.entryType === 'SOL' ? walletBalance >= raffle.entryFeeValue : true);
-        const shippingInfo = getShippingInfo(raffle.shippingType);
-        const card = document.createElement('div');
-        card.className = 'raffle-card';
-        card.innerHTML = `
-          <img src="${raffle.image}" alt="${raffle.title}" loading="lazy"
-               style="aspect-ratio:16/10;object-fit:cover;width:100%;height:200px;border-radius:8px 8px 0 0;box-shadow:0 2px 8px rgba(0,0,0,0.06);background:#eee;"
-               onerror="this.onerror=null;this.src='https://via.placeholder.com/320x200?text=No+Image';">
-          <div class="raffle-content">
-            <h3>${raffle.title}</h3>
-            <div class="host-info">
-              <span><strong>Hosted by ${raffle.host}</strong></span>
-              ${raffle.trusted ? '<span class="trusted-badge">✓ Trusted</span>' : ''}
-            </div>
-            <div class="shipping-indicator shipping-${raffle.shippingType}">
-              ${shippingInfo.icon} ${shippingInfo.text}
-            </div>
-            <div class="location-info">
-              📍 ${raffle.location}
-            </div>
-            <div class="shipping-details">
-              ${raffle.shippingInfo}
-            </div>
-            <div class="entry-fee">Entry Fee: <strong>${raffle.entryFee}</strong></div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${progress}%"></div>
-            </div>
-            <div class="raffle-stats">
-              <span><strong>${raffle.entries}</strong> / ${raffle.maxEntries} entries</span>
-              <span>⏰ ${raffle.endsIn} left</span>
-            </div>
-            <button class="enter-btn" onclick="enterRaffle(${raffle.id})" ${!canEnter ? 'disabled' : ''}>
-              ${canEnter ? 'Enter Raffle' : (walletConnected ? 'Insufficient Balance' : 'Connect Wallet')}
-            </button>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    function showNotification(message, type = 'info') {
-      const notif = document.getElementById('notification');
-      notif.textContent = message;
-      notif.className = `notification show ${type}`;
-      setTimeout(() => {
-        notif.className = `notification ${type}`;
-      }, 3000);
-    }
-
-    function applyFilters() {
-      const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
-      const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
-      const typeFilter = document.getElementById('typeFilter').value;
-      const shippingFilter = document.getElementById('shippingFilter').value;
-      const trustedOnly = document.getElementById('trustedOnly').checked;
-      let filtered = raffles.filter(r => 
-        r.entryFeeValue >= minPrice &&
-        r.entryFeeValue <= maxPrice &&
-        (typeFilter === 'all' || r.entryType === typeFilter) &&
-        (shippingFilter === 'all' || r.shippingType === shippingFilter) &&
-        (!trustedOnly || r.trusted)
-      );
-      renderRaffles(filtered);
-    }
-
-    function clearFilters() {
-      document.getElementById('minPrice').value = '';
-      document.getElementById('maxPrice').value = '';
-      document.getElementById('typeFilter').value = 'all';
-      document.getElementById('shippingFilter').value = 'all';
-      document.getElementById('trustedOnly').checked = false;
-      renderRaffles();
-    }
-
-    function showLaunchForm() {
-      document.getElementById('launchForm').style.display = 'block';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function hideLaunchForm() {
-      document.getElementById('launchForm').style.display = 'none';
-    }
-
-    function updateShippingInfo() {
-      const shippingType = document.getElementById('shippingType').value;
-      const shippingInfo = document.getElementById('shippingInfo');
-      switch (shippingType) {
-        case 'digital':
-          shippingInfo.value = "Delivered instantly to your wallet";
-          break;
-        case 'pickup':
-          shippingInfo.value = "Pick-up only at specified location";
-          break;
-        case 'worldwide':
-          shippingInfo.value = "Free worldwide shipping included";
-          break;
-        case 'regional':
-          shippingInfo.value = "Ships to limited regions";
-          break;
-        default:
-          shippingInfo.value = "";
-      }
-    }
-
-    function submitRaffleForm() {
-      const title = document.getElementById('raffleTitle').value;
-      const image = document.getElementById('prizeImage').value;
-      const entryFeeValue = parseFloat(document.getElementById('entryFee').value);
-      const entryType = document.getElementById('entryType').value;
-      const maxEntries = parseInt(document.getElementById('maxParticipants').value);
-      const days = parseInt(document.getElementById('raffleDuration').value);
-      const location = document.getElementById('prizeLocation').value;
-      const shippingType = document.getElementById('shippingType').value;
-      const shippingInfo = document.getElementById('shippingInfo').value;
-      if (!title || !image || !entryFeeValue || !maxEntries || !days || !location || !shippingType || !shippingInfo) {
-        showNotification("Please fill out all fields.", "error");
-        return;
-      }
-      raffles.unshift({
-        id: Date.now(),
-        host: walletConnected ? `@${walletAddress.slice(0, 6)}` : "@demo_user",
-        trusted: walletConnected,
-        entryFee: `${entryFeeValue} ${entryType}`,
-        entryFeeValue,
-        entryType,
-        entries: 0,
-        maxEntries,
-        endsIn: `${days}d 0h`,
-        image,
-        title,
-        location,
-        shippingType,
-        shippingInfo
-      });
-      hideLaunchForm();
-      showNotification("Raffle launched successfully!", "success");
-      renderRaffles();
-    }
-
-    function enterRaffle(id) {
-      if (!walletConnected) {
-        showNotification("Please connect your wallet to enter.", "error");
-        return;
-      }
-      const raffle = raffles.find(r => r.id === id);
-      if (!raffle) return;
-      if (raffle.entryType === "SOL" && walletBalance < raffle.entryFeeValue) {
-        showNotification("Insufficient balance for entry.", "error");
-        return;
-      }
-      raffle.entries += 1;
-      if (raffle.entryType === "SOL") {
-        walletBalance -= raffle.entryFeeValue;
-        updateWalletBalance();
-      }
-      showNotification("Successfully entered the raffle!", "success");
-      renderRaffles();
-    }
-  </script>
+        // Pulse effect for hot raffles
+        setInterval(() => {
+            const pulseCards = document.querySelectorAll('.pulse');
+            pulseCards.forEach(card => {
+                card.style.boxShadow = '0 0 20px rgba(0, 245, 255, 0.3)';
+                setTimeout(() => {
+                    card.style.boxShadow = 'none';
+                }, 1000);
+            });
+        }, 3000);
+    </script>
 </body>
 </html>
