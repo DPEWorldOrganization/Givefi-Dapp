@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # Frontend React App
+  frontend:
+    build:
+      context: ./givefi-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    volumes:
+      - ./givefi-frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  # Backend Node.js API
+  backend:
+    build:
+      context: ./givefi-backend
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+      DATABASE_URL: postgresql://givefi_user:givefi_pass@postgres:5432/givefi
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: your_jwt_secret
+      SOLANA_RPC_URL: https://api.devnet.solana.com
+      SOLANA_PROGRAM_ID: GiveFiRaffle11111111111111111111111111111111
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./givefi-backend:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+      - redis
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: givefi
+      POSTGRES_USER: givefi_user
+      POSTGRES_PASSWORD: givefi_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
