@@ -1,0 +1,29 @@
+{
+  "name": "givefi-frontend",
+  "version": "1.0.0",
+  "description": "GiveFi - Transparent Giveaways on Solana",
+  "type": "module",
+  "scripts": {
+    "dev": "python -m http.server 8000",
+    "serve": "python -m http.server 8000",
+    "build": "echo 'No build step required for vanilla HTML/JS'",
+    "start": "python -m http.server 8080"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
+    "@solana/web3.js": "^1.87.6",
+    "@solana/spl-token": "^0.3.9"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.2"
+  },
+  "keywords": [
+    "solana",
+    "blockchain",
+    "giveaway",
+    "web3",
+    "dapp"
+  ],
+  "author": "GiveFi Team",
+  "license": "MIT"
+}
