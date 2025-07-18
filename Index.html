@@ -1,1031 +1,1216 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GiveFi - Decentralized Raffle Platform</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body {
-  height: 100%;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  overflow-x: hidden;
-  width: 100%;
-}
-
-body {
-  background: #667eea;
-  background: -webkit-linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  color: #333;
-  position: relative;
-  max-width: 100vw;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-  z-index: -1;
-  pointer-events: none;
-}
-
-header {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.logo {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: white;
-  text-decoration: none;
-}
-
-nav {
-  display: flex;
-  gap: 2rem;
-}
-
-nav a {
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
-  transition: opacity 0.3s ease;
-}
-
-nav a:hover {
-  opacity: 0.8;
-}
-
-.wallet-section {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.wallet-info {
-  display: none;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.25rem;
-}
-
-.wallet-address {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  color: white;
-  font-family: 'Courier New', monospace;
-  font-size: 0.85rem;
-}
-
-.wallet-balance {
-  background: rgba(255, 255, 255, 0.2);
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  color: white;
-  font-weight: 600;
-  font-size: 0.85rem;
-}
-
-#connectWallet {
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-#connectWallet:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
-}
-
-#connectWallet:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.hero {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: white;
-}
-
-.hero h1 {
-  font-size: 3.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, #ffffff, #f8f9fa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hero p {
-  font-size: 1.2rem;
-  opacity: 0.9;
-  max-width: 600px;
-  margin: 0 auto 2rem;
-  line-height: 1.6;
-}
-
-.cta-button {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-  color: white;
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  text-decoration: none;
-  border-radius: 8px;
-  display: inline-block;
-  transition: all 0.3s ease;
-}
-
-.cta-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
-}
-
-main {
-  display: flex;
-  padding: 2rem;
-  gap: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.filters {
-  width: 280px;
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  height: fit-content;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.filters h3 {
-  margin-bottom: 1.5rem;
-  color: #333;
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.filters label {
-  display: block;
-  margin: 1rem 0 0.5rem;
-  font-weight: 600;
-  color: #555;
-  font-size: 0.9rem;
-}
-
-.filters input, .filters select {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 0.75rem;
-  border: 2px solid #e1e5e9;
-  border-radius: 6px;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-}
-
-.price-range {
-  display: flex;
-  gap: 4%;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.price-range input {
-  width: 48%;
-  margin-bottom: 0;
-}
-
-.price-range span {
-  width: 4%;
-  text-align: center;
-}
-
-.filter-btn {
-  width: 100%;
-  padding: 0.75rem;
-  margin-top: 1rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.apply-filters {
-  background: #667eea;
-  color: white;
-}
-
-.apply-filters:hover {
-  background: #5a6fd8;
-}
-
-.clear-filters {
-  background: #6c757d;
-  color: white;
-  margin-top: 0.5rem;
-}
-
-.clear-filters:hover {
-  background: #5a6268;
-}
-
-.raffle-feed {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
-}
-
-.raffle-card {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.raffle-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-}
-
-.raffle-card img {
-  width: 100%;
-  height: 200px;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-  display: block;
-  background: #eee;
-  border-radius: 8px 8px 0 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-.raffle-content {
-  padding: 1.5rem;
-}
-
-.raffle-card h3 {
-  margin: 0 0 0.75rem;
-  color: #333;
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.host-info {
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.trusted-badge {
-  background: #28a745;
-  color: white;
-  padding: 0.2rem 0.6rem;
-  font-size: 0.75rem;
-  border-radius: 12px;
-  font-weight: 600;
-}
-
-.shipping-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
-}
-
-.shipping-digital {
-  background: #e3f2fd;
-  color: #1976d2;
-  border: 1px solid #bbdefb;
-}
-
-.shipping-pickup {
-  background: #fff3e0;
-  color: #f57c00;
-  border: 1px solid #ffcc02;
-}
-
-.shipping-worldwide {
-  background: #e8f5e8;
-  color: #2e7d32;
-  border: 1px solid #a5d6a7;
-}
-
-.shipping-regional {
-  background: #f3e5f5;
-  color: #7b1fa2;
-  border: 1px solid #ce93d8;
-}
-
-.location-info {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.shipping-details {
-  font-size: 0.85rem;
-  color: #777;
-  font-style: italic;
-  margin-bottom: 1rem;
-  line-height: 1.4;
-}
-
-.entry-fee {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 1rem;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background: #e9ecef;
-  border-radius: 4px;
-  overflow: hidden;
-  margin: 1rem 0;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #28a745, #20c997);
-  transition: width 0.5s ease;
-}
-
-.raffle-stats {
-  display: flex;
-  justify-content: space-between;
-  margin: 1rem 0;
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.enter-btn {
-  width: 100%;
-  padding: 1rem;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.enter-btn:enabled {
-  background: #28a745;
-  color: white;
-}
-
-.enter-btn:enabled:hover {
-  background: #218838;
-  transform: translateY(-1px);
-}
-
-.enter-btn:disabled {
-  background: #e9ecef;
-  color: #6c757d;
-  cursor: not-allowed;
-}
-
-.form-container {
-  display: none;
-  background: white;
-  max-width: 600px;
-  margin: 2rem auto;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.form-container h2 {
-  text-align: center;
-  margin-bottom: 2rem;
-  color: #333;
-  font-weight: 600;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #555;
-}
-
-.form-group input,
-.form-group select {
-  width: 100%;
-  padding: 0.75rem;
-  border: 2px solid #e1e5e9;
-  border-radius: 6px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: #667eea;
-}
-
-.form-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.submit-btn {
-  flex: 1;
-  padding: 1rem;
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.submit-btn:hover {
-  background: #218838;
-}
-
-.cancel-btn {
-  padding: 1rem 2rem;
-  background: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.cancel-btn:hover {
-  background: #5a6268;
-}
-
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  color: white;
-  font-weight: 600;
-  z-index: 1000;
-  max-width: 300px;
-  transform: translateX(400px);
-  transition: transform 0.3s ease;
-}
-
-.notification.show {
-  transform: translateX(0);
-}
-
-.notification.success {
-  background: #28a745;
-}
-
-.notification.error {
-  background: #dc3545;
-}
-
-.notification.info {
-  background: #17a2b8;
-}
-
-@media (max-width: 768px) {
-  header {
-    padding: 1rem;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .hero h1 {
-    font-size: 2.5rem;
-  }
-
-  main {
-    flex-direction: column;
-    padding: 1rem;
-  }
-  
-  .filters {
-    width: 100%;
-  }
-  
-  .raffle-feed {
-    grid-template-columns: 1fr;
-  }
-}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GiveFi - Transparent Giveaways on Solana</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533a7b 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            z-index: -2;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #9945ff;
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.5; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #9945ff, #14f195);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(45deg, #9945ff, #14f195);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .connect-btn {
+            background: linear-gradient(45deg, #9945ff, #14f195);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(153, 69, 255, 0.3);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ffffff, #9945ff, #14f195);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: slideUp 0.8s ease forwards;
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            animation: slideUp 0.8s ease 0.2s forwards;
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: slideUp 0.8s ease 0.4s forwards;
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #9945ff, #14f195);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(153, 69, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            padding: 1rem 2rem;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover {
+            border-color: #9945ff;
+            background: rgba(153, 69, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        /* Live Giveaway Section */
+        .live-giveaway {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+            background: linear-gradient(45deg, #9945ff, #14f195);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .giveaway-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 2rem 0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .giveaway-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(45deg, #9945ff, #14f195);
+        }
+
+        .giveaway-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(153, 69, 255, 0.2);
+        }
+
+        .bmw-image {
+            width: 100%;
+            max-width: 600px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+        }
+
+        .giveaway-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+
+        .giveaway-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .detail-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #14f195;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #9945ff, #14f195);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .countdown {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .countdown-item {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .countdown-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #14f195;
+        }
+
+        .countdown-label {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .urgency-banner {
+            background: linear-gradient(45deg, #ff4757, #ff6b7a);
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            font-weight: 600;
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Features Section */
+        .features {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(153, 69, 255, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #14f195;
+        }
+
+        .feature-description {
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        /* How it Works */
+        .how-it-works {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .step {
+            position: relative;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(153, 69, 255, 0.2);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, #9945ff, #14f195);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .step-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+
+        .step-description {
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        /* Stats Section */
+        .stats {
+            padding: 4rem 2rem;
+            background: rgba(255, 255, 255, 0.02);
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 800px;
+            margin: 2rem auto 0;
+        }
+
+        .stat-item {
+            padding: 1.5rem;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #14f195;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 3rem 2rem;
+            background: #0a0a0a;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .social-link {
+            display: inline-block;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            color: #ffffff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: linear-gradient(45deg, #9945ff, #14f195);
+            transform: translateY(-3px);
+        }
+
+        .footer-text {
+            color: #888;
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .footer-links a {
+            color: #888;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: #14f195;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav {
+                padding: 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .countdown {
+                flex-wrap: wrap;
+            }
+
+            .giveaway-details {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Wallet Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            margin: 10% auto;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #fff;
+        }
+
+        .wallet-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .wallet-option {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .wallet-option:hover {
+            background: rgba(153, 69, 255, 0.1);
+            border-color: #9945ff;
+        }
+
+        .wallet-icon {
+            width: 30px;
+            height: 30px;
+            margin-right: 1rem;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <div class="logo">GiveFi 🎲</div>
-    <nav>
-      <a href="#raffles">Browse Raffles</a>
-      <a href="#" onclick="showLaunchForm()">Launch Raffle</a>
-    </nav>
-    <div class="wallet-section">
-      <div class="wallet-info" id="walletInfo">
-        <div class="wallet-address" id="walletAddress"></div>
-        <div class="wallet-balance" id="walletBalance"></div>
-      </div>
-      <button id="connectWallet">Connect Wallet</button>
-    </div>
-  </header>
+    <!-- Animated Background -->
+    <div class="bg-animation"></div>
+    
+    <!-- Floating Particles -->
+    <div class="particles" id="particles"></div>
 
-  <section class="hero">
-    <h1>Decentralized Raffles</h1>
-    <p>Enter raffles, win amazing prizes, and launch your own campaigns. Powered by Solana blockchain for transparent and fair gaming.</p>
-    <a href="#raffles" class="cta-button">Explore Raffles</a>
-  </section>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">GiveFi</div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#giveaways">Giveaways</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#about">About</a></li>
+            </ul>
+            <button class="connect-btn" onclick="openWalletModal()">Connect Wallet</button>
+        </nav>
+    </header>
 
-  <main id="raffles">
-    <aside class="filters">
-      <h3>🔍 Filters</h3>
-      <label>Entry Price Range</label>
-      <div class="price-range">
-        <input type="number" placeholder="Min" id="minPrice" step="0.01">
-        <span>–</span>
-        <input type="number" placeholder="Max" id="maxPrice" step="0.01">
-      </div>
-      <label>Payment Type</label>
-      <select id="typeFilter">
-        <option value="all">All Types</option>
-        <option value="SOL">SOL Only</option>
-        <option value="GIVE">$GIVE Only</option>
-      </select>
-      <label>Shipping Options</label>
-      <select id="shippingFilter">
-        <option value="all">All Shipping</option>
-        <option value="digital">Digital Only</option>
-        <option value="worldwide">Worldwide Shipping</option>
-        <option value="pickup">Pickup Only</option>
-        <option value="regional">Regional Shipping</option>
-      </select>
-      <label>
-        <input type="checkbox" id="trustedOnly" style="width: auto; margin-right: 0.5rem;"> Trusted Hosts Only
-      </label>
-      <button class="filter-btn apply-filters" onclick="applyFilters()">Apply Filters</button>
-      <button class="filter-btn clear-filters" onclick="clearFilters()">Clear All</button>
-    </aside>
-    <section class="raffle-feed" id="raffleFeed">
-      <!-- Raffle cards will be inserted here -->
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Transparent Giveaways on Solana</h1>
+            <p>The first provably fair giveaway platform. Every entry verified on-chain. No more wondering if it's rigged.</p>
+            <div class="hero-buttons">
+                <a href="#giveaways" class="btn-primary">Enter BMW Giveaway</a>
+                <a href="#how-it-works" class="btn-secondary">How It Works</a>
+            </div>
+        </div>
     </section>
-  </main>
 
-  <!-- Launch Form Modal -->
-  <div id="launchForm" class="form-container">
-    <h2>🚀 Launch a New Raffle</h2>
-    <div class="form-group">
-      <label>Prize Title</label>
-      <input type="text" id="raffleTitle" placeholder="Ex: Rare Solana NFT Collection" required>
-    </div>
-    <div class="form-group">
-      <label>Prize Image URL</label>
-      <input type="url" id="prizeImage" placeholder="https://example.com/image.png" required>
-    </div>
-    <div class="form-group">
-      <label>Entry Fee</label>
-      <input type="number" id="entryFee" step="0.01" placeholder="0.5" min="0.01" required>
-    </div>
-    <div class="form-group">
-      <label>Entry Payment Type</label>
-      <select id="entryType">
-        <option value="SOL">SOL</option>
-        <option value="GIVE">$GIVE Token</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Maximum Participants</label>
-      <input type="number" id="maxParticipants" placeholder="300" min="2" required>
-    </div>
-    <div class="form-group">
-      <label>Duration (days)</label>
-      <input type="number" id="raffleDuration" placeholder="30" min="1" max="30" required>
-    </div>
-    <div class="form-group">
-      <label>Prize Location</label>
-      <input type="text" id="prizeLocation" placeholder="Ex: New York, NY or Digital/NFT" required>
-    </div>
-    <div class="form-group">
-      <label>Shipping/Delivery Type</label>
-      <select id="shippingType" onchange="updateShippingInfo()">
-        <option value="digital">💻 Digital Delivery (NFTs, codes, etc.)</option>
-        <option value="pickup">📍 Pick-up Only (Local collection required)</option>
-        <option value="worldwide">🌍 Worldwide Shipping (Free shipping included)</option>
-        <option value="regional">🌐 Regional Shipping (Limited regions)</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Shipping Details</label>
-      <input type="text" id="shippingInfo" placeholder="Ex: Free worldwide shipping included" required>
-    </div>
-    <div class="form-actions">
-      <button type="button" class="submit-btn" onclick="submitRaffleForm()">Launch Raffle</button>
-      <button type="button" class="cancel-btn" onclick="hideLaunchForm()">Cancel</button>
-    </div>
-  </div>
-
-  <!-- Notification -->
-  <div id="notification" class="notification"></div>
-
-  <script>
-    // Global state
-    let walletConnected = false;
-    let walletAddress = null;
-    let walletBalance = 0;
-    let provider = null;
-
-    // Sample raffle data
-    const raffles = [
-      {
-        id: 1,
-        host: "@cryptowhale",
-        trusted: true,
-        entryFee: "0.5 SOL",
-        entryFeeValue: 0.5,
-        entryType: "SOL",
-        entries: 128,
-        maxEntries: 300,
-        endsIn: "1d 22h",
-        image: "https://via.placeholder.com/320x200/6f42c1/ffffff?text=Premium+NFT+Collection",
-        title: "Rare Solana NFT Collection",
-        location: "Digital/NFT",
-        shippingType: "digital",
-        shippingInfo: "Delivered instantly to your wallet"
-      },
-      {
-        id: 2,
-        host: "@gamercollector",
-        trusted: false,
-        entryFee: "1.3 SOL",
-        entryFeeValue: 1.3,
-        entryType: "SOL",
-        entries: 58,
-        maxEntries: 150,
-        endsIn: "10h 5m",
-        image: "https://via.placeholder.com/320x200/28a745/ffffff?text=Gaming+Setup",
-        title: "Epic Gaming Setup Bundle",
-        location: "Los Angeles, CA",
-        shippingType: "pickup",
-        shippingInfo: "Pick-up only in LA metro area"
-      },
-      {
-        id: 3,
-        host: "@luxurydealer",
-        trusted: true,
-        entryFee: "2.0 SOL",
-        entryFeeValue: 2.0,
-        entryType: "SOL",
-        entries: 245,
-        maxEntries: 500,
-        endsIn: "3d 8h",
-        image: "https://via.placeholder.com/320x200/dc3545/ffffff?text=Luxury+Watch",
-        title: "Rolex Submariner Watch",
-        location: "New York, NY",
-        shippingType: "worldwide",
-        shippingInfo: "Free worldwide shipping included"
-      },
-      {
-        id: 4,
-        host: "@artcollector",
-        trusted: true,
-        entryFee: "0.8 SOL",
-        entryFeeValue: 0.8,
-        entryType: "SOL",
-        entries: 67,
-        maxEntries: 200,
-        endsIn: "2d 14h",
-        image: "https://via.placeholder.com/320x200/17a2b8/ffffff?text=Digital+Artwork",
-        title: "Original Digital Art Piece",
-        location: "London, UK",
-        shippingType: "regional",
-        shippingInfo: "Ships to UK & EU only"
-      },
-      {
-        id: 5,
-        host: "@techguru",
-        trusted: true,
-        entryFee: "1.5 SOL",
-        entryFeeValue: 1.5,
-        entryType: "SOL",
-        entries: 89,
-        maxEntries: 250,
-        endsIn: "5d 12h",
-        image: "https://via.placeholder.com/320x200/ff6b6b/ffffff?text=iPhone+15+Pro",
-        title: "iPhone 15 Pro Max",
-        location: "Tokyo, Japan",
-        shippingType: "regional",
-        shippingInfo: "Ships to Japan, Korea, and Singapore"
-      }
-    ];
-
-    document.addEventListener('DOMContentLoaded', function() {
-      initializeApp();
-    });
-
-    function initializeApp() {
-      document.getElementById('connectWallet').onclick = simulateWalletConnection;
-      renderRaffles();
-      document.querySelector('.cta-button').onclick = function(e) {
-        e.preventDefault();
-        document.querySelector('#raffles').scrollIntoView({
-          behavior: 'smooth'
-        });
-      };
-    }
-
-    function simulateWalletConnection() {
-      const connectBtn = document.getElementById('connectWallet');
-      if (walletConnected) {
-        disconnectWallet();
-        return;
-      }
-      connectBtn.textContent = 'Connecting...';
-      connectBtn.disabled = true;
-      setTimeout(() => {
-        const fakeAddress = '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU';
-        const fakePublicKey = { toString: () => fakeAddress };
-        handleWalletConnected(fakePublicKey);
-      }, 1500);
-    }
-
-    function handleWalletConnected(publicKey) {
-      walletConnected = true;
-      walletAddress = publicKey.toString();
-      const connectBtn = document.getElementById('connectWallet');
-      const walletInfo = document.getElementById('walletInfo');
-      const addressElement = document.getElementById('walletAddress');
-      connectBtn.textContent = 'Disconnect';
-      connectBtn.disabled = false;
-      addressElement.textContent = `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
-      walletInfo.style.display = 'flex';
-      updateWalletBalance();
-      showNotification('Wallet connected successfully!', 'success');
-      renderRaffles();
-    }
-
-    function updateWalletBalance() {
-      const mockBalance = (Math.random() * 10 + 2).toFixed(2);
-      walletBalance = parseFloat(mockBalance);
-      document.getElementById('walletBalance').textContent = `${walletBalance} SOL`;
-    }
-
-    function disconnectWallet() {
-      walletConnected = false;
-      walletAddress = null;
-      walletBalance = 0;
-      const connectBtn = document.getElementById('connectWallet');
-      const walletInfo = document.getElementById('walletInfo');
-      connectBtn.textContent = 'Connect Wallet';
-      connectBtn.disabled = false;
-      walletInfo.style.display = 'none';
-      showNotification('Wallet disconnected', 'info');
-      renderRaffles();
-    }
-
-    function getShippingInfo(type) {
-      switch (type) {
-        case 'digital':
-          return { icon: '💻', text: 'Digital Delivery' };
-        case 'pickup':
-          return { icon: '📍', text: 'Pick-up Only' };
-        case 'worldwide':
-          return { icon: '🌍', text: 'Worldwide Shipping' };
-        case 'regional':
-          return { icon: '🌐', text: 'Regional Shipping' };
-        default:
-          return { icon: '', text: '' };
-      }
-    }
-
-    function renderRaffles(filteredRaffles = null) {
-      const container = document.getElementById('raffleFeed');
-      const rafflesToRender = filteredRaffles || raffles;
-      container.innerHTML = '';
-      if (rafflesToRender.length === 0) {
-        container.innerHTML = `
-          <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: white;">
-            <h3>No raffles match your filters</h3>
-            <p>Try adjusting your search criteria</p>
-          </div>`;
-        return;
-      }
-      rafflesToRender.forEach(raffle => {
-        const progress = (raffle.entries / raffle.maxEntries) * 100;
-        const canEnter = walletConnected && (raffle.entryType === 'SOL' ? walletBalance >= raffle.entryFeeValue : true);
-        const shippingInfo = getShippingInfo(raffle.shippingType);
-        const card = document.createElement('div');
-        card.className = 'raffle-card';
-        card.innerHTML = `
-          <img src="${raffle.image}" alt="${raffle.title}" loading="lazy"
-               style="aspect-ratio:16/10;object-fit:cover;width:100%;height:200px;border-radius:8px 8px 0 0;box-shadow:0 2px 8px rgba(0,0,0,0.06);background:#eee;"
-               onerror="this.onerror=null;this.src='https://via.placeholder.com/320x200?text=No+Image';">
-          <div class="raffle-content">
-            <h3>${raffle.title}</h3>
-            <div class="host-info">
-              <span><strong>Hosted by ${raffle.host}</strong></span>
-              ${raffle.trusted ? '<span class="trusted-badge">✓ Trusted</span>' : ''}
+    <!-- Live Giveaway Section -->
+    <section id="giveaways" class="live-giveaway">
+        <h2 class="section-title">🔥 Live Giveaway</h2>
+        
+        <div class="giveaway-card">
+            <div class="urgency-banner">
+                ⚡ URGENT: 47/50 participants - Could end ANY SECOND!
             </div>
-            <div class="shipping-indicator shipping-${raffle.shippingType}">
-              ${shippingInfo.icon} ${shippingInfo.text}
+            
+            <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&h=300&fit=crop" alt="BMW 640i M Sport" class="bmw-image">
+            
+            <h3 class="giveaway-title">BMW 640i M Sport</h3>
+            <p style="color: #ccc; font-size: 1.1rem; margin-bottom: 2rem;">
+                Luxury sports coupe worth $70,000+ • Winner's choice: Take the BMW or 33% cash jackpot
+            </p>
+
+            <div class="giveaway-details">
+                <div class="detail-item">
+                    <div class="detail-label">Entry Cost</div>
+                    <div class="detail-value">0.1 SOL</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Participants</div>
+                    <div class="detail-value">47/50</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Prize Value</div>
+                    <div class="detail-value">$70,000+</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Cash Option</div>
+                    <div class="detail-value">~3.3 SOL</div>
+                </div>
             </div>
-            <div class="location-info">
-              📍 ${raffle.location}
-            </div>
-            <div class="shipping-details">
-              ${raffle.shippingInfo}
-            </div>
-            <div class="entry-fee">Entry Fee: <strong>${raffle.entryFee}</strong></div>
+
             <div class="progress-bar">
-              <div class="progress-fill" style="width: ${progress}%"></div>
+                <div class="progress-fill" style="width: 94%"></div>
             </div>
-            <div class="raffle-stats">
-              <span><strong>${raffle.entries}</strong> / ${raffle.maxEntries} entries</span>
-              <span>⏰ ${raffle.endsIn} left</span>
+            <p style="color: #14f195; font-weight: 600; margin-bottom: 2rem;">
+                94% filled • Only 3 spots left!
+            </p>
+
+            <div class="countdown">
+                <div class="countdown-item">
+                    <div class="countdown-number" id="days">2</div>
+                    <div class="countdown-label">Days</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-number" id="hours">14</div>
+                    <div class="countdown-label">Hours</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-number" id="minutes">23</div>
+                    <div class="countdown-label">Minutes</div>
+                </div>
+                <div class="countdown-item">
+                    <div class="countdown-number" id="seconds">45</div>
+                    <div class="countdown-label">Seconds</div>
+                </div>
             </div>
-            <button class="enter-btn" onclick="enterRaffle(${raffle.id})" ${!canEnter ? 'disabled' : ''}>
-              ${canEnter ? 'Enter Raffle' : (walletConnected ? 'Insufficient Balance' : 'Connect Wallet')}
+
+            <p style="color: #ff6b7a; font-weight: 600; margin-bottom: 2rem;">
+                ⚠️ Early-end enabled: Closes immediately when 50th person enters!
+            </p>
+
+            <button class="btn-primary" onclick="enterGiveaway()" style="font-size: 1.2rem; padding: 1.2rem 2.5rem;">
+                Enter Now - 0.1 SOL
             </button>
-          </div>
-        `;
-        container.appendChild(card);
-      });
-    }
+        </div>
+    </section>
 
-    function showNotification(message, type = 'info') {
-      const notif = document.getElementById('notification');
-      notif.textContent = message;
-      notif.className = `notification show ${type}`;
-      setTimeout(() => {
-        notif.className = `notification ${type}`;
-      }, 3000);
-    }
+    <!-- Features Section -->
+    <section id="about" class="features">
+        <h2 class="section-title">Why GiveFi?</h2>
+        
+        <div class="features-grid">
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🔍</div>
+                <h3 class="feature-title">100% Transparent</h3>
+                <p class="feature-description">Every entry, draw, and winner is recorded on Solana blockchain. Verify everything yourself - no trust required.</p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">Early-End Urgency</h3>
+                <p class="feature-description">Giveaways can end the moment minimum participants join. Creates real scarcity and excitement.</p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🛡️</div>
+                <h3 class="feature-title">Refund Protection</h3>
+                <p class="feature-description">If minimum participants isn't met, everyone gets 100% refund automatically. Zero risk for participants.</p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <div class="feature-icon">💎</div>
+                <h3 class="feature-title">Winner's Choice</h3>
+                <p class="feature-description">Take the physical prize or choose 33% cash jackpot. Your prize, your choice.</p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🎲</div>
+                <h3 class="feature-title">Provably Fair</h3>
+                <p class="feature-description">Random winner selection using verifiable on-chain randomness. No manipulation possible.</p>
+            </div>
+            
+            <div class="feature-card fade-in">
+                <div class="feature-icon">🚀</div>
+                <h3 class="feature-title">Solana Speed</h3>
+                <p class="feature-description">Fast, cheap transactions powered by Solana blockchain. Enter giveaways in seconds.</p>
+            </div>
+        </div>
+    </section>
 
-    function applyFilters() {
-      const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
-      const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
-      const typeFilter = document.getElementById('typeFilter').value;
-      const shippingFilter = document.getElementById('shippingFilter').value;
-      const trustedOnly = document.getElementById('trustedOnly').checked;
-      let filtered = raffles.filter(r => 
-        r.entryFeeValue >= minPrice &&
-        r.entryFeeValue <= maxPrice &&
-        (typeFilter === 'all' || r.entryType === typeFilter) &&
-        (shippingFilter === 'all' || r.shippingType === shippingFilter) &&
-        (!trustedOnly || r.trusted)
-      );
-      renderRaffles(filtered);
-    }
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <h2 class="section-title">How It Works</h2>
+        
+        <div class="steps">
+            <div class="step fade-in">
+                <div class="step-number">1</div>
+                <h3 class="step-title">Connect Wallet</h3>
+                <p class="step-description">Connect your Solana wallet (Phantom, Solflare, etc.) to get started.</p>
+            </div>
+            
+            <div class="step fade-in">
+                <div class="step-number">2</div>
+                <h3 class="step-title">Choose Entry</h3>
+                <p class="step-description">Pay entry fee in SOL or $GIVE tokens. All entries are equal - no advantages.</p>
+            </div>
+            
+            <div class="step fade-in">
+                <div class="step-number">3</div>
+                <h3 class="step-title">Wait for Draw</h3>
+                <p class="step-description">Once minimum participants join, winner is drawn using verifiable randomness.</p>
+            </div>
+            
+            <div class="step fade-in">
+                <div class="step-number">4</div>
+                <h3 class="step-title">Claim Prize</h3>
+                <p class="step-description">Winner chooses: take the physical prize or 33% cash jackpot. Both options are great!</p>
+            </div>
+        </div>
+    </section>
 
-    function clearFilters() {
-      document.getElementById('minPrice').value = '';
-      document.getElementById('maxPrice').value = '';
-      document.getElementById('typeFilter').value = 'all';
-      document.getElementById('shippingFilter').value = 'all';
-      document.getElementById('trustedOnly').checked = false;
-      renderRaffles();
-    }
+    <!-- Stats Section -->
+    <section class="stats">
+        <h2 class="section-title">Platform Stats</h2>
+        
+        <div class="stats-grid">
+            <div class="stat-item fade-in">
+                <div class="stat-number">$2.1M</div>
+                <div class="stat-label">Total Prizes Given</div>
+            </div>
+            
+            <div class="stat-item fade-in">
+                <div class="stat-number">15,432</div>
+                <div class="stat-label">Happy Participants</div>
+            </div>
+            
+            <div class="stat-item fade-in">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Transparency Rate</div>
+            </div>
+            
+            <div class="stat-item fade-in">
+                <div class="stat-number">47</div>
+                <div class="stat-label">Prizes Delivered</div>
+            </div>
+        </div>
+    </section>
 
-    function showLaunchForm() {
-      document.getElementById('launchForm').style.display = 'block';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="social-links">
+                <a href="#" class="social-link">🐦</a>
+                <a href="#" class="social-link">📱</a>
+                <a href="#" class="social-link">💬</a>
+                <a href="#" class="social-link">📧</a>
+            </div>
+            
+            <p class="footer-text">
+                GiveFi - The future of transparent giveaways on Solana
+            </p>
+            
+            <div class="footer-links">
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Documentation</a>
+                <a href="#">Support</a>
+            </div>
+            
+            <p style="color: #444; font-size: 0.9rem; margin-top: 2rem;">
+                © 2025 GiveFi. Built on Solana. Powered by transparency.
+            </p>
+        </div>
+    </footer>
 
-    function hideLaunchForm() {
-      document.getElementById('launchForm').style.display = 'none';
-    }
+    <!-- Wallet Connection Modal -->
+    <div id="walletModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeWalletModal()">&times;</span>
+            <h2 style="margin-bottom: 1rem;">Connect Your Wallet</h2>
+            <p style="color: #ccc; margin-bottom: 2rem;">Choose your preferred Solana wallet to get started</p>
+            
+            <div class="wallet-options">
+                <div class="wallet-option" onclick="connectWallet('phantom')">
+                    <div class="wallet-icon">👻</div>
+                    <div>
+                        <div style="font-weight: 600;">Phantom</div>
+                        <div style="color: #888; font-size: 0.9rem;">Most popular Solana wallet</div>
+                    </div>
+                </div>
+                
+                <div class="wallet-option" onclick="connectWallet('solflare')">
+                    <div class="wallet-icon">🔥</div>
+                    <div>
+                        <div style="font-weight: 600;">Solflare</div>
+                        <div style="color: #888; font-size: 0.9rem;">Secure and user-friendly</div>
+                    </div>
+                </div>
+                
+                <div class="wallet-option" onclick="connectWallet('sollet')">
+                    <div class="wallet-icon">💼</div>
+                    <div>
+                        <div style="font-weight: 600;">Sollet</div>
+                        <div style="color: #888; font-size: 0.9rem;">Web-based wallet</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    function updateShippingInfo() {
-      const shippingType = document.getElementById('shippingType').value;
-      const shippingInfo = document.getElementById('shippingInfo');
-      switch (shippingType) {
-        case 'digital':
-          shippingInfo.value = "Delivered instantly to your wallet";
-          break;
-        case 'pickup':
-          shippingInfo.value = "Pick-up only at specified location";
-          break;
-        case 'worldwide':
-          shippingInfo.value = "Free worldwide shipping included";
-          break;
-        case 'regional':
-          shippingInfo.value = "Ships to limited regions";
-          break;
-        default:
-          shippingInfo.value = "";
-      }
-    }
+    <script>
+        // Particle animation
+        function createParticles() {
+            const particles = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particles.appendChild(particle);
+            }
+        }
 
-    function submitRaffleForm() {
-      const title = document.getElementById('raffleTitle').value;
-      const image = document.getElementById('prizeImage').value;
-      const entryFeeValue = parseFloat(document.getElementById('entryFee').value);
-      const entryType = document.getElementById('entryType').value;
-      const maxEntries = parseInt(document.getElementById('maxParticipants').value);
-      const days = parseInt(document.getElementById('raffleDuration').value);
-      const location = document.getElementById('prizeLocation').value;
-      const shippingType = document.getElementById('shippingType').value;
-      const shippingInfo = document.getElementById('shippingInfo').value;
-      if (!title || !image || !entryFeeValue || !maxEntries || !days || !location || !shippingType || !shippingInfo) {
-        showNotification("Please fill out all fields.", "error");
-        return;
-      }
-      raffles.unshift({
-        id: Date.now(),
-        host: walletConnected ? `@${walletAddress.slice(0, 6)}` : "@demo_user",
-        trusted: walletConnected,
-        entryFee: `${entryFeeValue} ${entryType}`,
-        entryFeeValue,
-        entryType,
-        entries: 0,
-        maxEntries,
-        endsIn: `${days}d 0h`,
-        image,
-        title,
-        location,
-        shippingType,
-        shippingInfo
-      });
-      hideLaunchForm();
-      showNotification("Raffle launched successfully!", "success");
-      renderRaffles();
-    }
+        // Countdown timer
+        function updateCountdown() {
+            const days = document.getElementById('days');
+            const hours = document.getElementById('hours');
+            const minutes = document.getElementById('minutes');
+            const seconds = document.getElementById('seconds');
+            
+            // Simulate countdown (you'd replace this with actual end time)
+            let timeLeft = 2 * 24 * 60 * 60 + 14 * 60 * 60 + 23 * 60 + 45; // 2 days, 14 hours, 23 minutes, 45 seconds
+            
+            setInterval(() => {
+                timeLeft--;
+                
+                const d = Math.floor(timeLeft / (24 * 60 * 60));
+                const h = Math.floor((timeLeft % (24 * 60 * 60)) / (60 * 60));
+                const m = Math.floor((timeLeft % (60 * 60)) / 60);
+                const s = timeLeft % 60;
+                
+                days.textContent = d;
+                hours.textContent = h;
+                minutes.textContent = m;
+                seconds.textContent = s;
+                
+                if (timeLeft <= 0) {
+                    timeLeft = 0;
+                }
+            }, 1000);
+        }
 
-    function enterRaffle(id) {
-      if (!walletConnected) {
-        showNotification("Please connect your wallet to enter.", "error");
-        return;
-      }
-      const raffle = raffles.find(r => r.id === id);
-      if (!raffle) return;
-      if (raffle.entryType === "SOL" && walletBalance < raffle.entryFeeValue) {
-        showNotification("Insufficient balance for entry.", "error");
-        return;
-      }
-      raffle.entries += 1;
-      if (raffle.entryType === "SOL") {
-        walletBalance -= raffle.entryFeeValue;
-        updateWalletBalance();
-      }
-      showNotification("Successfully entered the raffle!", "success");
-      renderRaffles();
-    }
-  </script>
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Fade in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(10, 10, 10, 0.98)';
+                header.style.boxShadow = '0 5px 20px rgba(0, 0, 0, 0.3)';
+            } else {
+                header.style.background = 'rgba(10, 10, 10, 0.95)';
+                header.style.boxShadow = 'none';
+            }
+        });
+
+        // Wallet modal functions
+        function openWalletModal() {
+            document.getElementById('walletModal').style.display = 'block';
+        }
+
+        function closeWalletModal() {
+            document.getElementById('walletModal').style.display = 'none';
+        }
+
+        function connectWallet(walletType) {
+            // Simulate wallet connection
+            alert(`Connecting to ${walletType}...`);
+            closeWalletModal();
+            
+            // Update connect button
+            const connectBtn = document.querySelector('.connect-btn');
+            connectBtn.textContent = 'Connected';
+            connectBtn.style.background = 'linear-gradient(45deg, #14f195, #9945ff)';
+            
+            // You would implement actual wallet connection logic here
+            console.log(`Attempting to connect to ${walletType}`);
+        }
+
+        function enterGiveaway() {
+            // Check if wallet is connected
+            const connectBtn = document.querySelector('.connect-btn');
+            if (connectBtn.textContent === 'Connect Wallet') {
+                openWalletModal();
+                return;
+            }
+            
+            // Simulate giveaway entry
+            if (confirm('Enter BMW giveaway for 0.1 SOL?\n\nThis transaction will be recorded on the Solana blockchain and cannot be reversed.')) {
+                // Simulate transaction
+                const button = event.target;
+                button.disabled = true;
+                button.textContent = 'Processing...';
+                
+                setTimeout(() => {
+                    alert('🎉 Entry successful! You are now entered in the BMW 640i M Sport giveaway.\n\nTransaction: [mock-transaction-hash]\n\nGood luck!');
+                    button.textContent = 'Entered ✓';
+                    button.style.background = 'linear-gradient(45deg, #14f195, #14f195)';
+                    
+                    // Update participant count
+                    const participantCount = document.querySelector('.detail-value');
+                    participantCount.textContent = '48/50';
+                    
+                    // Update progress bar
+                    const progressBar = document.querySelector('.progress-fill');
+                    progressBar.style.width = '96%';
+                    
+                    // Update urgency banner
+                    const urgencyBanner = document.querySelector('.urgency-banner');
+                    urgencyBanner.textContent = '⚡ URGENT: 48/50 participants - Only 2 spots left!';
+                    
+                }, 2000);
+            }
+        }
+
+        // Initialize animations and timers
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            updateCountdown();
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('walletModal');
+            if (event.target === modal) {
+                closeWalletModal();
+            }
+        }
+
+        // Add some dynamic elements
+        setInterval(() => {
+            const urgencyBanner = document.querySelector('.urgency-banner');
+            if (urgencyBanner) {
+                const messages = [
+                    '⚡ URGENT: 47/50 participants - Could end ANY SECOND!',
+                    '🔥 BREAKING: Someone just entered! 48/50 spots filled!',
+                    '⚠️ ALERT: Only 2 spots remaining - Don\'t miss out!',
+                    '🚨 FINAL WARNING: 49/50 - Last chance to enter!'
+                ];
+                
+                // Randomly change message every 10 seconds
+                if (Math.random() < 0.1) {
+                    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                    urgencyBanner.textContent = randomMessage;
+                }
+            }
+        }, 10000);
+
+        // Add floating animation to feature cards
+        document.querySelectorAll('.feature-card').forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+        });
+
+        // Simulate live updates
+        let participantCount = 47;
+        const maxParticipants = 50;
+
+        setInterval(() => {
+            if (participantCount < maxParticipants && Math.random() < 0.05) {
+                participantCount++;
+                
+                // Update UI
+                const detailValue = document.querySelector('.detail-value');
+                if (detailValue) {
+                    detailValue.textContent = `${participantCount}/50`;
+                }
+                
+                const progressFill = document.querySelector('.progress-fill');
+                if (progressFill) {
+                    progressFill.style.width = `${(participantCount / maxParticipants) * 100}%`;
+                }
+                
+                const progressText = document.querySelector('.progress-bar').nextElementSibling;
+                if (progressText) {
+                    progressText.textContent = `${Math.round((participantCount / maxParticipants) * 100)}% filled • Only ${maxParticipants - participantCount} spots left!`;
+                }
+                
+                // Update urgency banner
+                const urgencyBanner = document.querySelector('.urgency-banner');
+                if (urgencyBanner) {
+                    urgencyBanner.textContent = `⚡ URGENT: ${participantCount}/50 participants - Could end ANY SECOND!`;
+                }
+                
+                // Show notification
+                if (participantCount >= 48) {
+                    const notification = document.createElement('div');
+                    notification.style.cssText = `
+                        position: fixed;
+                        top: 100px;
+                        right: 20px;
+                        background: linear-gradient(45deg, #ff4757, #ff6b7a);
+                        color: white;
+                        padding: 1rem 1.5rem;
+                        border-radius: 10px;
+                        font-weight: 600;
+                        z-index: 1000;
+                        animation: slideInRight 0.5s ease;
+                    `;
+                    notification.textContent = `🔥 Someone just entered! ${maxParticipants - participantCount} spots left!`;
+                    document.body.appendChild(notification);
+                    
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 5000);
+                }
+            }
+        }, 5000);
+    </script>
+
+    <style>
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
 </body>
 </html>
