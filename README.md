@@ -13,21 +13,6 @@ GiveFi enables anyone to create and participate in provably fair giveaways using
 4. **Win prizes** through cryptographically secure randomness
 5. **Claim your winnings** directly to your wallet
 
-### For Developers
-```bash
-# Clone and setup
-git clone <repository-url>
-cd givefi-dapp
-
-# Automated setup (installs everything)
-./setup-dev-environment.sh
-
-# Or manual setup
-cd smart-contracts && anchor build
-cd ../frontend && python -m http.server 8000
-```
-
-Visit: `http://localhost:8000/pages/`
 
 ## 📁 Project Structure
 
@@ -63,55 +48,7 @@ givefi-dapp/
 ✅ **Access Controls** - Multi-level permission system  
 ✅ **Audit Ready** - Professional security practices  
 
-## 🔧 Development
 
-### Prerequisites
-- Node.js 16+
-- Rust 1.70+
-- Solana CLI 1.16+
-- Anchor CLI 0.29+
-
-### Local Development
-```bash
-# Setup environment
-./setup-dev-environment.sh
-
-# Run local tests
-./tests/run-tests.sh
-
-# Deploy to devnet
-./scripts/deploy.sh devnet
-
-# Start frontend
-cd frontend && python -m http.server 8000
-```
-
-### Testing
-```bash
-# Comprehensive local tests
-./tests/run-tests.sh
-
-# Test specific deployment
-node scripts/test-deployment.js PROGRAM_ID devnet
-
-# Check deployment status
-node scripts/check-deployment-status.js devnet
-```
-
-## 🚀 Deployment
-
-### Development (Devnet)
-```bash
-./scripts/deploy.sh devnet
-```
-
-### Production (Mainnet)
-1. **Complete security audit** ⚠️ REQUIRED
-2. **Review production checklist**: `PRODUCTION_CHECKLIST.md`
-3. **Deploy with verification**:
-```bash
-./scripts/deploy.sh mainnet
-```
 
 ## 🎮 How It Works
 
@@ -151,24 +88,7 @@ node scripts/check-deployment-status.js devnet
 **Devnet:** [Coming Soon]  
 **Mainnet:** [After Security Audit]
 
-## 📚 Documentation
 
-- [**Development Setup**](DEV_SETUP.md) - Get started developing
-- [**Deployment Guide**](DEPLOYMENT_GUIDE.md) - Deploy your own instance  
-- [**Production Checklist**](PRODUCTION_CHECKLIST.md) - Pre-launch requirements
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Run tests: `./tests/run-tests.sh`
-4. Submit a pull request
-
-### Development Guidelines
-- Follow existing code style
-- Add tests for new features
-- Update documentation
-- Security-first mindset
 
 ## 🛡️ Security
 
@@ -206,7 +126,5 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - **Community:** [Discord/Telegram Links]
 
 ---
-
-**⚠️ Disclaimer:** This software is provided as-is. Use at your own risk. Conduct thorough testing and security audits before mainnet deployment.
 
 **🎯 Mission:** Making giveaways transparent, fair, and accessible to everyone through blockchain technology.
