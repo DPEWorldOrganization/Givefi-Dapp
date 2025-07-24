@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
+use switchboard_solana::{VrfAccountData, VrfRequestRandomness, VrfSettle};
 
 declare_id!("5MrnsrCYpTrbv4iZKD51Caz8sXnQVZFZPMZ31FwgcTqz");
 
@@ -55,6 +56,7 @@ pub mod givefi {
         giveaway.prize_claimed = false;
         giveaway.jackpot_claimed = false;
         giveaway.is_successful = false;
+        giveaway.randomness_requested = false;
         giveaway.bump = ctx.bumps.giveaway;
 
         let program_state = &mut ctx.accounts.program_state;
@@ -149,26 +151,117 @@ pub mod givefi {
         Ok(())
     }
 
-    pub fn draw_winner(ctx: Context<DrawWinner>) -> Result<()> {
+    pub fn request_randomness(ctx: Context<RequestRandomness>) -> Result<()> {
         let giveaway = &mut ctx.accounts.giveaway;
         let clock = Clock::get()?;
 
         require!(giveaway.is_active, GivefiError::GiveawayNotActive);
         require!(clock.unix_timestamp >= giveaway.end_timestamp, GivefiError::GiveawayNotEnded);
         require!(giveaway.winner.is_none(), GivefiError::WinnerAlreadyDrawn);
+        require!(giveaway.current_entries >= giveaway.min_participants, GivefiError::MinParticipantsNotMet);
+
+        // Request randomness from Switchboard VRF
+        let vrf_request = VrfRequestRandomness {
+            authority: ctx.accounts.giveaway.to_account_info(),
+            vrf: ctx.accounts.vrf.to_account_info(),
+            oracle_queue: ctx.accounts.oracle_queue.to_account_info(),
+            queue_authority: ctx.accounts.queue_authority.to_account_info(),
+            data_buffer: ctx.accounts.data_buffer.to_account_info(),
+            permission: ctx.accounts.permission.to_account_info(),
+            escrow: ctx.accounts.escrow.to_account_info(),
+            payer_wallet: ctx.accounts.payer.to_account_info(),
+            payer_authority: ctx.accounts.payer.to_account_info(),
+            recent_blockhashes: ctx.accounts.recent_blockhashes.to_account_info(),
+            program_state: ctx.accounts.program_state.to_account_info(),
+            token_program: ctx.accounts.token_program.to_account_info(),
+        };
+
+        let giveaway_id_bytes = giveaway.id.to_le_bytes();
+        let seeds = &[b"giveaway", &giveaway_id_bytes[..], &[giveaway.bump]];
+        let signer = &[&seeds[..]];
+
+        let cpi_ctx = CpiContext::new_with_signer(
+            ctx.accounts.switchboard_program.to_account_info(),
+            vrf_request,
+            signer,
+        );
+
+        switchboard_solana::cpi::vrf_request_randomness(cpi_ctx)?;
+
+        giveaway.randomness_requested = true;
+        Ok(())
+    }
+
+    pub fn settle_randomness_and_pick_winner(ctx: Context<SettleRandomness>) -> Result<()> {
+        let giveaway = &mut ctx.accounts.giveaway;
+
+        require!(giveaway.is_active, GivefiError::GiveawayNotActive);
+        require!(giveaway.randomness_requested, GivefiError::RandomnessNotRequested);
+        require!(giveaway.winner.is_none(), GivefiError::WinnerAlreadyDrawn);
+
+        // Settle the VRF and get the random result
+        let vrf_settle = VrfSettle {
+            vrf: ctx.accounts.vrf.to_account_info(),
+            authority: ctx.accounts.giveaway.to_account_info(),
+        };
+
+        let giveaway_id_bytes = giveaway.id.to_le_bytes();
+        let seeds = &[b"giveaway", &giveaway_id_bytes[..], &[giveaway.bump]];
+        let signer = &[&seeds[..]];
+
+        let cpi_ctx = CpiContext::new_with_signer(
+            ctx.accounts.switchboard_program.to_account_info(),
+            vrf_settle,
+            signer,
+        );
+
+        switchboard_solana::cpi::vrf_settle(cpi_ctx)?;
+
+        // Get the random result from the VRF account
+        let vrf_account_info = &ctx.accounts.vrf;
+        let vrf = VrfAccountData::new(vrf_account_info)?;
+        let result_buffer = vrf.get_result()?;
+        
+        if result_buffer == [0u8; 32] {
+            return Err(GivefiError::RandomnessNotSettled.into());
+        }
+
+        // Convert the random bytes to a number and pick winner
+        let random_value = u64::from_le_bytes([
+            result_buffer[0], result_buffer[1], result_buffer[2], result_buffer[3],
+            result_buffer[4], result_buffer[5], result_buffer[6], result_buffer[7]
+        ]);
+
+        let winning_entry = random_value % giveaway.current_entries;
+        giveaway.winner = Some(winning_entry);
+        giveaway.is_successful = true;
+        giveaway.is_active = false;
+
+        Ok(())
+    }
+
+    pub fn draw_winner_fallback(ctx: Context<DrawWinner>) -> Result<()> {
+        let giveaway = &mut ctx.accounts.giveaway;
+        let clock = Clock::get()?;
+
+        require!(giveaway.is_active, GivefiError::GiveawayNotActive);
+        require!(clock.unix_timestamp >= giveaway.end_timestamp + 3600, GivefiError::FallbackTooEarly); // 1 hour after end
+        require!(giveaway.winner.is_none(), GivefiError::WinnerAlreadyDrawn);
 
         if giveaway.current_entries >= giveaway.min_participants {
             giveaway.is_successful = true;
-
-            let mut seed = [0u8; 32];
-            seed[0..8].copy_from_slice(&giveaway.id.to_le_bytes());
-            seed[8..16].copy_from_slice(&clock.unix_timestamp.to_le_bytes());
-            seed[16..24].copy_from_slice(&giveaway.current_entries.to_le_bytes());
-            seed[24..32].copy_from_slice(&giveaway.authority.to_bytes()[0..8]);
-
+            // Use recent blockhash as fallback randomness source (better than timestamp)
+            let recent_blockhashes = &ctx.accounts.recent_blockhashes;
+            let most_recent = Clock::get()?.slot;
+            
+            // Use slot hash for randomness (still not perfect but better than timestamp)
+            let slot_hash = recent_blockhashes.slot_hashes.get(0)
+                .ok_or(GivefiError::SlotHashUnavailable)?;
+            
+            let random_bytes = slot_hash.hash.to_bytes();
             let random_num = u64::from_le_bytes([
-                seed[0], seed[1], seed[2], seed[3],
-                seed[4], seed[5], seed[6], seed[7]
+                random_bytes[0], random_bytes[1], random_bytes[2], random_bytes[3],
+                random_bytes[4], random_bytes[5], random_bytes[6], random_bytes[7]
             ]);
 
             let winning_entry = random_num % giveaway.current_entries;
@@ -222,17 +315,45 @@ pub mod givefi {
     let owner_sol_amount = (total_sol_collected * 60) / 100;
     let treasury_sol_amount = (total_sol_collected * 7) / 100;
 
+    let giveaway_id_bytes = giveaway.id.to_le_bytes();
+    let vault_seeds = &[b"giveaway_vault", &giveaway_id_bytes[..], &[ctx.bumps.giveaway_vault]];
+    let vault_signer = &[&vault_seeds[..]];
+
     if winner_sol_amount > 0 {
-        **ctx.accounts.giveaway_vault.to_account_info().try_borrow_mut_lamports()? -= winner_sol_amount;
-        **ctx.accounts.user.to_account_info().try_borrow_mut_lamports()? += winner_sol_amount;
+        let transfer_instruction = anchor_lang::system_program::Transfer {
+            from: ctx.accounts.giveaway_vault.to_account_info(),
+            to: ctx.accounts.user.to_account_info(),
+        };
+        let cpi_ctx = CpiContext::new_with_signer(
+            ctx.accounts.system_program.to_account_info(),
+            transfer_instruction,
+            vault_signer,
+        );
+        anchor_lang::system_program::transfer(cpi_ctx, winner_sol_amount)?;
     }
     if owner_sol_amount > 0 {
-        **ctx.accounts.giveaway_vault.to_account_info().try_borrow_mut_lamports()? -= owner_sol_amount;
-        **ctx.accounts.owner.to_account_info().try_borrow_mut_lamports()? += owner_sol_amount;
+        let transfer_instruction = anchor_lang::system_program::Transfer {
+            from: ctx.accounts.giveaway_vault.to_account_info(),
+            to: ctx.accounts.owner.to_account_info(),
+        };
+        let cpi_ctx = CpiContext::new_with_signer(
+            ctx.accounts.system_program.to_account_info(),
+            transfer_instruction,
+            vault_signer,
+        );
+        anchor_lang::system_program::transfer(cpi_ctx, owner_sol_amount)?;
     }
     if treasury_sol_amount > 0 {
-        **ctx.accounts.giveaway_vault.to_account_info().try_borrow_mut_lamports()? -= treasury_sol_amount;
-        **ctx.accounts.treasury_wallet.to_account_info().try_borrow_mut_lamports()? += treasury_sol_amount;
+        let transfer_instruction = anchor_lang::system_program::Transfer {
+            from: ctx.accounts.giveaway_vault.to_account_info(),
+            to: ctx.accounts.treasury_wallet.to_account_info(),
+        };
+        let cpi_ctx = CpiContext::new_with_signer(
+            ctx.accounts.system_program.to_account_info(),
+            transfer_instruction,
+            vault_signer,
+        );
+        anchor_lang::system_program::transfer(cpi_ctx, treasury_sol_amount)?;
     }
 
     if giveaway.give_entries > 0 && giveaway.entry_cost_give.is_some() {
@@ -307,8 +428,20 @@ pub mod givefi {
 
         match entry.payment_type {
             PaymentType::Sol => {
-                **ctx.accounts.giveaway_vault.to_account_info().try_borrow_mut_lamports()? -= giveaway.entry_cost_sol;
-                **ctx.accounts.user.to_account_info().try_borrow_mut_lamports()? += giveaway.entry_cost_sol;
+                let giveaway_id_bytes = giveaway.id.to_le_bytes();
+                let vault_seeds = &[b"giveaway_vault", &giveaway_id_bytes[..], &[ctx.bumps.giveaway_vault]];
+                let vault_signer = &[&vault_seeds[..]];
+
+                let transfer_instruction = anchor_lang::system_program::Transfer {
+                    from: ctx.accounts.giveaway_vault.to_account_info(),
+                    to: ctx.accounts.user.to_account_info(),
+                };
+                let cpi_ctx = CpiContext::new_with_signer(
+                    ctx.accounts.system_program.to_account_info(),
+                    transfer_instruction,
+                    vault_signer,
+                );
+                anchor_lang::system_program::transfer(cpi_ctx, giveaway.entry_cost_sol)?;
             },
             PaymentType::Give => {
                 let id_bytes = giveaway.id.to_le_bytes();
@@ -480,6 +613,56 @@ pub struct EndRaffleEarly<'info> {
 }
 
 #[derive(Accounts)]
+pub struct RequestRandomness<'info> {
+    #[account(
+        mut,
+        seeds = [b"giveaway", giveaway.id.to_le_bytes().as_ref()],
+        bump = giveaway.bump
+    )]
+    pub giveaway: Account<'info, Giveaway>,
+    pub authority: Signer<'info>,
+    /// CHECK: Switchboard VRF account
+    #[account(mut)]
+    pub vrf: AccountInfo<'info>,
+    /// CHECK: Switchboard Oracle Queue account
+    pub oracle_queue: AccountInfo<'info>,
+    /// CHECK: Switchboard Queue Authority
+    pub queue_authority: AccountInfo<'info>,
+    /// CHECK: Switchboard Data Buffer
+    pub data_buffer: AccountInfo<'info>,
+    /// CHECK: Switchboard Permission account
+    pub permission: AccountInfo<'info>,
+    /// CHECK: Switchboard Escrow account
+    #[account(mut)]
+    pub escrow: AccountInfo<'info>,
+    /// CHECK: Recent blockhashes sysvar
+    pub recent_blockhashes: AccountInfo<'info>,
+    /// CHECK: Switchboard program state
+    pub program_state: AccountInfo<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub token_program: Program<'info, Token>,
+    /// CHECK: Switchboard program
+    pub switchboard_program: AccountInfo<'info>,
+}
+
+#[derive(Accounts)]
+pub struct SettleRandomness<'info> {
+    #[account(
+        mut,
+        seeds = [b"giveaway", giveaway.id.to_le_bytes().as_ref()],
+        bump = giveaway.bump
+    )]
+    pub giveaway: Account<'info, Giveaway>,
+    pub authority: Signer<'info>,
+    /// CHECK: Switchboard VRF account
+    #[account(mut)]
+    pub vrf: AccountInfo<'info>,
+    /// CHECK: Switchboard program
+    pub switchboard_program: AccountInfo<'info>,
+}
+
+#[derive(Accounts)]
 pub struct DrawWinner<'info> {
     #[account(
         mut,
@@ -488,6 +671,8 @@ pub struct DrawWinner<'info> {
     )]
     pub giveaway: Account<'info, Giveaway>,
     pub authority: Signer<'info>,
+    /// CHECK: Recent blockhashes sysvar
+    pub recent_blockhashes: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -573,9 +758,12 @@ pub struct ClaimJackpot<'info> {
     pub give_mint: Account<'info, token::Mint>,
     #[account(mut)]
     pub user: Signer<'info>,
-    /// CHECK: This account should be the giveaway authority/owner who receives a portion of the jackpot.
-    /// Validation should be added to ensure this matches giveaway.authority.
-    #[account(mut)]
+    /// CHECK: This account must be the giveaway authority/owner who receives a portion of the jackpot.
+    /// It is validated through the constraint below to ensure security.
+    #[account(
+        mut,
+        constraint = owner.key() == giveaway.authority @ GivefiError::InvalidOwner
+    )]
     pub owner: UncheckedAccount<'info>,
     /// CHECK: This account is validated to match the treasury_wallet stored in program_state.
     /// The address constraint ensures this is the correct treasury wallet.
@@ -585,6 +773,7 @@ pub struct ClaimJackpot<'info> {
     )]
     pub treasury_wallet: UncheckedAccount<'info>,
     pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -636,6 +825,7 @@ pub struct ClaimRefund<'info> {
     )]
     pub program_state: Account<'info, ProgramState>,
     pub token_program: Program<'info, Token>,
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -678,6 +868,7 @@ pub struct Giveaway {
     pub winner: Option<u64>,
     pub prize_claimed: bool,
     pub jackpot_claimed: bool,
+    pub randomness_requested: bool,
     pub bump: u8,
 }
 
@@ -745,4 +936,12 @@ pub enum GivefiError {
     UnauthorizedEarlyEnd,
     #[msg("Giveaway already ended")]
     GiveawayAlreadyEnded,
+    #[msg("Randomness not requested yet")]
+    RandomnessNotRequested,
+    #[msg("Randomness not settled yet")]
+    RandomnessNotSettled,
+    #[msg("Fallback randomness can only be used 1 hour after giveaway end")]
+    FallbackTooEarly,
+    #[msg("Invalid owner - must be giveaway authority")]
+    InvalidOwner,
 }

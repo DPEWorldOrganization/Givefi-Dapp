@@ -1,0 +1,20 @@
+{
+  "name": "givefi-deployment-scripts",
+  "version": "1.0.0",
+  "description": "Deployment automation scripts for GiveFi",
+  "type": "module",
+  "scripts": {
+    "deploy:devnet": "bash deploy.sh devnet",
+    "deploy:mainnet": "bash deploy.sh mainnet",
+    "update-config": "node update-config.js",
+    "check-init": "node check-and-initialize.js",
+    "test-deployment": "node test-deployment.js"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
+    "@solana/web3.js": "^1.87.6",
+    "@solana/spl-token": "^0.3.9"
+  },
+  "author": "GiveFi Team",
+  "license": "MIT"
+}

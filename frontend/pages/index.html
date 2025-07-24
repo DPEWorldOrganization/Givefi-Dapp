@@ -959,8 +959,385 @@
         </div>
     </div>
 
+    <!-- Add Web3 Dependencies -->
+    <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
+    <script src="https://unpkg.com/@coral-xyz/anchor@0.29.0/dist/browser/bundle.js"></script>
+    <script type="module">
+        // Import our utilities
+        import walletManager from '../utils/wallet.js';
+        import giveFiContract from '../utils/contract.js';
+        import CONFIG, { formatSOL, getTimeRemaining, calculateProgress } from '../utils/config.js';
+
+        // Global state
+        let currentGiveaway = null;
+        let isWalletConnected = false;
+        let currentUser = null;
+        let updateInterval = null;
+
+        // Initialize the app
+        async function initializeApp() {
+            try {
+                // Setup wallet event listeners
+                walletManager.onWalletConnect(onWalletConnected);
+                walletManager.onWalletDisconnect(onWalletDisconnected);
+                walletManager.onWalletBalanceChange(onBalanceChanged);
+
+                // Load initial giveaway data
+                await loadGiveawayData();
+                
+                // Start polling for updates
+                startPolling();
+                
+                console.log('GiveFi DApp initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize app:', error);
+                showError('Failed to load giveaway data. Please refresh the page.');
+            }
+        }
+
+        // Wallet connection handlers
+        function onWalletConnected(walletInfo) {
+            isWalletConnected = true;
+            currentUser = walletInfo;
+            
+            updateConnectButton(true);
+            showSuccess(CONFIG.SUCCESS.WALLET_CONNECTED);
+            
+            // Reload giveaway data with user context
+            loadGiveawayData();
+        }
+
+        function onWalletDisconnected() {
+            isWalletConnected = false;
+            currentUser = null;
+            
+            updateConnectButton(false);
+            showInfo(CONFIG.SUCCESS.WALLET_DISCONNECTED);
+        }
+
+        function onBalanceChanged(newBalance) {
+            if (currentUser) {
+                currentUser.balance = newBalance;
+                updateUIWithUserInfo();
+            }
+        }
+
+        // Load giveaway data from blockchain
+        async function loadGiveawayData() {
+            try {
+                // Try to load the default giveaway
+                const giveaway = await giveFiContract.getGiveaway(CONFIG.DEFAULT_GIVEAWAY_ID);
+                currentGiveaway = giveaway;
+                
+                updateGiveawayUI(giveaway);
+                
+            } catch (error) {
+                console.warn('No active giveaway found, using demo data');
+                // Fallback to demo data if no giveaway exists
+                loadDemoData();
+            }
+        }
+
+        // Update UI with real giveaway data
+        function updateGiveawayUI(giveaway) {
+            if (!giveaway) return;
+
+            // Update giveaway details
+            document.querySelector('.detail-value').textContent = `${giveaway.currentEntries}/${giveaway.maxEntries}`;
+            document.querySelector('.giveaway-title').textContent = giveaway.prizeDescription;
+            
+            // Update entry cost
+            const entryCostElement = document.querySelector('.detail-item .detail-value');
+            entryCostElement.textContent = `${giveaway.entryCostSol} SOL`;
+            
+            // Update progress bar
+            const progress = calculateProgress(giveaway.currentEntries, giveaway.maxEntries);
+            const progressBar = document.querySelector('.progress-fill');
+            progressBar.style.width = `${progress}%`;
+            
+            // Update progress text
+            const spotsLeft = giveaway.maxEntries - giveaway.currentEntries;
+            const progressText = document.querySelector('.progress-bar').nextElementSibling;
+            progressText.textContent = `${Math.round(progress)}% filled • ${spotsLeft} spots left!`;
+            
+            // Update countdown
+            updateCountdown(giveaway.endTimestamp);
+            
+            // Update urgency banner
+            const urgencyBanner = document.querySelector('.urgency-banner');
+            if (giveaway.earlyEndEnabled && spotsLeft <= 5) {
+                urgencyBanner.textContent = `⚡ URGENT: ${giveaway.currentEntries}/${giveaway.maxEntries} participants - Could end ANY SECOND!`;
+            } else {
+                urgencyBanner.textContent = `🔥 LIVE: ${giveaway.currentEntries}/${giveaway.maxEntries} participants`;
+            }
+            
+            // Update entry button state
+            updateEntryButton(giveaway);
+        }
+
+        // Update entry button based on giveaway state
+        function updateEntryButton(giveaway) {
+            const button = document.querySelector('button[onclick="enterGiveaway()"]');
+            
+            if (!giveaway.isActive) {
+                button.textContent = 'Giveaway Ended';
+                button.disabled = true;
+                button.style.background = '#666';
+            } else if (giveaway.currentEntries >= giveaway.maxEntries) {
+                button.textContent = 'Giveaway Full';
+                button.disabled = true;
+                button.style.background = '#666';
+            } else if (!isWalletConnected) {
+                button.textContent = 'Connect Wallet to Enter';
+                button.disabled = false;
+            } else {
+                button.textContent = `Enter Now - ${giveaway.entryCostSol} SOL`;
+                button.disabled = false;
+                button.style.background = 'linear-gradient(45deg, #9945ff, #14f195)';
+            }
+        }
+
+        // Real countdown based on blockchain data
+        function updateCountdown(endTimestamp) {
+            const updateTimer = () => {
+                const timeRemaining = getTimeRemaining(endTimestamp);
+                
+                if (timeRemaining.expired) {
+                    document.getElementById('days').textContent = '0';
+                    document.getElementById('hours').textContent = '0';
+                    document.getElementById('minutes').textContent = '0';
+                    document.getElementById('seconds').textContent = '0';
+                    
+                    // Stop the timer and reload giveaway data
+                    clearInterval(countdownInterval);
+                    loadGiveawayData();
+                    return;
+                }
+                
+                document.getElementById('days').textContent = timeRemaining.days;
+                document.getElementById('hours').textContent = timeRemaining.hours;
+                document.getElementById('minutes').textContent = timeRemaining.minutes;
+                document.getElementById('seconds').textContent = timeRemaining.seconds;
+            };
+            
+            // Clear existing countdown
+            if (window.countdownInterval) {
+                clearInterval(window.countdownInterval);
+            }
+            
+            // Start new countdown
+            updateTimer();
+            window.countdownInterval = setInterval(updateTimer, 1000);
+        }
+
+        // Update connect button
+        function updateConnectButton(connected) {
+            const connectBtn = document.querySelector('.connect-btn');
+            
+            if (connected && currentUser) {
+                connectBtn.innerHTML = `
+                    <span style="margin-right: 8px;">🟢</span>
+                    ${currentUser.publicKey.slice(0, 4)}...${currentUser.publicKey.slice(-4)}
+                `;
+                connectBtn.style.background = 'linear-gradient(45deg, #14f195, #9945ff)';
+                connectBtn.onclick = () => walletManager.disconnectWallet();
+            } else {
+                connectBtn.textContent = 'Connect Wallet';
+                connectBtn.style.background = 'linear-gradient(45deg, #9945ff, #14f195)';
+                connectBtn.onclick = openWalletModal;
+            }
+        }
+
+        // Real wallet connection function
+        window.connectWallet = async function(walletType) {
+            try {
+                showLoading('Connecting to wallet...');
+                
+                const result = await walletManager.connectWallet(walletType);
+                
+                hideLoading();
+                closeWalletModal();
+                
+                if (!result.success) {
+                    showError(result.error || CONFIG.ERRORS.WALLET_NOT_FOUND);
+                }
+            } catch (error) {
+                hideLoading();
+                showError(error.message || CONFIG.ERRORS.WALLET_NOT_FOUND);
+            }
+        };
+
+        // Real giveaway entry function
+        window.enterGiveaway = async function() {
+            try {
+                // Check wallet connection
+                if (!isWalletConnected) {
+                    openWalletModal();
+                    return;
+                }
+                
+                if (!currentGiveaway) {
+                    showError('No active giveaway found');
+                    return;
+                }
+                
+                // Check if giveaway is still active
+                if (!currentGiveaway.isActive) {
+                    showError(CONFIG.ERRORS.GIVEAWAY_ENDED);
+                    return;
+                }
+                
+                // Check if giveaway is full
+                if (currentGiveaway.currentEntries >= currentGiveaway.maxEntries) {
+                    showError(CONFIG.ERRORS.GIVEAWAY_FULL);
+                    return;
+                }
+                
+                // Check balance
+                if (currentUser.balance < currentGiveaway.entryCostSol) {
+                    showError(CONFIG.ERRORS.INSUFFICIENT_BALANCE);
+                    return;
+                }
+                
+                // Confirm transaction
+                const confirmed = confirm(
+                    `Enter ${currentGiveaway.prizeDescription} giveaway for ${currentGiveaway.entryCostSol} SOL?\n\n` +
+                    `This transaction will be recorded on the Solana blockchain and cannot be reversed.`
+                );
+                
+                if (!confirmed) return;
+                
+                // Show loading state
+                const button = event.target;
+                const originalText = button.textContent;
+                button.disabled = true;
+                button.textContent = 'Processing...';
+                
+                showLoading('Entering giveaway...');
+                
+                // Execute transaction
+                const result = await giveFiContract.enterGiveawaySOL(currentGiveaway.id);
+                
+                hideLoading();
+                
+                if (result.success) {
+                    showSuccess(
+                        `🎉 Entry successful! You are now entered in the ${currentGiveaway.prizeDescription} giveaway.\n\n` +
+                        `Transaction: ${result.signature}\n\nGood luck!`
+                    );
+                    
+                    button.textContent = 'Entered ✓';
+                    button.style.background = 'linear-gradient(45deg, #14f195, #14f195)';
+                    
+                    // Reload giveaway data
+                    setTimeout(() => loadGiveawayData(), 2000);
+                } else {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                    showError('Transaction failed. Please try again.');
+                }
+                
+            } catch (error) {
+                hideLoading();
+                const button = event.target;
+                button.textContent = 'Enter Now - ' + (currentGiveaway?.entryCostSol || '0.1') + ' SOL';
+                button.disabled = false;
+                
+                console.error('Entry failed:', error);
+                showError(error.message || CONFIG.ERRORS.TRANSACTION_FAILED);
+            }
+        };
+
+        // Polling for live updates
+        function startPolling() {
+            updateInterval = setInterval(async () => {
+                try {
+                    await loadGiveawayData();
+                } catch (error) {
+                    console.warn('Polling update failed:', error);
+                }
+            }, CONFIG.POLLING_INTERVAL);
+        }
+
+        // Utility functions for UI feedback
+        function showLoading(message) {
+            // Create or update loading overlay
+            let overlay = document.getElementById('loadingOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'loadingOverlay';
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 9999;
+                    color: white;
+                    font-size: 1.2rem;
+                `;
+                document.body.appendChild(overlay);
+            }
+            overlay.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="margin-bottom: 1rem;">⏳</div>
+                    <div>${message}</div>
+                </div>
+            `;
+            overlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            }
+        }
+
+        function showError(message) {
+            alert('❌ Error: ' + message);
+        }
+
+        function showSuccess(message) {
+            alert('✅ ' + message);
+        }
+
+        function showInfo(message) {
+            console.log('ℹ️ ' + message);
+        }
+
+        // Fallback demo data for when no real giveaway exists
+        function loadDemoData() {
+            currentGiveaway = {
+                id: 1,
+                prizeDescription: 'BMW 640i M Sport',
+                entryCostSol: 0.1,
+                maxEntries: 50,
+                currentEntries: 47,
+                endTimestamp: Math.floor(Date.now() / 1000) + (2 * 24 * 60 * 60), // 2 days from now
+                isActive: true,
+                earlyEndEnabled: true
+            };
+            
+            updateGiveawayUI(currentGiveaway);
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Make functions globally available
+        window.walletManager = walletManager;
+        window.giveFiContract = giveFiContract;
+        window.CONFIG = CONFIG;
+
+    </script>
+
     <script>
-        // Particle animation
+        // Keep existing particle animation and other UI functions
         function createParticles() {
             const particles = document.getElementById('particles');
             for (let i = 0; i < 50; i++) {

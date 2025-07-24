@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GiveFi Admin - Create Giveaway</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #9945ff, #14f195);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #14f195;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #9945ff;
+            box-shadow: 0 0 0 2px rgba(153, 69, 255, 0.2);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: #9945ff;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #9945ff, #14f195);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(153, 69, 255, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .wallet-status {
+            text-align: center;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .connected {
+            border-color: #14f195;
+            background: rgba(20, 241, 149, 0.1);
+        }
+
+        .error {
+            color: #ff4757;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .success {
+            color: #14f195;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #9945ff;
+            text-decoration: none;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            color: #14f195;
+        }
+
+        .datetime-input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .datetime-input::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Home</a>
+        
+        <div class="header">
+            <h1 class="title">Create Giveaway</h1>
+            <p>Deploy a new transparent giveaway on Solana</p>
+        </div>
+
+        <div id="walletStatus" class="wallet-status">
+            <p>Please connect your wallet to create giveaways</p>
+            <button onclick="connectWallet()" class="btn-primary" style="width: auto; margin-top: 1rem;">
+                Connect Wallet
+            </button>
+        </div>
+
+        <form id="giveawayForm" style="display: none;">
+            <div class="form-group">
+                <label class="form-label">Giveaway ID</label>
+                <input type="number" id="giveawayId" class="form-input" min="1" required>
+                <div class="error" id="giveawayIdError"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Prize Description</label>
+                <input type="text" id="prizeDescription" class="form-input" maxlength="100" placeholder="BMW 640i M Sport" required>
+                <div class="error" id="prizeDescriptionError"></div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Entry Price (SOL)</label>
+                    <input type="number" id="entryPriceSOL" class="form-input" step="0.001" min="0.001" placeholder="0.1" required>
+                    <div class="error" id="entryPriceSOLError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Entry Price (GIVE) - Optional</label>
+                    <input type="number" id="entryPriceGIVE" class="form-input" step="1" min="0" placeholder="100">
+                    <div class="error" id="entryPriceGIVEError"></div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Maximum Entries</label>
+                    <input type="number" id="maxEntries" class="form-input" min="1" placeholder="50" required>
+                    <div class="error" id="maxEntriesError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Minimum Participants</label>
+                    <input type="number" id="minParticipants" class="form-input" min="1" placeholder="10" required>
+                    <div class="error" id="minParticipantsError"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">End Date & Time</label>
+                <input type="datetime-local" id="endDateTime" class="datetime-input" required>
+                <div class="error" id="endDateTimeError"></div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="jackpotEnabled" class="checkbox" checked>
+                    <label for="jackpotEnabled" class="form-label">Enable Jackpot Option (33% cash prize)</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="earlyEndEnabled" class="checkbox" checked>
+                    <label for="earlyEndEnabled" class="form-label">Enable Early End (closes when full)</label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary" id="createButton">
+                Create Giveaway
+            </button>
+        </form>
+    </div>
+
+    <!-- Web3 Dependencies -->
+    <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
+    <script src="https://unpkg.com/@coral-xyz/anchor@0.29.0/dist/browser/bundle.js"></script>
+    
+    <script type="module">
+        import walletManager from '../utils/wallet.js';
+        import giveFiContract from '../utils/contract.js';
+        import CONFIG, { validateGiveawayParams } from '../utils/config.js';
+
+        let isConnected = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            checkWalletConnection();
+            setMinDateTime();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('giveawayForm').addEventListener('submit', handleCreateGiveaway);
+            
+            // Real-time validation
+            document.getElementById('minParticipants').addEventListener('input', validateParticipants);
+            document.getElementById('maxEntries').addEventListener('input', validateParticipants);
+            
+            // Wallet event listeners
+            walletManager.onWalletConnect(onWalletConnected);
+            walletManager.onWalletDisconnect(onWalletDisconnected);
+        }
+
+        function setMinDateTime() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() + 60); // Minimum 1 hour from now
+            document.getElementById('endDateTime').min = now.toISOString().slice(0, 16);
+        }
+
+        function onWalletConnected(walletInfo) {
+            isConnected = true;
+            updateWalletStatus(true, walletInfo);
+        }
+
+        function onWalletDisconnected() {
+            isConnected = false;
+            updateWalletStatus(false);
+        }
+
+        function updateWalletStatus(connected, walletInfo = null) {
+            const statusDiv = document.getElementById('walletStatus');
+            const form = document.getElementById('giveawayForm');
+
+            if (connected && walletInfo) {
+                statusDiv.className = 'wallet-status connected';
+                statusDiv.innerHTML = `
+                    <p>✅ Wallet Connected: ${walletInfo.publicKey.slice(0, 8)}...${walletInfo.publicKey.slice(-8)}</p>
+                    <p>Balance: ${walletInfo.balance.toFixed(4)} SOL</p>
+                    <button onclick="disconnectWallet()" class="btn-primary" style="width: auto; margin-top: 1rem;">
+                        Disconnect
+                    </button>
+                `;
+                form.style.display = 'block';
+            } else {
+                statusDiv.className = 'wallet-status';
+                statusDiv.innerHTML = `
+                    <p>Please connect your wallet to create giveaways</p>
+                    <button onclick="connectWallet()" class="btn-primary" style="width: auto; margin-top: 1rem;">
+                        Connect Wallet
+                    </button>
+                `;
+                form.style.display = 'none';
+            }
+        }
+
+        function checkWalletConnection() {
+            if (walletManager.isWalletConnected()) {
+                const walletInfo = {
+                    publicKey: walletManager.getPublicKey().toString(),
+                    balance: walletManager.getBalance()
+                };
+                onWalletConnected(walletInfo);
+            }
+        }
+
+        window.connectWallet = async function() {
+            try {
+                // For simplicity, try Phantom first
+                const result = await walletManager.connectWallet('phantom');
+                if (!result.success) {
+                    alert('Failed to connect wallet: ' + result.error);
+                }
+            } catch (error) {
+                alert('Wallet connection failed: ' + error.message);
+            }
+        };
+
+        window.disconnectWallet = async function() {
+            await walletManager.disconnectWallet();
+        };
+
+        function validateParticipants() {
+            const minParticipants = parseInt(document.getElementById('minParticipants').value);
+            const maxEntries = parseInt(document.getElementById('maxEntries').value);
+            
+            const minError = document.getElementById('minParticipantsError');
+            const maxError = document.getElementById('maxEntriesError');
+            
+            minError.textContent = '';
+            maxError.textContent = '';
+            
+            if (minParticipants && maxEntries && minParticipants > maxEntries) {
+                minError.textContent = 'Minimum participants cannot exceed maximum entries';
+            }
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.error').forEach(el => el.textContent = '');
+        }
+
+        function showError(fieldId, message) {
+            const errorEl = document.getElementById(fieldId + 'Error');
+            if (errorEl) {
+                errorEl.textContent = message;
+            }
+        }
+
+        async function handleCreateGiveaway(event) {
+            event.preventDefault();
+            
+            if (!isConnected) {
+                alert('Please connect your wallet first');
+                return;
+            }
+
+            clearErrors();
+
+            // Get form data
+            const formData = {
+                giveawayId: parseInt(document.getElementById('giveawayId').value),
+                prizeDescription: document.getElementById('prizeDescription').value,
+                entryPriceSOL: parseFloat(document.getElementById('entryPriceSOL').value),
+                entryPriceGIVE: document.getElementById('entryPriceGIVE').value ? 
+                    parseFloat(document.getElementById('entryPriceGIVE').value) : null,
+                maxEntries: parseInt(document.getElementById('maxEntries').value),
+                minParticipants: parseInt(document.getElementById('minParticipants').value),
+                endTimestamp: Math.floor(new Date(document.getElementById('endDateTime').value).getTime() / 1000),
+                jackpotEnabled: document.getElementById('jackpotEnabled').checked,
+                earlyEndEnabled: document.getElementById('earlyEndEnabled').checked
+            };
+
+            // Validate
+            const errors = validateGiveawayParams(formData);
+            if (errors.length > 0) {
+                alert('Validation errors:\n' + errors.join('\n'));
+                return;
+            }
+
+            // Create giveaway
+            const button = document.getElementById('createButton');
+            const originalText = button.textContent;
+            
+            try {
+                button.disabled = true;
+                button.textContent = 'Creating Giveaway...';
+
+                const result = await giveFiContract.createGiveaway(formData);
+
+                if (result.success) {
+                    alert(`✅ Giveaway created successfully!\n\nTransaction: ${result.signature}\nGiveaway Address: ${result.giveawayPda}`);
+                    
+                    // Reset form
+                    document.getElementById('giveawayForm').reset();
+                    setMinDateTime();
+                } else {
+                    alert('❌ Failed to create giveaway');
+                }
+
+            } catch (error) {
+                console.error('Create giveaway error:', error);
+                alert('❌ Error creating giveaway: ' + error.message);
+            } finally {
+                button.disabled = false;
+                button.textContent = originalText;
+            }
+        }
+
+        // Make functions available globally
+        window.walletManager = walletManager;
+        window.giveFiContract = giveFiContract;
+    </script>
+</body>
+</html>
