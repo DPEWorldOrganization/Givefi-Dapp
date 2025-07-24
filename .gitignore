@@ -38,3 +38,6 @@ test-ledger/
 # IDE files
 .vscode/
 .idea/
+*.tar.bz2
+*.tar.gz
+solana-release-*

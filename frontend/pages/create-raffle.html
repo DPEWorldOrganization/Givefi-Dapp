@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Raffle - GiveFi</title>
+    
+    <!-- Solana Web3.js -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
+    <script src="https://unpkg.com/bn.js@5.2.1/lib/bn.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533a7b 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #9945ff, #14f195);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #14f195;
+        }
+
+        .connect-btn {
+            background: linear-gradient(45deg, #9945ff, #14f195);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(153, 69, 255, 0.3);
+        }
+
+        .connected {
+            background: linear-gradient(45deg, #14f195, #14f195) !important;
+        }
+
+        .main-content {
+            padding-top: 100px;
+            max-width: 800px;
+            margin: 0 auto;
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ffffff, #14f195);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #cccccc;
+            margin-bottom: 3rem;
+        }
+
+        .create-form {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 3rem;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 3rem;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #14f195;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .help-text {
+            font-size: 0.9rem;
+            color: #cccccc;
+            margin-top: 0.5rem;
+        }
+
+        .prize-type-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .prize-option {
+            padding: 1.5rem;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .prize-option:hover {
+            border-color: #14f195;
+            background: rgba(20, 241, 149, 0.1);
+        }
+
+        .prize-option.selected {
+            border-color: #14f195;
+            background: rgba(20, 241, 149, 0.15);
+        }
+
+        .prize-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #9945ff, #14f195);
+            border: none;
+            padding: 1.2rem 3rem;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 2rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(153, 69, 255, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-message {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            font-weight: 600;
+            z-index: 1500;
+            max-width: 300px;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .status-message.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .status-success {
+            background: linear-gradient(45deg, #14f195, #00d2ff);
+            color: white;
+        }
+
+        .status-error {
+            background: linear-gradient(45deg, #ff4757, #ff6b7a);
+            color: white;
+        }
+
+        .status-info {
+            background: linear-gradient(45deg, #9945ff, #14f195);
+            color: white;
+        }
+
+        .preview-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .preview-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #14f195;
+        }
+
+        .preview-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .preview-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .preview-label {
+            font-size: 0.9rem;
+            color: #cccccc;
+            margin-bottom: 0.5rem;
+        }
+
+        .preview-value {
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .prize-type-selector {
+                grid-template-columns: 1fr;
+            }
+            
+            .preview-details {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">GiveFi</div>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/#giveaways">Giveaways</a></li>
+                <li><a href="/create">Create</a></li>
+                <li><a href="/browse">Browse</a></li>
+            </ul>
+            <button class="connect-btn" id="connectBtn" onclick="openWalletModal()">Connect Wallet</button>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <h1 class="page-title">Create Raffle</h1>
+        <p class="page-subtitle">Launch your own transparent, blockchain-verified giveaway</p>
+
+        <form class="create-form" id="raffleForm">
+            <div class="form-group">
+                <label class="form-label" for="raffleTitle">Raffle Title</label>
+                <input type="text" id="raffleTitle" class="form-input" placeholder="BMW 640i M Sport Giveaway" required>
+                <p class="help-text">Choose an attractive title for your raffle</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="raffleDescription">Description</label>
+                <textarea id="raffleDescription" class="form-textarea" placeholder="Luxury sports coupe worth $70,000+. Winner's choice: Take the car or 33% cash jackpot"></textarea>
+                <p class="help-text">Provide details about the prize and raffle terms</p>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="entryFee">Entry Fee (SOL)</label>
+                    <input type="number" id="entryFee" class="form-input" step="0.01" min="0.01" placeholder="0.1" required>
+                    <p class="help-text">Cost for participants to enter</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="maxParticipants">Max Participants</label>
+                    <input type="number" id="maxParticipants" class="form-input" min="2" max="1000" placeholder="50" required>
+                    <p class="help-text">Maximum number of entries allowed</p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Prize Type</label>
+                <div class="prize-type-selector">
+                    <div class="prize-option selected" onclick="selectPrizeType('physical')">
+                        <div class="prize-icon">🚗</div>
+                        <div><strong>Physical Prize</strong></div>
+                        <div style="font-size: 0.9rem; color: #ccc;">Car, Electronics, etc.</div>
+                    </div>
+                    <div class="prize-option" onclick="selectPrizeType('digital')">
+                        <div class="prize-icon">🎨</div>
+                        <div><strong>Digital Prize</strong></div>
+                        <div style="font-size: 0.9rem; color: #ccc;">NFT, Digital Art</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label" for="prizeValue">Prize Value (USD)</label>
+                    <input type="number" id="prizeValue" class="form-input" min="1" placeholder="70000" required>
+                    <p class="help-text">Estimated value of the prize</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="cashPercentage">Cash Option (%)</label>
+                    <input type="number" id="cashPercentage" class="form-input" min="10" max="100" placeholder="33" required>
+                    <p class="help-text">% of pool winner can take as SOL</p>
+                </div>
+            </div>
+
+            <div class="form-group" id="nftMintGroup" style="display: none;">
+                <label class="form-label" for="nftMint">NFT Mint Address</label>
+                <input type="text" id="nftMint" class="form-input" placeholder="Enter NFT mint address">
+                <p class="help-text">Solana NFT mint address (for digital prizes)</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="treasuryAddress">Treasury Address</label>
+                <input type="text" id="treasuryAddress" class="form-input" placeholder="Your Solana wallet address" required>
+                <p class="help-text">Address to receive entry fees and handle prize distribution</p>
+            </div>
+
+            <button type="submit" class="btn-primary" id="createBtn">
+                Create Raffle
+            </button>
+        </form>
+
+        <!-- Preview Card -->
+        <div class="preview-card" id="previewCard" style="display: none;">
+            <h3 class="preview-title">Raffle Preview</h3>
+            <div class="preview-details">
+                <div class="preview-item">
+                    <div class="preview-label">Entry Fee</div>
+                    <div class="preview-value" id="previewEntryFee">0.1 SOL</div>
+                </div>
+                <div class="preview-item">
+                    <div class="preview-label">Max Participants</div>
+                    <div class="preview-value" id="previewMaxParticipants">50</div>
+                </div>
+                <div class="preview-item">
+                    <div class="preview-label">Prize Value</div>
+                    <div class="preview-value" id="previewPrizeValue">$70,000</div>
+                </div>
+                <div class="preview-item">
+                    <div class="preview-label">Total Pool</div>
+                    <div class="preview-value" id="previewTotalPool">5 SOL</div>
+                </div>
+                <div class="preview-item">
+                    <div class="preview-label">Cash Option</div>
+                    <div class="preview-value" id="previewCashOption">1.65 SOL</div>
+                </div>
+                <div class="preview-item">
+                    <div class="preview-label">Prize Type</div>
+                    <div class="preview-value" id="previewPrizeType">Physical</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Status Message -->
+    <div id="statusMessage" class="status-message"></div>
+
+    <script type="module">
+        // Import wallet manager
+        import walletManager from './utils/wallet.js';
+        import contract from './utils/contract.js';
+
+        let selectedPrizeType = 'physical';
+
+        // Initialize the application
+        async function initApp() {
+            try {
+                console.log('🚀 Initializing Create Raffle Page...');
+                
+                // Try to auto-connect wallet
+                const autoConnect = await walletManager.autoConnect();
+                if (autoConnect.success) {
+                    updateWalletUI(autoConnect);
+                    showStatus('Wallet connected!', 'success');
+                }
+
+                // Set up wallet change listener
+                walletManager.onWalletStateChange((state) => {
+                    updateWalletUI(state);
+                });
+
+                // Set up form listeners
+                setupFormListeners();
+                
+                console.log('✅ Create page initialized successfully');
+            } catch (error) {
+                console.error('❌ Error initializing app:', error);
+                showStatus('Error initializing application', 'error');
+            }
+        }
+
+        // Setup form event listeners
+        function setupFormListeners() {
+            const form = document.getElementById('raffleForm');
+            const inputs = form.querySelectorAll('input');
+            
+            // Update preview when inputs change
+            inputs.forEach(input => {
+                input.addEventListener('input', updatePreview);
+            });
+
+            // Form submission
+            form.addEventListener('submit', handleCreateRaffle);
+        }
+
+        // Update wallet UI
+        function updateWalletUI(walletState) {
+            const connectBtn = document.getElementById('connectBtn');
+            
+            if (walletState.connected) {
+                connectBtn.textContent = `Connected: ${walletManager.formatPublicKey(walletState.publicKey)}`;
+                connectBtn.classList.add('connected');
+                connectBtn.onclick = () => disconnectWallet();
+                
+                // Auto-fill treasury address
+                const treasuryInput = document.getElementById('treasuryAddress');
+                if (!treasuryInput.value) {
+                    treasuryInput.value = walletState.publicKey;
+                }
+            } else {
+                connectBtn.textContent = 'Connect Wallet';
+                connectBtn.classList.remove('connected');
+                connectBtn.onclick = () => openWalletModal();
+            }
+        }
+
+        // Select prize type
+        window.selectPrizeType = function(type) {
+            selectedPrizeType = type;
+            
+            // Update UI
+            document.querySelectorAll('.prize-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            event.target.closest('.prize-option').classList.add('selected');
+            
+            // Show/hide NFT mint field
+            const nftGroup = document.getElementById('nftMintGroup');
+            if (type === 'digital') {
+                nftGroup.style.display = 'block';
+                document.getElementById('nftMint').required = true;
+            } else {
+                nftGroup.style.display = 'none';
+                document.getElementById('nftMint').required = false;
+            }
+            
+            updatePreview();
+        };
+
+        // Update preview
+        function updatePreview() {
+            const entryFee = parseFloat(document.getElementById('entryFee').value) || 0;
+            const maxParticipants = parseInt(document.getElementById('maxParticipants').value) || 0;
+            const prizeValue = parseInt(document.getElementById('prizeValue').value) || 0;
+            const cashPercentage = parseInt(document.getElementById('cashPercentage').value) || 0;
+            
+            if (entryFee > 0 && maxParticipants > 0) {
+                const totalPool = entryFee * maxParticipants;
+                const cashOption = totalPool * (cashPercentage / 100);
+                
+                document.getElementById('previewEntryFee').textContent = `${entryFee} SOL`;
+                document.getElementById('previewMaxParticipants').textContent = maxParticipants.toString();
+                document.getElementById('previewPrizeValue').textContent = `$${prizeValue.toLocaleString()}`;
+                document.getElementById('previewTotalPool').textContent = `${totalPool} SOL`;
+                document.getElementById('previewCashOption').textContent = `${cashOption.toFixed(2)} SOL`;
+                document.getElementById('previewPrizeType').textContent = selectedPrizeType === 'physical' ? 'Physical' : 'Digital NFT';
+                
+                document.getElementById('previewCard').style.display = 'block';
+            } else {
+                document.getElementById('previewCard').style.display = 'none';
+            }
+        }
+
+        // Handle raffle creation
+        async function handleCreateRaffle(event) {
+            event.preventDefault();
+            
+            const status = walletManager.getStatus();
+            if (!status.connected) {
+                showStatus('Please connect your wallet first', 'error');
+                return;
+            }
+
+            try {
+                const createBtn = document.getElementById('createBtn');
+                createBtn.disabled = true;
+                createBtn.textContent = 'Creating Raffle...';
+                
+                showStatus('Creating raffle on blockchain...', 'info');
+
+                // Get form data
+                const formData = {
+                    title: document.getElementById('raffleTitle').value,
+                    description: document.getElementById('raffleDescription').value,
+                    entryFee: parseFloat(document.getElementById('entryFee').value),
+                    maxParticipants: parseInt(document.getElementById('maxParticipants').value),
+                    prizeValue: parseInt(document.getElementById('prizeValue').value),
+                    cashPercentage: parseInt(document.getElementById('cashPercentage').value),
+                    treasuryAddress: document.getElementById('treasuryAddress').value,
+                    prizeType: selectedPrizeType,
+                    nftMint: document.getElementById('nftMint').value || null
+                };
+
+                // Validate treasury address
+                let treasuryKey;
+                try {
+                    treasuryKey = new solanaWeb3.PublicKey(formData.treasuryAddress);
+                } catch (error) {
+                    throw new Error('Invalid treasury address');
+                }
+
+                // For demonstration, we'll simulate the contract call
+                // In production, you'd call your smart contract here
+                const result = await simulateCreateRaffle(formData, treasuryKey);
+                
+                if (result.success) {
+                    showStatus('🎉 Raffle created successfully!', 'success');
+                    
+                    // Show success details
+                    const successMessage = `
+                        Raffle Created Successfully!
+                        
+                        Title: ${formData.title}
+                        Entry Fee: ${formData.entryFee} SOL
+                        Max Participants: ${formData.maxParticipants}
+                        
+                        Transaction: ${result.signature}
+                        Raffle Address: ${result.rafflePDA}
+                        
+                        Your raffle is now live and accepting entries!
+                    `;
+                    
+                    setTimeout(() => {
+                        alert(successMessage);
+                        // In production, redirect to raffle page
+                        window.location.href = '/';
+                    }, 2000);
+                } else {
+                    throw new Error(result.error);
+                }
+                
+            } catch (error) {
+                console.error('Create raffle error:', error);
+                showStatus('Failed to create raffle: ' + error.message, 'error');
+                
+                const createBtn = document.getElementById('createBtn');
+                createBtn.disabled = false;
+                createBtn.textContent = 'Create Raffle';
+            }
+        }
+
+        // Simulate raffle creation (replace with actual contract call)
+        async function simulateCreateRaffle(formData, treasuryKey) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    // Simulate success with 90% probability
+                    if (Math.random() > 0.1) {
+                        resolve({ 
+                            success: true,
+                            signature: 'mock-signature-' + Math.random().toString(36).substring(7),
+                            rafflePDA: 'mock-raffle-address-' + Math.random().toString(36).substring(7)
+                        });
+                    } else {
+                        resolve({
+                            success: false,
+                            error: 'Insufficient SOL balance for transaction fees'
+                        });
+                    }
+                }, 3000);
+            });
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message status-${type} show`;
+            
+            setTimeout(() => {
+                statusDiv.classList.remove('show');
+            }, 5000);
+        }
+
+        // Wallet modal functions (simplified - would use same modal system)
+        window.openWalletModal = function() {
+            // For now, just try to connect to Phantom
+            connectToPhantom();
+        };
+
+        async function connectToPhantom() {
+            try {
+                const result = await walletManager.connect('phantom');
+                if (result.success) {
+                    updateWalletUI(result);
+                    showStatus('Connected to Phantom!', 'success');
+                } else {
+                    showStatus(result.error, 'error');
+                }
+            } catch (error) {
+                showStatus('Failed to connect wallet', 'error');
+            }
+        }
+
+        async function disconnectWallet() {
+            try {
+                const result = await walletManager.disconnect();
+                if (result.success) {
+                    updateWalletUI({ connected: false, publicKey: null });
+                    showStatus('Wallet disconnected', 'info');
+                }
+            } catch (error) {
+                showStatus('Error disconnecting wallet', 'error');
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
