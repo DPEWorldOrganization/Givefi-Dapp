@@ -2,9 +2,8 @@
 
 # Build settings
 [build]
-  # No build command needed for static site
   publish = "deploy"
-  
+
 # Headers for security and performance
 [[headers]]
   for = "/*"
@@ -13,17 +12,10 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https: wss:;"
+    Content-Security-Policy = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https: wss:;"
 
 # Redirects for SPA behavior
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-
-# Custom domain settings
-[[redirects]]
-  from = "https://givefi.netlify.app/*"
-  to = "https://givefi.fun/:splat"
-  status = 301
-  force = true
