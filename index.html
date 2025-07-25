@@ -16,243 +16,490 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #0a0a0a;
-            color: #ffffff;
-            line-height: 1.6;
-            overflow-x: hidden;
+        :root {
+            --primary-purple: #9945ff;
+            --primary-green: #14f195;
+            --dark-bg: #0a0a0a;
+            --dark-surface: #1a1a2e;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-muted: #888888;
+            --danger: #ff4757;
+            --warning: #ffa502;
+            --success: #26de81;
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 1.5rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 8px 30px rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.3);
+            --blur-sm: blur(10px);
+            --blur-md: blur(20px);
+            --blur-lg: blur(40px);
         }
 
-        /* Animated Background */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Enhanced Animated Background */
         .bg-animation {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(45deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533a7b 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
+            background: linear-gradient(45deg, 
+                var(--dark-bg) 0%, 
+                #1a1a2e 20%, 
+                #16213e 40%, 
+                #0f3460 60%, 
+                #533a7b 80%, 
+                var(--primary-purple) 100%);
+            background-size: 300% 300%;
+            animation: gradientFlow 20s ease infinite;
             z-index: -2;
         }
 
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(153, 69, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(20, 241, 149, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, rgba(255, 71, 87, 0.05) 0%, transparent 50%);
+            z-index: -1;
         }
 
-        /* Header */
+        @keyframes gradientFlow {
+            0%, 100% { background-position: 0% 50%; }
+            33% { background-position: 100% 50%; }
+            66% { background-position: 50% 100%; }
+        }
+
+        /* Modern Glass Header */
         .header {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            background: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: var(--blur-md);
+            border-bottom: 1px solid var(--glass-border);
             z-index: 1000;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            -webkit-backdrop-filter: var(--blur-md);
         }
 
         .nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 2rem;
+            padding: var(--spacing-sm) var(--spacing-md);
             max-width: 1200px;
             margin: 0 auto;
         }
 
         .logo {
-            font-size: 1.8rem;
+            font-size: clamp(1.5rem, 4vw, 1.8rem);
             font-weight: 800;
-            background: linear-gradient(45deg, #9945ff, #14f195);
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-green));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: var(--spacing-xs);
+        }
+
+        .nav-toggle span {
+            width: 24px;
+            height: 2px;
+            background: var(--text-primary);
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .nav-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(6px, 6px);
+        }
+
+        .nav-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .nav-toggle.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
         }
 
         .nav-links {
             display: flex;
-            gap: 2rem;
+            gap: var(--spacing-lg);
             list-style: none;
+            align-items: center;
         }
 
         .nav-links a {
-            color: #ffffff;
+            color: var(--text-secondary);
             text-decoration: none;
             font-weight: 500;
-            transition: color 0.3s ease;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: var(--spacing-xs) 0;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-purple), var(--primary-green));
+            transition: width 0.3s ease;
+            border-radius: 2px;
         }
 
         .nav-links a:hover {
-            color: #14f195;
+            color: var(--text-primary);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
         }
 
         .connect-btn {
-            background: linear-gradient(45deg, #9945ff, #14f195);
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-green));
             border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 8px;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-lg);
             color: white;
             font-weight: 600;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            min-width: 140px;
+            text-align: center;
+        }
+
+        .connect-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .connect-btn:hover::before {
+            left: 100%;
         }
 
         .connect-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(153, 69, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(153, 69, 255, 0.4);
         }
 
-        .connected {
-            background: linear-gradient(45deg, #14f195, #14f195) !important;
+        .connect-btn.connected {
+            background: linear-gradient(135deg, var(--success), var(--primary-green));
         }
 
-        /* Hero Section */
+        /* Hero Section - Mobile First */
         .hero {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 2rem;
+            padding: calc(80px + var(--spacing-lg)) var(--spacing-md) var(--spacing-lg);
             position: relative;
         }
 
+        .hero-content {
+            max-width: 800px;
+            width: 100%;
+        }
+
         .hero-content h1 {
-            font-size: 4rem;
-            font-weight: 800;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(45deg, #ffffff, #14f195);
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 900;
+            margin-bottom: var(--spacing-md);
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--primary-green) 50%, var(--primary-purple) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
         }
 
         .hero-content p {
-            font-size: 1.3rem;
-            margin-bottom: 3rem;
-            color: #cccccc;
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            margin-bottom: var(--spacing-xl);
+            color: var(--text-secondary);
             max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
         }
 
         .hero-buttons {
             display: flex;
-            gap: 1.5rem;
+            gap: var(--spacing-md);
             justify-content: center;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .btn-primary, .btn-secondary {
-            padding: 1rem 2rem;
-            border-radius: 10px;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-md);
             text-decoration: none;
             font-weight: 600;
-            transition: all 0.3s ease;
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: none;
             cursor: pointer;
-            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+            min-width: 160px;
+            text-align: center;
         }
 
         .btn-primary {
-            background: linear-gradient(45deg, #9945ff, #14f195);
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-green));
             color: white;
+            box-shadow: var(--shadow-md);
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: var(--blur-sm);
         }
 
         .btn-primary:hover, .btn-secondary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(153, 69, 255, 0.4);
+            box-shadow: var(--shadow-lg);
         }
 
         /* Live Giveaway Section */
         .live-giveaway {
-            padding: 5rem 2rem;
-            max-width: 800px;
+            padding: var(--spacing-xl) var(--spacing-md);
+            max-width: 900px;
             margin: 0 auto;
         }
 
         .section-title {
             text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
-            background: linear-gradient(45deg, #9945ff, #14f195);
+            font-size: clamp(2rem, 6vw, 2.8rem);
+            font-weight: 800;
+            margin-bottom: var(--spacing-xl);
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-green));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
         .giveaway-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 20px;
-            padding: 2.5rem;
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--glass-bg);
+            border-radius: var(--radius-xl);
+            padding: var(--spacing-lg);
+            backdrop-filter: var(--blur-md);
+            border: 1px solid var(--glass-border);
             text-align: center;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .giveaway-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-purple), var(--primary-green));
         }
 
         .urgency-banner {
-            background: linear-gradient(45deg, #ff4757, #ff6b7a);
+            background: linear-gradient(135deg, var(--danger), #ff6b7a);
             color: white;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 2rem;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-lg);
             font-weight: 600;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
             animation: pulse 2s infinite;
+            box-shadow: var(--shadow-sm);
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.02); }
         }
 
-        .bmw-image {
+        /* Image Gallery */
+        .image-gallery {
+            position: relative;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .gallery-container {
+            position: relative;
             width: 100%;
-            max-width: 500px;
-            height: 250px;
+            max-width: 600px;
+            margin: 0 auto;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .gallery-main {
+            width: 100%;
+            height: clamp(200px, 40vw, 300px);
             object-fit: cover;
-            border-radius: 15px;
-            margin-bottom: 2rem;
+            display: block;
+        }
+
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            backdrop-filter: var(--blur-sm);
+        }
+
+        .gallery-nav:hover {
+            background: rgba(0, 0, 0, 0.7);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .gallery-prev {
+            left: 10px;
+        }
+
+        .gallery-next {
+            right: 10px;
+        }
+
+        .gallery-indicators {
+            display: flex;
+            justify-content: center;
+            gap: var(--spacing-xs);
+            margin-top: var(--spacing-sm);
+        }
+
+        .gallery-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--glass-border);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gallery-dot.active {
+            background: var(--primary-green);
+            transform: scale(1.2);
         }
 
         .giveaway-title {
-            font-size: 2.2rem;
-            margin-bottom: 1rem;
-            color: #ffffff;
+            font-size: clamp(1.8rem, 5vw, 2.4rem);
+            font-weight: 700;
+            margin-bottom: var(--spacing-sm);
+            color: var(--text-primary);
         }
 
+        .giveaway-subtitle {
+            color: var(--text-secondary);
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            margin-bottom: var(--spacing-lg);
+            line-height: 1.5;
+        }
+
+        /* Grid System for Details */
         .giveaway-details {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1.5rem;
-            margin: 2rem 0;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: var(--spacing-md);
+            margin: var(--spacing-lg) 0;
         }
 
         .detail-item {
-            background: rgba(255, 255, 255, 0.08);
-            padding: 1.5rem;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+            backdrop-filter: var(--blur-sm);
+        }
+
+        .detail-item:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: var(--shadow-sm);
         }
 
         .detail-label {
-            color: #cccccc;
-            font-size: 0.9rem;
-            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: var(--spacing-xs);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .detail-value {
-            font-size: 1.3rem;
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
             font-weight: 700;
-            color: #14f195;
+            color: var(--primary-green);
+        }
+
+        /* Enhanced Progress Bar */
+        .progress-section {
+            margin: var(--spacing-lg) 0;
         }
 
         .progress-bar {
@@ -261,43 +508,149 @@
             background: rgba(255, 255, 255, 0.1);
             border-radius: 4px;
             overflow: hidden;
-            margin: 2rem 0 1rem 0;
+            position: relative;
+            margin-bottom: var(--spacing-sm);
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(45deg, #9945ff, #14f195);
-            transition: width 0.5s ease;
+            background: linear-gradient(90deg, var(--primary-purple), var(--primary-green));
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
         }
 
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            color: var(--primary-green);
+            font-weight: 600;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            text-align: center;
+        }
+
+        /* Countdown Grid */
         .countdown {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin: 2rem 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: var(--spacing-md);
+            margin: var(--spacing-lg) 0;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .countdown-item {
             text-align: center;
+            background: var(--glass-bg);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: var(--blur-sm);
+            transition: all 0.3s ease;
+        }
+
+        .countdown-item:hover {
+            transform: scale(1.05);
             background: rgba(255, 255, 255, 0.08);
-            padding: 1rem;
-            border-radius: 10px;
-            min-width: 80px;
         }
 
         .countdown-number {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #14f195;
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: 800;
+            color: var(--primary-green);
+            line-height: 1;
+            display: block;
         }
 
         .countdown-label {
-            font-size: 0.8rem;
-            color: #cccccc;
-            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: var(--spacing-xs);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        /* Wallet Modal */
+        /* Enhanced CTA Section */
+        .cta-section {
+            margin: var(--spacing-lg) 0;
+            padding: var(--spacing-lg);
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.1), rgba(255, 107, 122, 0.05));
+            border: 1px solid rgba(255, 71, 87, 0.2);
+            border-radius: var(--radius-lg);
+            backdrop-filter: var(--blur-sm);
+        }
+
+        .warning-text {
+            color: #ff6b7a;
+            font-weight: 600;
+            margin-bottom: var(--spacing-md);
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-xs);
+        }
+
+        .enter-btn {
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-green));
+            color: white;
+            border: none;
+            padding: var(--spacing-md) var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            font-size: clamp(1.1rem, 3vw, 1.3rem);
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            display: block;
+            box-shadow: var(--shadow-md);
+        }
+
+        .enter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .enter-btn:hover::before {
+            left: 100%;
+        }
+
+        .enter-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(153, 69, 255, 0.5);
+        }
+
+        .enter-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Enhanced Modal */
         .modal {
             display: none;
             position: fixed;
@@ -307,71 +660,120 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.8);
-            backdrop-filter: blur(10px);
+            backdrop-filter: var(--blur-lg);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .modal-content {
             background: linear-gradient(145deg, #1a1a2e, #16213e);
-            margin: 15% auto;
-            padding: 2rem;
-            border-radius: 20px;
+            margin: 10% auto;
+            padding: var(--spacing-xl);
+            border-radius: var(--radius-xl);
             width: 90%;
-            max-width: 400px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 450px;
+            border: 1px solid var(--glass-border);
             position: relative;
+            animation: modalSlideIn 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px) scale(0.9); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
         }
 
         .close {
-            color: #aaa;
-            float: right;
+            color: var(--text-muted);
+            position: absolute;
+            right: var(--spacing-md);
+            top: var(--spacing-md);
             font-size: 28px;
             font-weight: bold;
             cursor: pointer;
-            position: absolute;
-            right: 20px;
-            top: 15px;
+            transition: all 0.3s ease;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .close:hover {
-            color: #fff;
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(90deg);
+        }
+
+        .modal h2 {
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-lg);
+            font-size: 1.5rem;
+            text-align: center;
         }
 
         .wallet-option {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            margin: 1rem 0;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            margin: var(--spacing-sm) 0;
+            background: var(--glass-bg);
+            border-radius: var(--radius-md);
             cursor: pointer;
             transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
         }
 
         .wallet-option:hover {
             background: rgba(255, 255, 255, 0.1);
             transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
         }
 
         .wallet-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            flex-shrink: 0;
         }
 
+        .wallet-info {
+            flex: 1;
+        }
+
+        .wallet-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .wallet-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Status Messages */
         .status-message {
             position: fixed;
             top: 100px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            border-radius: 10px;
+            right: var(--spacing-md);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-md);
             font-weight: 600;
             z-index: 1500;
-            max-width: 300px;
+            max-width: 350px;
             opacity: 0;
             transform: translateX(100%);
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: var(--blur-md);
+            box-shadow: var(--shadow-md);
         }
 
         .status-message.show {
@@ -380,55 +782,174 @@
         }
 
         .status-success {
-            background: linear-gradient(45deg, #14f195, #00d2ff);
+            background: linear-gradient(135deg, var(--success), var(--primary-green));
             color: white;
         }
 
         .status-error {
-            background: linear-gradient(45deg, #ff4757, #ff6b7a);
+            background: linear-gradient(135deg, var(--danger), #ff6b7a);
             color: white;
         }
 
         .status-info {
-            background: linear-gradient(45deg, #9945ff, #14f195);
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-green));
             color: white;
         }
 
-        /* Responsive */
+        /* Mobile Navigation */
         @media (max-width: 768px) {
-            .hero-content h1 {
-                font-size: 2.5rem;
+            .nav-toggle {
+                display: flex;
             }
-            
-            .hero-buttons {
+
+            .nav-links {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                right: 0;
+                background: rgba(10, 10, 10, 0.95);
+                backdrop-filter: var(--blur-md);
                 flex-direction: column;
-                align-items: center;
+                padding: var(--spacing-lg);
+                transform: translateY(-100%);
+                opacity: 0;
+                transition: all 0.3s ease;
+                border-bottom: 1px solid var(--glass-border);
             }
-            
+
+            .nav-links.active {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            .nav-links a {
+                padding: var(--spacing-sm) 0;
+                font-size: 1.1rem;
+            }
+
+            .connect-btn {
+                min-width: 120px;
+                padding: var(--spacing-xs) var(--spacing-sm);
+                font-size: 0.85rem;
+            }
+
+            .hero {
+                padding-top: calc(70px + var(--spacing-md));
+            }
+
             .giveaway-details {
                 grid-template-columns: 1fr 1fr;
+                gap: var(--spacing-sm);
             }
-            
+
+            .modal-content {
+                margin: 5% auto;
+                width: 95%;
+                padding: var(--spacing-lg);
+            }
+
+            .status-message {
+                right: var(--spacing-sm);
+                left: var(--spacing-sm);
+                max-width: none;
+            }
+        }
+
+        /* Extra Small Mobile */
+        @media (max-width: 480px) {
+            .nav {
+                padding: var(--spacing-sm);
+            }
+
+            .hero {
+                padding-left: var(--spacing-sm);
+                padding-right: var(--spacing-sm);
+            }
+
+            .live-giveaway {
+                padding-left: var(--spacing-sm);
+                padding-right: var(--spacing-sm);
+            }
+
+            .giveaway-card {
+                padding: var(--spacing-md);
+            }
+
+            .giveaway-details {
+                grid-template-columns: 1fr;
+            }
+
             .countdown {
-                flex-wrap: wrap;
-                gap: 1rem;
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--spacing-sm);
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                gap: var(--spacing-sm);
+            }
+
+            .btn-primary, .btn-secondary {
+                width: 100%;
+                max-width: 280px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        /* Dark mode enhancements */
+        @media (prefers-color-scheme: dark) {
+            .giveaway-card {
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
             }
         }
     </style>
 </head>
 <body>
     <div class="bg-animation"></div>
+    <div class="bg-overlay"></div>
 
-    <!-- Header -->
+    <!-- Enhanced Header -->
     <header class="header">
         <nav class="nav">
             <div class="logo">GiveFi</div>
-            <ul class="nav-links">
+            
+            <button class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <ul class="nav-links" id="navLinks">
                 <li><a href="#home">Home</a></li>
                 <li><a href="#giveaways">Giveaways</a></li>
                 <li><a href="#how-it-works">How It Works</a></li>
                 <li><a href="#about">About</a></li>
             </ul>
+            
             <button class="connect-btn" id="connectBtn" onclick="openWalletModal()">Connect Wallet</button>
         </nav>
     </header>
@@ -454,10 +975,27 @@
                 ⚡ URGENT: Loading participant count...
             </div>
             
-            <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&h=300&fit=crop" alt="BMW 640i M Sport" class="bmw-image">
+            <!-- Enhanced Image Gallery -->
+            <div class="image-gallery">
+                <div class="gallery-container">
+                    <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&h=300&fit=crop" 
+                         alt="BMW 640i M Sport" 
+                         class="gallery-main" 
+                         id="mainImage">
+                    
+                    <button class="gallery-nav gallery-prev" id="prevBtn">‹</button>
+                    <button class="gallery-nav gallery-next" id="nextBtn">›</button>
+                </div>
+                
+                <div class="gallery-indicators" id="indicators">
+                    <div class="gallery-dot active"></div>
+                    <div class="gallery-dot"></div>
+                    <div class="gallery-dot"></div>
+                </div>
+            </div>
             
             <h3 class="giveaway-title">BMW 640i M Sport</h3>
-            <p style="color: #ccc; font-size: 1.1rem; margin-bottom: 2rem;">
+            <p class="giveaway-subtitle">
                 Luxury sports coupe worth $70,000+ • Winner's choice: Take the BMW or 33% cash jackpot
             </p>
 
@@ -480,52 +1018,56 @@
                 </div>
             </div>
 
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            <div class="progress-section">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <p class="progress-text" id="progressText">
+                    Loading raffle data...
+                </p>
             </div>
-            <p id="progressText" style="color: #14f195; font-weight: 600; margin-bottom: 2rem;">
-                Loading raffle data...
-            </p>
 
             <div class="countdown">
                 <div class="countdown-item">
-                    <div class="countdown-number" id="days">--</div>
+                    <span class="countdown-number" id="days">--</span>
                     <div class="countdown-label">Days</div>
                 </div>
                 <div class="countdown-item">
-                    <div class="countdown-number" id="hours">--</div>
+                    <span class="countdown-number" id="hours">--</span>
                     <div class="countdown-label">Hours</div>
                 </div>
                 <div class="countdown-item">
-                    <div class="countdown-number" id="minutes">--</div>
+                    <span class="countdown-number" id="minutes">--</span>
                     <div class="countdown-label">Minutes</div>
                 </div>
                 <div class="countdown-item">
-                    <div class="countdown-number" id="seconds">--</div>
+                    <span class="countdown-number" id="seconds">--</span>
                     <div class="countdown-label">Seconds</div>
                 </div>
             </div>
 
-            <p style="color: #ff6b7a; font-weight: 600; margin-bottom: 2rem;">
-                ⚠️ Early-end enabled: Closes immediately when 50th person enters!
-            </p>
+            <div class="cta-section">
+                <p class="warning-text">
+                    ⚠️ Early-end enabled: Closes immediately when 50th person enters!
+                </p>
 
-            <button class="btn-primary" id="enterBtn" onclick="enterGiveaway()" style="font-size: 1.2rem; padding: 1.2rem 2.5rem;">
-                Enter Now - 0.1 SOL
-            </button>
+                <button class="enter-btn" id="enterBtn" onclick="enterGiveaway()">
+                    Enter Now - 0.1 SOL
+                </button>
+            </div>
         </div>
     </section>
 
-    <!-- Wallet Selection Modal -->
+    <!-- Enhanced Wallet Selection Modal -->
     <div id="walletModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeWalletModal()">&times;</span>
-            <h2 style="margin-bottom: 1.5rem; color: #fff;">Select Wallet</h2>
+            <h2>Select Wallet</h2>
             <div id="walletList">
                 <!-- Wallets will be populated by JavaScript -->
             </div>
-            <p style="color: #ccc; font-size: 0.9rem; margin-top: 1rem; text-align: center;">
-                Don't have a wallet? <a href="https://phantom.app/" target="_blank" style="color: #14f195;">Install Phantom</a>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: var(--spacing-md); text-align: center;">
+                Don't have a wallet? <a href="https://phantom.app/" target="_blank" style="color: var(--primary-green);">Install Phantom</a>
             </p>
         </div>
     </div>
@@ -533,32 +1075,148 @@
     <!-- Status Message -->
     <div id="statusMessage" class="status-message"></div>
 
-    <script type="module">
-        // Import our utility modules
-        import walletManager from './utils/wallet.js';
-        import contract from './utils/contract.js';
+    <script>
+        // Image Gallery
+        const images = [
+            'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&h=300&fit=crop',
+            'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=300&fit=crop',
+            'https://images.unsplash.com/photo-1563720223185-11003d516935?w=600&h=300&fit=crop'
+        ];
+        
+        let currentImageIndex = 0;
+        
+        function updateGallery() {
+            const mainImage = document.getElementById('mainImage');
+            const indicators = document.querySelectorAll('.gallery-dot');
+            
+            mainImage.src = images[currentImageIndex];
+            
+            indicators.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentImageIndex);
+            });
+        }
+        
+        function nextImage() {
+            currentImageIndex = (currentImageIndex + 1) % images.length;
+            updateGallery();
+        }
+        
+        function prevImage() {
+            currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+            updateGallery();
+        }
+        
+        function goToImage(index) {
+            currentImageIndex = index;
+            updateGallery();
+        }
+
+        // Mobile Navigation
+        const navToggle = document.getElementById('navToggle');
+        const navLinks = document.getElementById('navLinks');
+        
+        navToggle.addEventListener('click', () => {
+            navToggle.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking on links
+        navLinks.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A') {
+                navToggle.classList.remove('active');
+                navLinks.classList.remove('active');
+            }
+        });
+
+        // Gallery Event Listeners
+        document.getElementById('nextBtn').addEventListener('click', nextImage);
+        document.getElementById('prevBtn').addEventListener('click', prevImage);
+        
+        document.querySelectorAll('.gallery-dot').forEach((dot, index) => {
+            dot.addEventListener('click', () => goToImage(index));
+        });
+
+        // Auto-advance gallery
+        setInterval(nextImage, 5000);
 
         // Global variables
         let currentRaffleHost = null;
         let raffleEndTime = null;
+
+        // Mock wallet manager for demonstration
+        const walletManager = {
+            connected: false,
+            publicKey: null,
+            
+            getAvailableWallets() {
+                const wallets = [];
+                
+                if (window.phantom?.solana) {
+                    wallets.push({
+                        id: 'phantom',
+                        name: 'Phantom',
+                        description: 'Popular Solana wallet',
+                        icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTA4IiBoZWlnaHQ9IjEwOCIgdmlld0JveD0iMCAwIDEwOCAxMDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iNTQiIGN5PSI1NCIgcj0iNTQiIGZpbGw9IiM1MzQ5QkIiLz48L3N2Zz4='
+                    });
+                }
+                
+                if (window.solflare) {
+                    wallets.push({
+                        id: 'solflare',
+                        name: 'Solflare',
+                        description: 'Secure web wallet',
+                        icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTA4IiBoZWlnaHQ9IjEwOCIgdmlld0JveD0iMCAwIDEwOCAxMDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iNTQiIGN5PSI1NCIgcj0iNTQiIGZpbGw9IiNGRjk5MDAiLz48L3N2Zz4='
+                    });
+                }
+                
+                return wallets;
+            },
+            
+            async connect(walletId) {
+                try {
+                    if (walletId === 'phantom' && window.phantom?.solana) {
+                        const response = await window.phantom.solana.connect();
+                        this.connected = true;
+                        this.publicKey = response.publicKey.toString();
+                        return {
+                            success: true,
+                            publicKey: this.publicKey,
+                            walletName: 'Phantom'
+                        };
+                    }
+                    throw new Error('Wallet not available');
+                } catch (error) {
+                    return {
+                        success: false,
+                        error: error.message
+                    };
+                }
+            },
+            
+            async disconnect() {
+                this.connected = false;
+                this.publicKey = null;
+                return { success: true };
+            },
+            
+            getStatus() {
+                return {
+                    connected: this.connected,
+                    publicKey: this.publicKey
+                };
+            },
+            
+            formatPublicKey(key) {
+                if (!key) return '';
+                return `${key.slice(0, 4)}...${key.slice(-4)}`;
+            }
+        };
 
         // Initialize the application
         async function initApp() {
             try {
                 console.log('🚀 Initializing GiveFi DApp...');
                 
-                // Try to auto-connect wallet
-                const autoConnect = await walletManager.autoConnect();
-                if (autoConnect.success) {
-                    updateWalletUI(autoConnect);
-                    showStatus('Wallet auto-connected!', 'success');
-                }
-
-                // Set up wallet change listener
-                walletManager.onWalletStateChange((state) => {
-                    updateWalletUI(state);
-                });
-
                 // Load raffle data
                 await loadRaffleData();
                 
@@ -578,10 +1236,7 @@
         // Load raffle data from smart contract
         async function loadRaffleData() {
             try {
-                // For now, we'll use mock data since we need a specific raffle host
-                // In production, you'd query your smart contract for active raffles
-                
-                // Mock BMW raffle data
+                // Mock BMW raffle data - replace with actual contract calls
                 const mockRaffleData = {
                     entryFee: 0.1,
                     maxParticipants: 50,
@@ -622,7 +1277,7 @@
             const connectBtn = document.getElementById('connectBtn');
             
             if (walletState.connected) {
-                connectBtn.textContent = `Connected: ${walletManager.formatPublicKey(walletState.publicKey)}`;
+                connectBtn.textContent = walletManager.formatPublicKey(walletState.publicKey);
                 connectBtn.classList.add('connected');
                 connectBtn.onclick = () => disconnectWallet();
             } else {
@@ -641,11 +1296,12 @@
             
             if (availableWallets.length === 0) {
                 walletList.innerHTML = `
-                    <p style="color: #ccc; text-align: center; padding: 2rem;">
-                        No Solana wallets detected. Please install a wallet like 
-                        <a href="https://phantom.app/" target="_blank" style="color: #14f195;">Phantom</a> or 
-                        <a href="https://solflare.com/" target="_blank" style="color: #14f195;">Solflare</a>.
-                    </p>
+                    <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                        <p>No Solana wallets detected.</p>
+                        <p style="margin-top: 1rem;">Please install a wallet like 
+                        <a href="https://phantom.app/" target="_blank" style="color: var(--primary-green);">Phantom</a> or 
+                        <a href="https://solflare.com/" target="_blank" style="color: var(--primary-green);">Solflare</a>.</p>
+                    </div>
                 `;
                 return;
             }
@@ -657,7 +1313,10 @@
                 
                 walletOption.innerHTML = `
                     <img src="${wallet.icon}" alt="${wallet.name}" class="wallet-icon">
-                    <span>${wallet.name}</span>
+                    <div class="wallet-info">
+                        <div class="wallet-name">${wallet.name}</div>
+                        <div class="wallet-desc">${wallet.description}</div>
+                    </div>
                 `;
                 
                 walletList.appendChild(walletOption);
@@ -715,15 +1374,13 @@
                 
                 showStatus('Processing raffle entry...', 'info');
 
-                // For demonstration, we'll simulate the transaction
-                // In production, you'd call your smart contract here
-                
+                // Simulate transaction
                 const mockTransaction = await simulateRaffleEntry();
                 
                 if (mockTransaction.success) {
                     showStatus('🎉 Entry successful! Good luck!', 'success');
                     enterBtn.textContent = 'Entered ✓';
-                    enterBtn.style.background = 'linear-gradient(45deg, #14f195, #14f195)';
+                    enterBtn.style.background = 'linear-gradient(135deg, var(--success), var(--primary-green))';
                     
                     // Update participant count
                     await loadRaffleData();
@@ -781,10 +1438,9 @@
                 const timeLeft = raffleEndTime - now;
                 
                 if (timeLeft <= 0) {
-                    document.getElementById('days').textContent = '0';
-                    document.getElementById('hours').textContent = '0';
-                    document.getElementById('minutes').textContent = '0';
-                    document.getElementById('seconds').textContent = '0';
+                    ['days', 'hours', 'minutes', 'seconds'].forEach(id => {
+                        document.getElementById(id).textContent = '0';
+                    });
                     return;
                 }
                 
@@ -803,10 +1459,12 @@
         // Modal functions
         window.openWalletModal = function() {
             document.getElementById('walletModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
         };
 
         window.closeWalletModal = function() {
             document.getElementById('walletModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
         };
 
         window.scrollToGiveaway = function() {
@@ -824,6 +1482,20 @@
                 closeWalletModal();
             }
         };
+
+        // Enhanced scroll effects
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('.header');
+            const scrolled = window.scrollY > 50;
+            
+            if (scrolled) {
+                header.style.background = 'rgba(10, 10, 10, 0.95)';
+                header.style.backdropFilter = 'blur(30px)';
+            } else {
+                header.style.background = 'rgba(10, 10, 10, 0.8)';
+                header.style.backdropFilter = 'blur(20px)';
+            }
+        });
 
         // Initialize when DOM is loaded
         document.addEventListener('DOMContentLoaded', initApp);
