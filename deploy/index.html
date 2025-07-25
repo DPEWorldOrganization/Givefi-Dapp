@@ -204,8 +204,8 @@
 
         /* Main Content Container */
         .main-container {
-            margin-top: 80px;
-            min-height: calc(100vh - 80px);
+            margin-top: 160px; /* Header (80px) + Ad Banner (80px) */
+            min-height: calc(100vh - 160px);
             padding: 2rem;
         }
 
@@ -894,31 +894,357 @@
         /* Responsive Design */
         @media (max-width: 1200px) {
             .marketplace-grid {
-                grid-template-columns: 200px 1fr 280px;
-                gap: 1.5rem;
+                grid-template-columns: 1fr;
+                gap: 15px;
+                padding: 0 15px;
+            }
+            
+            .left-sidebar,
+            .right-sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                padding: 0;
+            }
+
+            .raffle-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 15px;
             }
         }
 
         @media (max-width: 768px) {
-            .main-container {
-                padding: 1rem;
+            .main-header {
+                padding: 0 15px;
+                height: auto;
+                min-height: 70px;
             }
-            
-            .glass-header {
-                padding: 0 1rem;
+
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
             }
-            
-            .nav-links {
-                gap: 1rem;
+
+            .logo-section {
+                justify-content: center;
             }
-            
-            .raffles-grid {
-                grid-template-columns: 1fr;
+
+            .logo-section h1 {
+                font-size: 1.8rem;
             }
-            
+
+            .search-container {
+                order: 3;
+                width: 100%;
+            }
+
+            .search-input {
+                width: 100%;
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+
+            .header-actions {
+                order: 2;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .action-btn {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+                min-width: 100px;
+            }
+
+            .marketplace-container {
+                margin-top: 200px; /* Account for taller mobile header + ad banner */
+                padding: 0 10px;
+            }
+
             .stats-bar {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 0.75rem;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+
+            .stat-card {
+                padding: 12px;
+            }
+
+            .stat-value {
+                font-size: 1.2rem;
+            }
+
+            .stat-label {
+                font-size: 0.75rem;
+            }
+
+            .raffle-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .raffle-card {
+                max-width: none;
+            }
+
+            .raffle-title {
+                font-size: 1.1rem;
+            }
+
+            .raffle-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .raffle-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .enter-btn, .details-btn {
+                width: 100%;
+                padding: 12px;
+                font-size: 1rem;
+            }
+
+            /* Mobile filter toggle */
+            .mobile-filter-toggle {
+                display: block;
+                width: 100%;
+                padding: 12px;
+                background: var(--glass-bg);
+                border: 1px solid var(--glass-border);
+                border-radius: 12px;
+                color: var(--text-primary);
+                font-weight: 600;
+                margin-bottom: 15px;
+                backdrop-filter: blur(10px);
+                cursor: pointer;
+            }
+
+            .mobile-sidebar {
+                display: none;
+                position: fixed;
+                top: 200px; /* Account for header + ad banner */
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.95);
+                backdrop-filter: blur(20px);
+                z-index: 1000;
+                padding: 20px;
+                overflow-y: auto;
+            }
+
+            .mobile-sidebar.show {
+                display: block;
+            }
+
+            .mobile-sidebar-content {
+                background: var(--glass-bg);
+                border-radius: 20px;
+                padding: 20px;
+                border: 1px solid var(--glass-border);
+                backdrop-filter: blur(10px);
+            }
+
+            .mobile-sidebar-close {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                background: none;
+                border: none;
+                color: var(--text-primary);
+                font-size: 24px;
+                cursor: pointer;
+                z-index: 1001;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-section h1 {
+                font-size: 1.6rem;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr;
+            }
+
+            .marketplace-container {
+                margin-top: 240px;
+                padding: 0 8px;
+            }
+
+            .raffle-card {
+                padding: 15px;
+            }
+
+            .raffle-image {
+                height: 160px;
+            }
+        }
+
+        /* Advertisement Banner Styles */
+        .ad-banner-container {
+            position: relative;
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(20, 241, 149, 0.1), rgba(153, 69, 255, 0.1));
+            border-bottom: 1px solid var(--glass-border);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .ad-banner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 0 20px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ad-banner:hover {
+            background: rgba(20, 241, 149, 0.05);
+        }
+
+        .ad-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .ad-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 2px solid var(--primary-green);
+        }
+
+        .ad-text {
+            flex: 1;
+            text-align: center;
+        }
+
+        .ad-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .ad-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .ad-sponsored {
+            font-size: 0.8rem;
+            color: var(--primary-green);
+            font-weight: 600;
+            background: rgba(20, 241, 149, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(20, 241, 149, 0.3);
+        }
+
+        .ad-controls {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .ad-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ad-dot.active {
+            background: var(--primary-green);
+            transform: scale(1.2);
+        }
+
+        .ad-timer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            background: var(--primary-green);
+            transition: width linear;
+        }
+
+        /* Mobile Ad Banner */
+        @media (max-width: 768px) {
+            .ad-banner-container {
+                height: 60px;
+            }
+
+            .ad-content {
+                gap: 12px;
+                padding: 0 15px;
+            }
+
+            .ad-logo {
+                width: 40px;
+                height: 40px;
+            }
+
+            .ad-title {
+                font-size: 1rem;
+            }
+
+            .ad-description {
+                font-size: 0.8rem;
+                display: none; /* Hide description on mobile to save space */
+            }
+
+            .ad-sponsored {
+                font-size: 0.7rem;
+                padding: 2px 8px;
+            }
+
+            .ad-controls {
+                bottom: 5px;
+                right: 15px;
+            }
+
+            .ad-dot {
+                width: 6px;
+                height: 6px;
+            }
+        }
+
+        /* Mobile Filter Toggle Button */
+        .mobile-filter-toggle {
+            display: none;
+        }
+
+        @media (max-width: 1200px) {
+            .mobile-filter-toggle {
+                display: block;
             }
         }
 
@@ -1476,6 +1802,28 @@
         </button>
     </header>
 
+    <!-- Advertisement Banner -->
+    <div class="ad-banner-container" id="adBannerContainer">
+        <div class="ad-banner" id="adBanner" onclick="openAdLink()">
+            <div class="ad-content">
+                <img class="ad-logo" id="adLogo" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiByeD0iMTIiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8cGF0aCBkPSJNMjUgMTBMMzUgMzBIMTVMMjUgMTBaIiBmaWxsPSJ3aGl0ZSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDAiIHgxPSIwIiB5MT0iMCIgeDI9IjUwIiB5Mj0iNTAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzE0RjE5NSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM5OTQ1RkYiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K" alt="Ad Logo">
+                <div class="ad-text">
+                    <div class="ad-title" id="adTitle">Sample Advertisement</div>
+                    <div class="ad-description" id="adDescription">This is a sample ad paid for with $GIVE tokens</div>
+                </div>
+                <div class="ad-sponsored">Sponsored</div>
+            </div>
+            <div class="ad-timer" id="adTimer"></div>
+        </div>
+        <div class="ad-controls" id="adControls">
+            <div class="ad-dot active" data-ad="0"></div>
+            <div class="ad-dot" data-ad="1"></div>
+            <div class="ad-dot" data-ad="2"></div>
+            <div class="ad-dot" data-ad="3"></div>
+            <div class="ad-dot" data-ad="4"></div>
+        </div>
+    </div>
+
     <!-- Main Marketplace Container -->
     <main class="main-container">
         <!-- Marketplace Grid Layout -->
@@ -1564,6 +1912,11 @@
 
             <!-- Main Content Area -->
             <main class="main-content">
+                <!-- Mobile Filter Toggle -->
+                <button class="mobile-filter-toggle" onclick="toggleMobileFilters()">
+                    <i class="fas fa-filter"></i> Filters & Categories
+                </button>
+
                 <!-- Stats Bar -->
                 <section class="stats-bar">
                     <div class="stat-card">
@@ -1860,6 +2213,67 @@
                 </div>
             </aside>
         </div>
+
+        <!-- Mobile Sidebar Overlay -->
+        <div class="mobile-sidebar" id="mobileSidebar">
+            <button class="mobile-sidebar-close" onclick="toggleMobileFilters()">×</button>
+            <div class="mobile-sidebar-content">
+                <!-- Copy of left sidebar content for mobile -->
+                <div class="filter-section">
+                    <div class="filter-title">
+                        <i class="fas fa-dollar-sign"></i>
+                        Price Range
+                    </div>
+                    <div class="filter-option active" data-price="all" onclick="applyFilter('price', 'all')">
+                        <span>All Prices</span>
+                        <span class="text-muted">∞</span>
+                    </div>
+                    <div class="filter-option" data-price="low" onclick="applyFilter('price', 'low')">
+                        <span>0.01 - 0.1 SOL</span>
+                        <span class="text-success">Low</span>
+                    </div>
+                    <div class="filter-option" data-price="mid" onclick="applyFilter('price', 'mid')">
+                        <span>0.1 - 0.5 SOL</span>
+                        <span class="text-warning">Mid</span>
+                    </div>
+                    <div class="filter-option" data-price="high" onclick="applyFilter('price', 'high')">
+                        <span>0.5+ SOL</span>
+                        <span class="text-danger">High</span>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-title">
+                        <i class="fas fa-clock"></i>
+                        Status
+                    </div>
+                    <div class="filter-option active" data-status="all" onclick="applyFilter('status', 'all')">
+                        <span>All Status</span>
+                    </div>
+                    <div class="filter-option" data-status="live" onclick="applyFilter('status', 'live')">
+                        <span>Live Now</span>
+                    </div>
+                    <div class="filter-option" data-status="ending" onclick="applyFilter('status', 'ending')">
+                        <span>Ending Soon</span>
+                    </div>
+                </div>
+
+                <!-- Mobile Live Activity Feed -->
+                <div class="live-data-card">
+                    <div class="live-data-header">
+                        <h3 style="color: var(--text-primary); font-size: 1.1rem; font-weight: 600;">Live Activity</h3>
+                        <div class="live-indicator">
+                            <div class="pulse-dot"></div>
+                            <span>LIVE</span>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-feed" id="mobileActivityFeed">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
             <h1>Transparent Giveaways on Solana</h1>
             <p>The first provably fair giveaway platform. Every entry verified on-chain. No more wondering if it's rigged.</p>
@@ -2009,6 +2423,179 @@
             activeRaffles: 42,
             totalPrizeValue: 156200
         };
+
+        // Advertisement System
+        class AdvertisementManager {
+            constructor() {
+                this.currentAdIndex = 0;
+                this.adInterval = null;
+                this.adDuration = 10000; // 10 seconds per ad (can be set by DAO)
+                this.advertisements = [
+                    {
+                        id: 1,
+                        title: "DeFi Trading Platform",
+                        description: "Trade with 0% fees - Powered by Solana",
+                        logo: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiByeD0iMTIiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8cGF0aCBkPSJNMjUgMTBMMzUgMzBIMTVMMjUgMTBaIiBmaWxsPSJ3aGl0ZSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDAiIHgxPSIwIiB5MT0iMCIgeDI9IjUwIiB5Mj0iNTAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzE0RjE5NSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM5OTQ1RkYiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K",
+                        link: "https://example-defi.com",
+                        giveAmountPaid: 50000, // 50K $GIVE tokens
+                        duration: 10000,
+                        active: true
+                    },
+                    {
+                        id: 2,
+                        title: "NFT Marketplace",
+                        description: "Mint, trade & earn - The future of digital art",
+                        logo: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiByeD0iMTIiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8cGF0aCBkPSJNMTUgMTVIMzVWMzVIMTVWMTVaIiBmaWxsPSJ3aGl0ZSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDAiIHgxPSIwIiB5MT0iMCIgeDI9IjUwIiB5Mj0iNTAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzE0RjE5NSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM5OTQ1RkYiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K",
+                        link: "https://example-nft.com",
+                        giveAmountPaid: 75000,
+                        duration: 15000,
+                        active: true
+                    },
+                    {
+                        id: 3,
+                        title: "Solana Validator",
+                        description: "Stake your SOL with 8.5% APY",
+                        logo: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiByeD0iMTIiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8Y2lyY2xlIGN4PSIyNSIgY3k9IjI1IiByPSIxMCIgZmlsbD0id2hpdGUiLz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQwIiB4MT0iMCIgeTE9IjAiIHgyPSI1MCIgeTI9IjUwIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIHN0b3AtY29sb3I9IiMxNEYxOTUiLz4KPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOTk0NUZGIi8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPC9zdmc+Cg==",
+                        link: "https://example-validator.com",
+                        giveAmountPaid: 30000,
+                        duration: 8000,
+                        active: true
+                    },
+                    {
+                        id: 4,
+                        title: "Web3 Gaming",
+                        description: "Play to earn in the metaverse",
+                        logo: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiByeD0iMTIiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8cGF0aCBkPSJNMTAgMjBMMjUgMTBMNDAgMjBWMzBMMjUgNDBMMTAgMzBWMjBaIiBmaWxsPSJ3aGl0ZSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDAiIHgxPSIwIiB5MT0iMCIgeDI9IjUwIiB5Mj0iNTAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzE0RjE5NSIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM5OTQ1RkYiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K",
+                        link: "https://example-gaming.com",
+                        giveAmountPaid: 100000,
+                        duration: 12000,
+                        active: true
+                    },
+                    {
+                        id: 5,
+                        title: "DeFi Lending Protocol",
+                        description: "Lend & borrow with competitive rates",
+                        logo: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiByeD0iMTIiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8cGF0aCBkPSJNMTUgMjVIMzVNMjUgMTVWMzUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MCIgeDE9IjAiIHkxPSIwIiB4Mj0iNTAiIHkyPSI1MCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMTRGMTk1Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzk5NDVGRiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=",
+                        link: "https://example-lending.com",
+                        giveAmountPaid: 60000,
+                        duration: 11000,
+                        active: true
+                    }
+                ];
+                this.currentAd = this.advertisements[0];
+            }
+
+            start() {
+                this.updateAdDisplay();
+                this.startRotation();
+            }
+
+            startRotation() {
+                if (this.adInterval) clearInterval(this.adInterval);
+                
+                this.adInterval = setInterval(() => {
+                    this.nextAd();
+                }, this.currentAd.duration || this.adDuration);
+
+                // Start timer animation
+                this.startTimerAnimation();
+            }
+
+            nextAd() {
+                this.currentAdIndex = (this.currentAdIndex + 1) % this.advertisements.length;
+                this.currentAd = this.advertisements[this.currentAdIndex];
+                this.updateAdDisplay();
+                this.updateAdControls();
+                this.startRotation(); // Restart with new ad's duration
+            }
+
+            updateAdDisplay() {
+                const titleEl = document.getElementById('adTitle');
+                const descEl = document.getElementById('adDescription');
+                const logoEl = document.getElementById('adLogo');
+
+                if (titleEl) titleEl.textContent = this.currentAd.title;
+                if (descEl) descEl.textContent = this.currentAd.description;
+                if (logoEl) logoEl.src = this.currentAd.logo;
+            }
+
+            updateAdControls() {
+                const dots = document.querySelectorAll('.ad-dot');
+                dots.forEach((dot, index) => {
+                    if (index === this.currentAdIndex) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            }
+
+            startTimerAnimation() {
+                const timer = document.getElementById('adTimer');
+                if (timer) {
+                    timer.style.width = '0%';
+                    timer.style.transition = `width ${this.currentAd.duration || this.adDuration}ms linear`;
+                    
+                    setTimeout(() => {
+                        timer.style.width = '100%';
+                    }, 100);
+                }
+            }
+
+            goToAd(index) {
+                this.currentAdIndex = index;
+                this.currentAd = this.advertisements[index];
+                this.updateAdDisplay();
+                this.updateAdControls();
+                this.startRotation();
+            }
+
+            openCurrentAdLink() {
+                if (this.currentAd.link) {
+                    window.open(this.currentAd.link, '_blank');
+                }
+            }
+
+            // DAO Functions for managing ads
+            addAdvertisement(ad) {
+                if (this.advertisements.length < 5) {
+                    this.advertisements.push(ad);
+                    return true;
+                }
+                return false; // Max 5 ads
+            }
+
+            removeAdvertisement(adId) {
+                this.advertisements = this.advertisements.filter(ad => ad.id !== adId);
+                if (this.currentAdIndex >= this.advertisements.length) {
+                    this.currentAdIndex = 0;
+                }
+                this.currentAd = this.advertisements[this.currentAdIndex];
+                this.updateAdDisplay();
+                this.updateAdControls();
+            }
+
+            updateAdDuration(newDuration) {
+                this.adDuration = newDuration;
+                this.startRotation();
+            }
+        }
+
+        // Initialize Advertisement Manager
+        const adManager = new AdvertisementManager();
+
+        // Mobile Functions
+        function toggleMobileFilters() {
+            const mobileSidebar = document.getElementById('mobileSidebar');
+            if (mobileSidebar) {
+                mobileSidebar.classList.toggle('show');
+            }
+        }
+
+        // Advertisement Functions
+        function openAdLink() {
+            adManager.openCurrentAdLink();
+        }
 
         // Global state - wallet-based data
         let currentWalletData = {
@@ -2195,8 +2782,38 @@
             activityFeed.updateActivityDisplay();
             activityFeed.updateStatsDisplay();
 
+            // Start advertisement system
+            adManager.start();
+
+            // Add ad control click handlers
+            document.querySelectorAll('.ad-dot').forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    adManager.goToAd(index);
+                });
+            });
+
+            // Sync mobile activity feed with main feed
+            setInterval(() => {
+                const mobileActivityFeed = document.getElementById('mobileActivityFeed');
+                const mainActivityFeed = document.getElementById('activityFeed');
+                if (mobileActivityFeed && mainActivityFeed) {
+                    mobileActivityFeed.innerHTML = mainActivityFeed.innerHTML;
+                }
+            }, 1000);
+
             // Update stats bar with live data
             updateStatsBar();
+
+            // Handle mobile orientation changes
+            window.addEventListener('orientationchange', () => {
+                setTimeout(() => {
+                    // Close mobile sidebar on orientation change
+                    const mobileSidebar = document.getElementById('mobileSidebar');
+                    if (mobileSidebar) {
+                        mobileSidebar.classList.remove('show');
+                    }
+                }, 100);
+            });
         });
 
         // Update Stats Bar Function
