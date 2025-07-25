@@ -5,11 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GiveFi - Transparent Giveaways on Solana</title>
     
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
     <!-- Solana Web3.js -->
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
     <script src="https://unpkg.com/bn.js@5.2.1/lib/bn.min.js"></script>
     
     <style>
+        :root {
+            --glass-bg: rgba(15, 15, 23, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(20, 241, 149, 0.05);
+            --primary-green: #14f195;
+            --primary-purple: #9945ff;
+            --accent-blue: #00d2ff;
+            --dark-bg: #0a0a0f;
+            --dark-card: #131321;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b8;
+            --text-muted: #6c6c89;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -18,42 +36,950 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #0a0a0a;
-            color: #ffffff;
+            background: var(--dark-bg);
+            color: var(--text-primary);
             line-height: 1.6;
             overflow-x: hidden;
         }
 
-        /* Animated Background */
-        .bg-animation {
+        /* Glass Dark Background with Mesh Gradient */
+        .mesh-background {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(45deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533a7b 100%);
-            background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(20, 241, 149, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(153, 69, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(0, 210, 255, 0.08) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a0f 0%, #131321 50%, #1a1a2e 100%);
             z-index: -2;
         }
 
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Header */
-        .header {
+        /* Animated particles overlay */
+        .particles-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: var(--primary-green);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+        }
+
+        /* Glass Header */
+        .glass-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .glass-header.scrolled {
+            height: 70px;
+            background: rgba(15, 15, 23, 0.9);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-purple));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 4px 20px rgba(20, 241, 149, 0.3);
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-green);
+            background: var(--glass-hover);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 4px;
+            background: var(--primary-green);
+            border-radius: 50%;
+        }
+
+        /* Wallet Connection Button */
+        .wallet-connect {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
             backdrop-filter: blur(10px);
-            z-index: 100;
-            padding: 1rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .wallet-connect:hover {
+            background: var(--glass-hover);
+            border-color: var(--primary-green);
+            box-shadow: 0 4px 20px rgba(20, 241, 149, 0.2);
+        }
+
+        .wallet-connect.connected {
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-purple));
+            border-color: transparent;
+            color: white;
+        }
+
+        /* Main Content Container */
+        .main-container {
+            margin-top: 80px;
+            min-height: calc(100vh - 80px);
+            padding: 2rem;
+        }
+
+        /* Marketplace Layout Styles */
+        .marketplace-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr 320px;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1024px) {
+            .marketplace-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+
+        /* Glass Card Base */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(20, 241, 149, 0.3);
+            box-shadow: 0 8px 32px rgba(20, 241, 149, 0.1);
+        }
+
+        /* Sidebar Filters */
+        .sidebar {
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .filter-section {
+            margin-bottom: 2rem;
+        }
+
+        .filter-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-option:hover {
+            background: var(--glass-hover);
+            border-color: var(--primary-green);
+        }
+
+        .filter-option.active {
+            background: linear-gradient(135deg, rgba(20, 241, 149, 0.1), rgba(153, 69, 255, 0.1));
+            border: 1px solid var(--primary-green);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            overflow: hidden;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-green), var(--primary-purple));
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-green);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .stat-change {
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        .stat-change.positive {
+            color: var(--primary-green);
+        }
+
+        .stat-change.negative {
+            color: #ff6b7a;
+        }
+
+        /* Raffle Cards Grid */
+        .raffles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .raffle-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .raffle-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary-green);
+            box-shadow: 0 12px 40px rgba(20, 241, 149, 0.15);
+        }
+
+        .raffle-card.featured {
+            border: 2px solid var(--primary-green);
+            box-shadow: 0 8px 32px rgba(20, 241, 149, 0.2);
+        }
+
+        .raffle-card.featured::before {
+            content: '🔥 FEATURED';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-purple));
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            z-index: 2;
+        }
+
+        .raffle-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            position: relative;
+        }
+
+        .raffle-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 1rem;
+        }
+
+        .raffle-status {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .raffle-status.live {
+            background: rgba(20, 241, 149, 0.9);
+            color: white;
+        }
+
+        .raffle-status.ending {
+            background: rgba(255, 107, 122, 0.9);
+            color: white;
+        }
+
+        .raffle-status.ended {
+            background: rgba(108, 108, 137, 0.9);
+            color: white;
+        }
+
+        .raffle-content {
+            padding: 1.5rem;
+        }
+
+        .raffle-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+
+        .raffle-price {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .raffle-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .raffle-stat {
+            text-align: center;
+        }
+
+        .raffle-stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-green);
+        }
+
+        .raffle-stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .raffle-progress {
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-green), var(--primary-purple));
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .raffle-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn-primary {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-purple));
+            border: none;
+            border-radius: 10px;
+            padding: 0.875rem 1.5rem;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(20, 241, 149, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 0.875rem 1rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-green);
+            color: var(--primary-green);
+        }
+
+        /* Right Sidebar - Live Data */
+        .right-sidebar {
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .live-data-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .live-data-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-green);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-green);
+        }
+
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-purple));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Trending Section */
+        .trending-card {
+            background: linear-gradient(135deg, rgba(20, 241, 149, 0.05), rgba(153, 69, 255, 0.05));
+            border: 1px solid rgba(20, 241, 149, 0.2);
+        }
+
+        .trending-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .trending-item:hover {
+            background: var(--glass-hover);
+            transform: translateX(4px);
+        }
+
+        .trending-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .trending-rank {
+            width: 24px;
+            height: 24px;
+            background: var(--primary-green);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .trending-details h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .trending-details p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .trending-value {
+            text-align: right;
+        }
+
+        .trending-price {
+            font-weight: 700;
+            color: var(--primary-green);
+        }
+
+        .trending-change {
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Loading States */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Right Sidebar Styles */
+        .right-sidebar {
+            padding: 0 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-bottom: 100px;
+        }
+
+        .live-data-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .live-data-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--primary-green);
+            font-weight: 600;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .activity-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .activity-icon {
+            font-size: 1.2rem;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(20, 241, 149, 0.1);
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-time {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .trending-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .trending-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .trending-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+        }
+
+        .trending-rank {
+            width: 24px;
+            height: 24px;
+            background: var(--primary-green);
+            color: #000;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .trending-details h4 {
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0 0 0.25rem 0;
+        }
+
+        .trending-details p {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin: 0;
+        }
+
+        .trending-value {
+            text-align: right;
+        }
+
+        .trending-price {
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .trending-change {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .trending-change.positive {
+            color: var(--primary-green);
+        }
+
+        .trending-change.negative {
+            color: #ff6b6b;
+        }
+
+        .stat-value {
+            color: var(--text-primary);
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-change {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .stat-change.positive {
+            color: var(--primary-green);
+        }
+
+        .stat-change.negative {
+            color: #ff6b6b;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .marketplace-grid {
+                grid-template-columns: 200px 1fr 280px;
+                gap: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 1rem;
+            }
+            
+            .glass-header {
+                padding: 0 1rem;
+            }
+            
+            .nav-links {
+                gap: 1rem;
+            }
+            
+            .raffles-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+        }
+
+        /* Search and Filters */
+        .search-section {
+            margin-bottom: 2rem;
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem 1rem 1rem 3rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-green);
+            box-shadow: 0 0 0 3px rgba(20, 241, 149, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .filter-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .filter-chip {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-chip:hover, .filter-chip.active {
+            background: linear-gradient(135deg, rgba(20, 241, 149, 0.1), rgba(153, 69, 255, 0.1));
+            border-color: var(--primary-green);
+            color: var(--primary-green);
         }
 
         .nav-container {
@@ -515,25 +1441,426 @@
     </style>
 </head>
 <body>
-    <div class="bg-animation"></div>
+    <!-- Glass Dark Background -->
+    <div class="mesh-background"></div>
+    <div class="particles-overlay">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 40%; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 4s;"></div>
+        <div class="particle" style="left: 60%; animation-delay: 1.5s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 2.5s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 3.5s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 0.5s;"></div>
+    </div>
 
-    <!-- Header -->
-        <!-- Header -->
-    <header class="header">
-        <div class="nav-container">
-            <div class="logo">⚡ GiveFi</div>
-            <nav class="nav-links">
-                <a href="#giveaways" class="nav-link" onclick="scrollToGiveaway()">Live Raffles</a>
-                <a href="#how-it-works" class="nav-link">How It Works</a>
-                <a href="admin.html" class="admin-link">🛠️ Admin Panel</a>
-                <button class="connect-btn" id="connectBtn" onclick="openWalletModal()">Connect Wallet</button>
-            </nav>
+    <!-- Glass Header -->
+    <header class="glass-header" id="header">
+        <div class="logo-section">
+            <div class="logo-icon">⚡</div>
+            <div class="logo-text">GiveFi</div>
         </div>
+        
+        <nav class="nav-links">
+            <a href="#marketplace" class="nav-link active">Marketplace</a>
+            <a href="#trending" class="nav-link">Trending</a>
+            <a href="#dao" class="nav-link">DAO</a>
+            <a href="#analytics" class="nav-link">Analytics</a>
+            <a href="admin.html" class="nav-link">Admin</a>
+        </nav>
+
+        <button class="wallet-connect" id="walletBtn" onclick="connectWallet()">
+            <i class="fas fa-wallet"></i>
+            <span>Connect Wallet</span>
+        </button>
     </header>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
-        <div class="hero-content">
+    <!-- Main Marketplace Container -->
+    <main class="main-container">
+        <!-- Marketplace Grid Layout -->
+        <div class="marketplace-grid">
+            <!-- Left Sidebar - Filters -->
+            <aside class="sidebar">
+                <!-- Search Section -->
+                <div class="glass-card search-section">
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" placeholder="Search raffles..." id="searchInput">
+                    </div>
+                    <div class="filter-chips">
+                        <div class="filter-chip active" data-filter="all">All</div>
+                        <div class="filter-chip" data-filter="live">Live</div>
+                        <div class="filter-chip" data-filter="ending">Ending Soon</div>
+                        <div class="filter-chip" data-filter="featured">Featured</div>
+                    </div>
+                </div>
+
+                <!-- Price Range Filter -->
+                <div class="glass-card filter-section">
+                    <div class="filter-title">
+                        <i class="fas fa-coins"></i>
+                        Entry Fee Range
+                    </div>
+                    <div class="filter-option" data-price="all">
+                        <span>All Prices</span>
+                        <span class="text-muted">∞</span>
+                    </div>
+                    <div class="filter-option" data-price="low">
+                        <span>0.01 - 0.1 SOL</span>
+                        <span class="text-success">Low</span>
+                    </div>
+                    <div class="filter-option" data-price="mid">
+                        <span>0.1 - 0.5 SOL</span>
+                        <span class="text-warning">Mid</span>
+                    </div>
+                    <div class="filter-option" data-price="high">
+                        <span>0.5+ SOL</span>
+                        <span class="text-danger">High</span>
+                    </div>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="glass-card filter-section">
+                    <div class="filter-title">
+                        <i class="fas fa-tags"></i>
+                        Categories
+                    </div>
+                    <div class="filter-option" data-category="all">
+                        <span>All Categories</span>
+                        <span class="text-muted">∞</span>
+                    </div>
+                    <div class="filter-option" data-category="automotive">
+                        <span>🚗 Automotive</span>
+                        <span class="text-info">12</span>
+                    </div>
+                    <div class="filter-option" data-category="electronics">
+                        <span>📱 Electronics</span>
+                        <span class="text-info">8</span>
+                    </div>
+                    <div class="filter-option" data-category="crypto">
+                        <span>₿ Crypto</span>
+                        <span class="text-info">15</span>
+                    </div>
+                    <div class="filter-option" data-category="luxury">
+                        <span>💎 Luxury</span>
+                        <span class="text-info">5</span>
+                    </div>
+                </div>
+
+                <!-- DAO Status -->
+                <div class="glass-card filter-section">
+                    <div class="filter-title">
+                        <i class="fas fa-users"></i>
+                        DAO Status
+                    </div>
+                    <div style="text-align: center; padding: 1rem;">
+                        <div class="stat-value" id="daoMembers">1,247</div>
+                        <div class="stat-label">Active Members</div>
+                        <div class="stat-change positive">+12% this week</div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+                <!-- Stats Bar -->
+                <section class="stats-bar">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalRaffles">23</div>
+                        <div class="stat-label">Active Raffles</div>
+                        <div class="stat-change positive">+3 today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalParticipants">1,547</div>
+                        <div class="stat-label">Total Participants</div>
+                        <div class="stat-change positive">+127 today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalVolume">847.3</div>
+                        <div class="stat-label">SOL Volume</div>
+                        <div class="stat-change positive">+23.4 SOL</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="successRate">94.2%</div>
+                        <div class="stat-label">Success Rate</div>
+                        <div class="stat-change positive">+2.1%</div>
+                    </div>
+                </section>
+
+                <!-- Raffles Grid -->
+                <section class="raffles-grid" id="rafflesContainer">
+                    <!-- Sample Featured Raffle -->
+                    <div class="raffle-card featured" onclick="openRaffleModal('bmw-640i')">
+                        <div class="raffle-image" style="background: url('https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&h=300&fit=crop') center/cover;">
+                            <div class="raffle-status live">🔴 LIVE</div>
+                            <div class="raffle-overlay">
+                                <div class="raffle-title">BMW 640i M Sport</div>
+                            </div>
+                        </div>
+                        <div class="raffle-content">
+                            <div class="raffle-price">$75,000 Value</div>
+                            <div class="raffle-stats">
+                                <div class="raffle-stat">
+                                    <div class="raffle-stat-value">47/50</div>
+                                    <div class="raffle-stat-label">Entries</div>
+                                </div>
+                                <div class="raffle-stat">
+                                    <div class="raffle-stat-value">2h 34m</div>
+                                    <div class="raffle-stat-label">Time Left</div>
+                                </div>
+                            </div>
+                            <div class="raffle-progress">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span style="font-size: 0.9rem; color: var(--text-secondary);">Progress</span>
+                                    <span style="font-size: 0.9rem; color: var(--primary-green);">94%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 94%;"></div>
+                                </div>
+                            </div>
+                            <div class="raffle-actions">
+                                <button class="btn-primary">Enter for 0.1 SOL</button>
+                                <button class="btn-secondary"><i class="fas fa-heart"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sample Regular Raffle -->
+                    <div class="raffle-card" onclick="openRaffleModal('iphone-15')">
+                        <div class="raffle-image" style="background: url('https://images.unsplash.com/photo-1592078615290-033ee584e267?w=600&h=300&fit=crop') center/cover;">
+                            <div class="raffle-status live">🔴 LIVE</div>
+                            <div class="raffle-overlay">
+                                <div class="raffle-title">iPhone 15 Pro Max</div>
+                            </div>
+                        </div>
+                        <div class="raffle-content">
+                            <div class="raffle-price">$1,299 Value</div>
+                            <div class="raffle-stats">
+                                <div class="raffle-stat">
+                                    <div class="raffle-stat-value">89/100</div>
+                                    <div class="raffle-stat-label">Entries</div>
+                                </div>
+                                <div class="raffle-stat">
+                                    <div class="raffle-stat-value">5h 12m</div>
+                                    <div class="raffle-stat-label">Time Left</div>
+                                </div>
+                            </div>
+                            <div class="raffle-progress">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span style="font-size: 0.9rem; color: var(--text-secondary);">Progress</span>
+                                    <span style="font-size: 0.9rem; color: var(--primary-green);">89%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 89%;"></div>
+                                </div>
+                            </div>
+                            <div class="raffle-actions">
+                                <button class="btn-primary">Enter for 0.05 SOL</button>
+                                <button class="btn-secondary"><i class="fas fa-heart"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sample Ending Soon Raffle -->
+                    <div class="raffle-card" onclick="openRaffleModal('rolex-gmt')">
+                        <div class="raffle-image" style="background: url('https://images.unsplash.com/photo-1523170335258-f5c6c6bd6eaf?w=600&h=300&fit=crop') center/cover;">
+                            <div class="raffle-status ending">⏰ ENDING SOON</div>
+                            <div class="raffle-overlay">
+                                <div class="raffle-title">Rolex GMT Master II</div>
+                            </div>
+                        </div>
+                        <div class="raffle-content">
+                            <div class="raffle-price">$15,000 Value</div>
+                            <div class="raffle-stats">
+                                <div class="raffle-stat">
+                                    <div class="raffle-stat-value">48/50</div>
+                                    <div class="raffle-stat-label">Entries</div>
+                                </div>
+                                <div class="raffle-stat">
+                                    <div class="raffle-stat-value">23m</div>
+                                    <div class="raffle-stat-label">Time Left</div>
+                                </div>
+                            </div>
+                            <div class="raffle-progress">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span style="font-size: 0.9rem; color: var(--text-secondary);">Progress</span>
+                                    <span style="font-size: 0.9rem; color: var(--primary-green);">96%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 96%;"></div>
+                                </div>
+                            </div>
+                            <div class="raffle-actions">
+                                <button class="btn-primary">Enter for 0.2 SOL</button>
+                                <button class="btn-secondary"><i class="fas fa-heart"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loading skeleton cards for dynamic content -->
+                    <div class="raffle-card skeleton" style="height: 400px; display: none;" id="loadingSkeleton1"></div>
+                    <div class="raffle-card skeleton" style="height: 400px; display: none;" id="loadingSkeleton2"></div>
+                </section>
+            </main>
+
+            <!-- Right Sidebar - Live Data & Analytics -->
+            <aside class="right-sidebar">
+                <!-- Live Activity Feed -->
+                <div class="live-data-card">
+                    <div class="live-data-header">
+                        <h3 style="color: var(--text-primary); font-size: 1.1rem; font-weight: 600;">Live Activity</h3>
+                        <div class="live-indicator">
+                            <div class="pulse-dot"></div>
+                            <span>LIVE</span>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-feed" id="activityFeed">
+                        <div class="activity-item">
+                            <div class="activity-icon">🎉</div>
+                            <div class="activity-content">
+                                <div class="activity-title">New entry: BMW 640i</div>
+                                <div class="activity-time">2 minutes ago</div>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-item">
+                            <div class="activity-icon">🏆</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Winner selected: Tesla Model 3</div>
+                                <div class="activity-time">5 minutes ago</div>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-item">
+                            <div class="activity-icon">🚀</div>
+                            <div class="activity-content">
+                                <div class="activity-title">New raffle: MacBook Pro</div>
+                                <div class="activity-time">12 minutes ago</div>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-item">
+                            <div class="activity-icon">💎</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Raffle funded: $50K Cash</div>
+                                <div class="activity-time">18 minutes ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trending Raffles -->
+                <div class="live-data-card trending-card">
+                    <div class="live-data-header">
+                        <h3 style="color: var(--text-primary); font-size: 1.1rem; font-weight: 600;">Trending Today</h3>
+                        <div style="color: var(--primary-green); font-size: 0.9rem; font-weight: 600;">🔥 HOT</div>
+                    </div>
+                    
+                    <div class="trending-list">
+                        <div class="trending-item">
+                            <div class="trending-info">
+                                <div class="trending-rank">1</div>
+                                <div class="trending-details">
+                                    <h4>BMW 640i M Sport</h4>
+                                    <p>94% filled • 2h left</p>
+                                </div>
+                            </div>
+                            <div class="trending-value">
+                                <div class="trending-price">0.1 SOL</div>
+                                <div class="trending-change positive">+47 entries</div>
+                            </div>
+                        </div>
+                        
+                        <div class="trending-item">
+                            <div class="trending-info">
+                                <div class="trending-rank">2</div>
+                                <div class="trending-details">
+                                    <h4>iPhone 15 Pro</h4>
+                                    <p>89% filled • 5h left</p>
+                                </div>
+                            </div>
+                            <div class="trending-value">
+                                <div class="trending-price">0.05 SOL</div>
+                                <div class="trending-change positive">+89 entries</div>
+                            </div>
+                        </div>
+                        
+                        <div class="trending-item">
+                            <div class="trending-info">
+                                <div class="trending-rank">3</div>
+                                <div class="trending-details">
+                                    <h4>Rolex GMT</h4>
+                                    <p>96% filled • 23m left</p>
+                                </div>
+                            </div>
+                            <div class="trending-value">
+                                <div class="trending-price">0.2 SOL</div>
+                                <div class="trending-change positive">+48 entries</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Stats -->
+                <div class="live-data-card">
+                    <div class="live-data-header">
+                        <h3 style="color: var(--text-primary); font-size: 1.1rem; font-weight: 600;">Market Stats</h3>
+                        <div style="color: var(--text-muted); font-size: 0.9rem;">24H</div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                        <div style="text-align: center;">
+                            <div class="stat-value" style="font-size: 1.4rem;">23.4K</div>
+                            <div class="stat-label">Total Volume</div>
+                            <div class="stat-change positive" style="font-size: 0.8rem;">+12.5%</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div class="stat-value" style="font-size: 1.4rem;">156</div>
+                            <div class="stat-label">Active Users</div>
+                            <div class="stat-change positive" style="font-size: 0.8rem;">+8.3%</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div class="stat-value" style="font-size: 1.4rem;">847</div>
+                            <div class="stat-label">SOL Staked</div>
+                            <div class="stat-change positive" style="font-size: 0.8rem;">+23.4</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div class="stat-value" style="font-size: 1.4rem;">94.2%</div>
+                            <div class="stat-label">Win Rate</div>
+                            <div class="stat-change positive" style="font-size: 0.8rem;">+2.1%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- $GIVE Token Stats -->
+                <div class="live-data-card" style="background: linear-gradient(135deg, rgba(20, 241, 149, 0.1), rgba(153, 69, 255, 0.1)); border: 1px solid var(--primary-green);">
+                    <div class="live-data-header">
+                        <h3 style="color: var(--primary-green); font-size: 1.1rem; font-weight: 600;">$GIVE Token</h3>
+                        <div style="color: var(--primary-green); font-size: 0.9rem; font-weight: 600;">ACTIVE</div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <div class="stat-value" style="color: var(--primary-green); font-size: 1.6rem;">1,247</div>
+                        <div class="stat-label">DAO Voters</div>
+                        <div class="stat-change positive" style="font-size: 0.8rem;">+12% this week</div>
+                        
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(20, 241, 149, 0.2);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span style="font-size: 0.9rem; color: var(--text-secondary);">Min. Stake</span>
+                                <span style="font-size: 0.9rem; color: var(--primary-green);">1M $GIVE</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="font-size: 0.9rem; color: var(--text-secondary);">Delegations</span>
+                                <span style="font-size: 0.9rem; color: var(--primary-green);">156 active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
             <h1>Transparent Giveaways on Solana</h1>
             <p>The first provably fair giveaway platform. Every entry verified on-chain. No more wondering if it's rigged.</p>
             <div class="hero-buttons">
@@ -673,6 +2000,16 @@
         const PROGRAM_ID = '48mihemhp1UxYjz1UznH4fJ9FnF3AfN3XG18GasPFamU';
         const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
 
+        // Marketplace State
+        let marketplaceState = {
+            totalVolume: 23400,
+            activeUsers: 156,
+            solStaked: 847,
+            winRate: 94.2,
+            activeRaffles: 42,
+            totalPrizeValue: 156200
+        };
+
         // Global state - wallet-based data
         let currentWalletData = {
             rafflesCreated: [],
@@ -688,6 +2025,233 @@
         // Real raffle state storage (in production, this would be from smart contract)
         let activeRaffles = new Map(); // Map of raffle_id -> raffle_data
         let raffleParticipants = new Map(); // Map of raffle_id -> Set of participant addresses
+
+        // Activity Feed Management
+        class ActivityFeed {
+            constructor() {
+                this.activities = [
+                    { icon: '🎉', title: 'New entry: BMW 640i', time: '2 minutes ago' },
+                    { icon: '🏆', title: 'Winner selected: Tesla Model 3', time: '5 minutes ago' },
+                    { icon: '🚀', title: 'New raffle: MacBook Pro', time: '12 minutes ago' },
+                    { icon: '💎', title: 'Raffle funded: $50K Cash', time: '18 minutes ago' }
+                ];
+                this.updateInterval = null;
+            }
+
+            start() {
+                this.updateInterval = setInterval(() => {
+                    this.addRandomActivity();
+                    this.updateLiveStats();
+                }, 15000); // Update every 15 seconds
+            }
+
+            addRandomActivity() {
+                const activities = [
+                    { icon: '🎯', title: `New entry: ${this.getRandomPrize()}`, time: 'Just now' },
+                    { icon: '🎊', title: `Winner selected: ${this.getRandomPrize()}`, time: 'Just now' },
+                    { icon: '🚀', title: `New raffle: ${this.getRandomPrize()}`, time: 'Just now' },
+                    { icon: '💰', title: `High value entry: ${this.getRandomPrize()}`, time: 'Just now' }
+                ];
+
+                const newActivity = activities[Math.floor(Math.random() * activities.length)];
+                this.activities.unshift(newActivity);
+                
+                // Keep only last 8 activities
+                if (this.activities.length > 8) {
+                    this.activities.pop();
+                }
+
+                this.updateActivityDisplay();
+                this.updateTimeStamps();
+            }
+
+            getRandomPrize() {
+                const prizes = ['BMW M3', 'iPhone 15 Pro', 'Rolex Submariner', 'MacBook Pro', 'Tesla Model Y', 'Louis Vuitton Bag', 'Gaming PC', '$10K Cash'];
+                return prizes[Math.floor(Math.random() * prizes.length)];
+            }
+
+            updateActivityDisplay() {
+                const feed = document.getElementById('activityFeed');
+                if (!feed) return;
+
+                feed.innerHTML = this.activities.map(activity => `
+                    <div class="activity-item">
+                        <div class="activity-icon">${activity.icon}</div>
+                        <div class="activity-content">
+                            <div class="activity-title">${activity.title}</div>
+                            <div class="activity-time">${activity.time}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updateTimeStamps() {
+                // Update all time stamps to be more realistic
+                this.activities.forEach((activity, index) => {
+                    if (index === 0) {
+                        activity.time = 'Just now';
+                    } else {
+                        const minutes = (index * 3) + Math.floor(Math.random() * 5);
+                        activity.time = `${minutes} minutes ago`;
+                    }
+                });
+            }
+
+            updateLiveStats() {
+                // Simulate live market changes
+                marketplaceState.totalVolume += Math.floor(Math.random() * 100);
+                marketplaceState.activeUsers += Math.floor(Math.random() * 3) - 1;
+                marketplaceState.solStaked += Math.random() * 10;
+                
+                // Update stats display
+                this.updateStatsDisplay();
+            }
+
+            updateStatsDisplay() {
+                const updateElement = (id, value, suffix = '') => {
+                    const element = document.getElementById(id);
+                    if (element) element.textContent = value + suffix;
+                };
+
+                updateElement('totalVolumeValue', (marketplaceState.totalVolume / 1000).toFixed(1), 'K');
+                updateElement('activeUsersValue', marketplaceState.activeUsers);
+                updateElement('solStakedValue', marketplaceState.solStaked.toFixed(0));
+                updateElement('winRateValue', marketplaceState.winRate.toFixed(1), '%');
+            }
+        }
+
+        // Initialize Activity Feed
+        const activityFeed = new ActivityFeed();
+
+        // Search and Filter Functions
+        function handleSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const raffleCards = document.querySelectorAll('.raffle-card:not(.skeleton)');
+            
+            raffleCards.forEach(card => {
+                const title = card.querySelector('.raffle-title')?.textContent?.toLowerCase() || '';
+                const description = card.querySelector('.raffle-description')?.textContent?.toLowerCase() || '';
+                
+                if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function applyFilter(filterType, value) {
+            // Update filter UI
+            document.querySelectorAll('.filter-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            const raffleCards = document.querySelectorAll('.raffle-card:not(.skeleton)');
+            
+            raffleCards.forEach(card => {
+                let show = true;
+                
+                switch(filterType) {
+                    case 'status':
+                        const status = card.querySelector('.raffle-status')?.textContent?.toLowerCase() || '';
+                        if (value !== 'all' && !status.includes(value)) {
+                            show = false;
+                        }
+                        break;
+                    case 'price':
+                        const price = parseFloat(card.querySelector('.raffle-price')?.textContent?.replace(/[^\d.]/g, '') || '0');
+                        switch(value) {
+                            case 'low':
+                                show = price <= 0.1;
+                                break;
+                            case 'medium':
+                                show = price > 0.1 && price <= 0.5;
+                                break;
+                            case 'high':
+                                show = price > 0.5;
+                                break;
+                        }
+                        break;
+                    case 'time':
+                        // This would need real time data in production
+                        show = true;
+                        break;
+                }
+                
+                card.style.display = show ? 'block' : 'none';
+            });
+        }
+
+        // Initialize search functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', handleSearch);
+            }
+
+            // Start activity feed
+            activityFeed.start();
+            activityFeed.updateActivityDisplay();
+            activityFeed.updateStatsDisplay();
+
+            // Update stats bar with live data
+            updateStatsBar();
+        });
+
+        // Update Stats Bar Function
+        function updateStatsBar() {
+            const statsData = [
+                { 
+                    id: 'totalVolumeValue',
+                    label: 'Total Volume',
+                    value: (marketplaceState.totalVolume / 1000).toFixed(1) + 'K SOL',
+                    change: '+12.5%'
+                },
+                { 
+                    id: 'activeUsersValue',
+                    label: 'Active Users',
+                    value: marketplaceState.activeUsers.toString(),
+                    change: '+8.3%'
+                },
+                { 
+                    id: 'solStakedValue',
+                    label: 'SOL Staked',
+                    value: marketplaceState.solStaked.toFixed(0),
+                    change: '+23.4'
+                },
+                { 
+                    id: 'winRateValue',
+                    label: 'Win Rate',
+                    value: marketplaceState.winRate.toFixed(1) + '%',
+                    change: '+2.1%'
+                },
+                { 
+                    id: 'activeRafflesValue',
+                    label: 'Active Raffles',
+                    value: marketplaceState.activeRaffles.toString(),
+                    change: '+5'
+                },
+                { 
+                    id: 'totalPrizeValue',
+                    label: 'Total Prize Value',
+                    value: '$' + (marketplaceState.totalPrizeValue / 1000).toFixed(0) + 'K',
+                    change: '+18.7%'
+                }
+            ];
+
+            // Update existing stats or create them
+            const statsBar = document.querySelector('.stats-bar');
+            if (statsBar) {
+                statsBar.innerHTML = statsData.map(stat => `
+                    <div class="stat-card">
+                        <div class="stat-value" id="${stat.id}">${stat.value}</div>
+                        <div class="stat-label">${stat.label}</div>
+                        <div class="stat-change positive">${stat.change}</div>
+                    </div>
+                `).join('');
+            }
+        }
 
         // Wallet Manager Class
         class WalletManager {
@@ -1576,6 +3140,72 @@
 
         // Initialize when DOM is loaded
         document.addEventListener('DOMContentLoaded', initApp);
+
+        // Additional Marketplace Functions
+        function showCreateModal() {
+            // Show create raffle modal (to be implemented)
+            showStatus('Create raffle functionality coming soon!', 'info');
+        }
+
+        function viewRaffleDetails(raffleId) {
+            // Show detailed raffle view (to be implemented)
+            showStatus('Raffle details view coming soon!', 'info');
+        }
+
+        function enterRaffle(raffleId, price) {
+            if (!walletManager.connected) {
+                showWalletModal();
+                return;
+            }
+            
+            // Simulate raffle entry
+            showStatus(`Entering raffle for ${price} SOL...`, 'info');
+            
+            setTimeout(() => {
+                showStatus('Successfully entered raffle!', 'success');
+                
+                // Update activity feed
+                activityFeed.activities.unshift({
+                    icon: '🎯',
+                    title: 'You entered a raffle!',
+                    time: 'Just now'
+                });
+                activityFeed.updateActivityDisplay();
+            }, 2000);
+        }
+
+        // Auto-update marketplace data every 30 seconds
+        setInterval(() => {
+            if (typeof activityFeed !== 'undefined') {
+                activityFeed.updateLiveStats();
+            }
+        }, 30000);
+
+        // Mobile responsive menu toggle
+        function toggleMobileMenu() {
+            const leftSidebar = document.querySelector('.left-sidebar');
+            const rightSidebar = document.querySelector('.right-sidebar');
+            
+            if (window.innerWidth <= 768) {
+                if (leftSidebar.style.display === 'block') {
+                    leftSidebar.style.display = 'none';
+                    rightSidebar.style.display = 'none';
+                } else {
+                    leftSidebar.style.display = 'block';
+                    rightSidebar.style.display = 'block';
+                }
+            }
+        }
+
+        // Handle window resize for responsive layout
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                const leftSidebar = document.querySelector('.left-sidebar');
+                const rightSidebar = document.querySelector('.right-sidebar');
+                leftSidebar.style.display = '';
+                rightSidebar.style.display = '';
+            }
+        });
     </script>
 </body>
 </html>

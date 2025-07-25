@@ -859,6 +859,61 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Advanced Proposal Creation -->
+            <div class="admin-card" style="margin-top: 2rem;">
+                <div class="card-header">
+                    <div class="card-icon">🚀</div>
+                    <div class="card-title">Create Governance Proposal</div>
+                </div>
+                
+                <div class="dashboard-grid">
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Proposal Category</label>
+                            <select class="form-input form-select" id="proposalCategory">
+                                <option value="RAFFLE">🎰 Raffle Proposal (24h voting)</option>
+                                <option value="GOVERNANCE">🏛️ Governance Change (72h voting)</option>
+                                <option value="TREASURY">💰 Treasury Management (48h voting)</option>
+                                <option value="EMERGENCY">🚨 Emergency Action (6h voting)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Proposal Title</label>
+                            <input type="text" class="form-input" id="proposalTitle" placeholder="Brief, descriptive title...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Proposal Description</label>
+                            <textarea class="form-input form-textarea" id="proposalDescription" placeholder="Detailed description of what you're proposing..." style="min-height: 120px;"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;">
+                            <h5 style="color: #14f195; margin-bottom: 1rem;">📋 Category Requirements</h5>
+                            <div id="categoryRequirements">
+                                <div><strong>Voting Period:</strong> <span style="color: #14f195;">24 hours</span></div>
+                                <div><strong>Required Votes:</strong> <span style="color: #9945FF;">3 votes</span></div>
+                                <div><strong>Quorum:</strong> <span style="color: #ff6b7a;">2 voting power</span></div>
+                                <div style="margin-top: 1rem; color: #888; font-size: 0.9rem;">Create new raffle offerings for the community.</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(20, 241, 149, 0.05); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem;">
+                            <h5 style="color: #14f195; margin-bottom: 1rem;">💎 Your Voting Status</h5>
+                            <div><strong>Your Power:</strong> <span style="color: #14f195;" id="yourVotingPower">-- votes</span></div>
+                            <div><strong>Your Tier:</strong> <span style="color: #9945FF;" id="yourVotingTier">--</span></div>
+                            <div><strong>Can Create:</strong> <span style="color: #14f195;" id="canCreateProposal">Checking...</span></div>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="createGovernanceProposal()" style="width: 100%; padding: 1rem;">
+                            🗳️ Submit Proposal to DAO
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -881,18 +936,81 @@
         const PROGRAM_ID = '48mihemhp1UxYjz1UznH4fJ9FnF3AfN3XG18GasPFamU';
         const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
         
-        // DAO VERIFICATION SYSTEM
+        // $GIVE TOKEN STAKING CONFIGURATION
+        const GIVE_TOKEN_CONFIG = {
+            // $GIVE token contract address
+            tokenMint: 'HgrSaBkJHnvxsQrfsnQVtjDTmBH1EJyS2jwfCpyRpump',
+            // Minimum $GIVE tokens required to be staked for voting rights (1 million)
+            minimumStakeForVoting: 1_000_000,
+            // Token decimals (standard SPL token has 9 decimals)
+            decimals: 9,
+            // Staking period for voting rights (can be adjusted)
+            stakingPeriod: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+            // Minimum staking time before voting rights activate
+            votingActivationDelay: 24 * 60 * 60 * 1000, // 24 hours
+            // WEIGHTED VOTING CONFIGURATION
+            votingTiers: [
+                { threshold: 1_000_000, votes: 1, name: "Basic Voter" },      // 1M tokens = 1 vote
+                { threshold: 5_000_000, votes: 2, name: "Power Voter" },      // 5M tokens = 2 votes  
+                { threshold: 10_000_000, votes: 3, name: "Mega Voter" },      // 10M tokens = 3 votes
+                { threshold: 25_000_000, votes: 5, name: "Whale Voter" },     // 25M tokens = 5 votes
+                { threshold: 50_000_000, votes: 8, name: "Ultra Whale" },     // 50M tokens = 8 votes
+            ],
+            maxVotingPower: 10, // Cap to prevent extreme centralization
+        };
+        
+        // DAO VERIFICATION SYSTEM WITH TOKEN STAKING
         const DAO_CONFIG = {
-            // DAO wallet addresses authorized to vote on proposals
+            // DAO wallet addresses authorized to vote on proposals (legacy - will be replaced by token staking)
             daoMembers: [
                 '5YMBWHdvqpcKy2Ae6tmhFe81rGb8gHkkkRVpkdWQiV7T', // Your address - DAO founder
-                // Add more DAO member addresses here
-                // 'ANOTHER_DAO_MEMBER_ADDRESS',
+                // Legacy members - new members must stake $GIVE tokens
             ],
-            votingThreshold: 1, // Minimum votes needed to approve (adjust based on DAO size)
+            votingThreshold: 3, // Minimum voting power needed to approve (adjusted for weighted voting)
             votingPeriod: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
-            requiredQuorum: 1, // Minimum DAO members that must vote
+            requiredQuorum: 2, // Minimum voting power required for quorum
+            // Token-based voting enabled with weighted power
+            tokenBasedVoting: true,
+            // Voting power calculation method: 'weighted' for token-based scaling
+            votingPowerMethod: 'weighted',
+            // Proposal deposit requirements (prevents spam)
+            proposalDeposit: 100_000, // 100K $GIVE tokens required to create proposal
+            // PROPOSAL CATEGORIES WITH DIFFERENT RULES
+            proposalCategories: {
+                RAFFLE: {
+                    name: "Raffle Proposal",
+                    votingThreshold: 3,
+                    requiredQuorum: 2,
+                    votingPeriod: 24 * 60 * 60 * 1000, // 24 hours
+                    description: "Create new raffle offerings"
+                },
+                GOVERNANCE: {
+                    name: "Governance Change",
+                    votingThreshold: 5,
+                    requiredQuorum: 3,
+                    votingPeriod: 72 * 60 * 60 * 1000, // 72 hours
+                    description: "Modify DAO rules and parameters"
+                },
+                TREASURY: {
+                    name: "Treasury Management",
+                    votingThreshold: 4,
+                    requiredQuorum: 3,
+                    votingPeriod: 48 * 60 * 60 * 1000, // 48 hours
+                    description: "Fund allocation and treasury decisions"
+                },
+                EMERGENCY: {
+                    name: "Emergency Action",
+                    votingThreshold: 2,
+                    requiredQuorum: 2,
+                    votingPeriod: 6 * 60 * 60 * 1000, // 6 hours
+                    description: "Urgent security or operational issues"
+                }
+            }
         };
+        
+        // VOTE DELEGATION SYSTEM
+        const delegationStorage = new Map(); // wallet -> delegate mapping
+        const delegatedPower = new Map(); // delegate -> total power delegated to them
         
         // ADMIN ACCESS CONTROL - Add your wallet address here
         const AUTHORIZED_ADMIN_WALLETS = [
@@ -970,8 +1088,262 @@
             location.reload(); // Simple way to restore interface, or we could rebuild it programmatically
         }
 
+        // VOTE DELEGATION SYSTEM FUNCTIONS
+        
+        // Delegate voting power to another wallet
+        async function delegateVotingPower(delegateAddress) {
+            if (!connected) {
+                showStatus('Please connect your wallet first', 'error');
+                return false;
+            }
+            
+            const userAddress = wallet.publicKey.toString();
+            
+            // Can't delegate to yourself
+            if (userAddress === delegateAddress) {
+                showStatus('Cannot delegate to yourself', 'error');
+                return false;
+            }
+            
+            // Check if user has voting power to delegate
+            const userPower = await getVotingPower(userAddress, false); // Don't include already delegated power
+            if (userPower === 0) {
+                showStatus('You have no voting power to delegate', 'error');
+                return false;
+            }
+            
+            // Validate delegate address
+            try {
+                new PublicKey(delegateAddress);
+            } catch {
+                showStatus('Invalid delegate wallet address', 'error');
+                return false;
+            }
+            
+            // Remove any existing delegation
+            if (delegationStorage.has(userAddress)) {
+                const oldDelegate = delegationStorage.get(userAddress);
+                const oldDelegatedPower = delegatedPower.get(oldDelegate) || 0;
+                delegatedPower.set(oldDelegate, Math.max(0, oldDelegatedPower - userPower));
+            }
+            
+            // Set new delegation
+            delegationStorage.set(userAddress, delegateAddress);
+            const currentDelegatedPower = delegatedPower.get(delegateAddress) || 0;
+            delegatedPower.set(delegateAddress, currentDelegatedPower + userPower);
+            
+            showStatus(`Successfully delegated ${userPower} voting power to ${delegateAddress.slice(0,8)}...`, 'success');
+            updateDaoInterface();
+            return true;
+        }
+        
+        // Remove delegation and reclaim voting power
+        async function removeDelegation() {
+            if (!connected) {
+                showStatus('Please connect your wallet first', 'error');
+                return false;
+            }
+            
+            const userAddress = wallet.publicKey.toString();
+            
+            if (!delegationStorage.has(userAddress)) {
+                showStatus('No active delegation found', 'error');
+                return false;
+            }
+            
+            const delegateAddress = delegationStorage.get(userAddress);
+            const userPower = await getVotingPower(userAddress, false);
+            
+            // Remove delegation
+            delegationStorage.delete(userAddress);
+            const currentDelegatedPower = delegatedPower.get(delegateAddress) || 0;
+            delegatedPower.set(delegateAddress, Math.max(0, currentDelegatedPower - userPower));
+            
+            showStatus(`Successfully reclaimed ${userPower} voting power from delegation`, 'success');
+            updateDaoInterface();
+            return true;
+        }
+        
+        // Get delegation info for a wallet
+        function getDelegationInfo(walletAddress) {
+            const delegatedTo = delegationStorage.get(walletAddress);
+            const delegatedFrom = delegatedPower.get(walletAddress) || 0;
+            
+            return {
+                hasDelegated: !!delegatedTo,
+                delegatedTo: delegatedTo,
+                delegatedPowerReceived: delegatedFrom
+            };
+        }
+
+        // GOVERNANCE ANALYTICS FUNCTIONS
+        
+        // Calculate governance participation metrics
+        function getGovernanceAnalytics() {
+            const totalProposals = raffleProposals.size;
+            let totalVotes = 0;
+            let approvedProposals = 0;
+            let rejectedProposals = 0;
+            let activeProposals = 0;
+            
+            raffleProposals.forEach(proposal => {
+                totalVotes += proposal.votes.approve + proposal.votes.reject;
+                
+                switch(proposal.status) {
+                    case PROPOSAL_STATUS.APPROVED:
+                        approvedProposals++;
+                        break;
+                    case PROPOSAL_STATUS.REJECTED:
+                        rejectedProposals++;
+                        break;
+                    case PROPOSAL_STATUS.VOTING:
+                        activeProposals++;
+                        break;
+                }
+            });
+            
+            const participationRate = totalProposals > 0 ? (totalVotes / totalProposals).toFixed(1) : 0;
+            const approvalRate = totalProposals > 0 ? ((approvedProposals / totalProposals) * 100).toFixed(1) : 0;
+            
+            return {
+                totalProposals,
+                totalVotes,
+                approvedProposals,
+                rejectedProposals,
+                activeProposals,
+                participationRate,
+                approvalRate,
+                delegationCount: delegationStorage.size,
+                activeDelegates: delegatedPower.size
+            };
+        }
+        
+        // Add governance analytics to the interface
+        function updateGovernanceAnalytics() {
+            const analytics = getGovernanceAnalytics();
+            
+            const analyticsHTML = `
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(255, 255, 255, 0.03); border-radius: 8px;">
+                    <h5 style="color: #14f195; margin-bottom: 0.75rem;">📊 Governance Analytics</h5>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem;">
+                        <div style="text-align: center; padding: 0.5rem; background: rgba(20, 241, 149, 0.1); border-radius: 6px;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #14f195;">${analytics.totalProposals}</div>
+                            <div style="font-size: 0.8rem; color: #888;">Total Proposals</div>
+                        </div>
+                        <div style="text-align: center; padding: 0.5rem; background: rgba(153, 69, 255, 0.1); border-radius: 6px;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #9945FF;">${analytics.approvalRate}%</div>
+                            <div style="font-size: 0.8rem; color: #888;">Approval Rate</div>
+                        </div>
+                        <div style="text-align: center; padding: 0.5rem; background: rgba(255, 107, 122, 0.1); border-radius: 6px;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #ff6b7a;">${analytics.activeProposals}</div>
+                            <div style="font-size: 0.8rem; color: #888;">Active Votes</div>
+                        </div>
+                        <div style="text-align: center; padding: 0.5rem; background: rgba(255, 255, 255, 0.05); border-radius: 6px;">
+                            <div style="font-size: 1.5rem; font-weight: bold; color: #fff;">${analytics.delegationCount}</div>
+                            <div style="font-size: 0.8rem; color: #888;">Delegations</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.9rem; color: #888;">
+                        <strong>Participation:</strong> ${analytics.participationRate} avg votes per proposal | 
+                        <strong>Delegation Power:</strong> ${analytics.activeDelegates} active delegate${analytics.activeDelegates !== 1 ? 's' : ''}
+                    </div>
+                </div>
+            `;
+            
+            // Find or create analytics container
+            const daoContainer = document.querySelector('#dao .tab-section');
+            let analyticsContainer = daoContainer.querySelector('.governance-analytics');
+            if (!analyticsContainer) {
+                analyticsContainer = document.createElement('div');
+                analyticsContainer.className = 'governance-analytics';
+                daoContainer.appendChild(analyticsContainer);
+            }
+            analyticsContainer.innerHTML = analyticsHTML;
+        }
+
+        // ADVANCED PROPOSAL CREATION FUNCTIONS
+        
+        // Create governance proposal with category support
+        async function createGovernanceProposal() {
+            if (!connected) {
+                showStatus('Please connect your wallet first', 'error');
+                return;
+            }
+            
+            const category = document.getElementById('proposalCategory').value;
+            const title = document.getElementById('proposalTitle').value.trim();
+            const description = document.getElementById('proposalDescription').value.trim();
+            
+            if (!title || !description) {
+                showStatus('Please fill in all fields', 'error');
+                return;
+            }
+            
+            try {
+                // Check if user has enough tokens for proposal deposit
+                const userTokens = await getStakedGiveAmount(wallet.publicKey.toString());
+                if (userTokens < DAO_CONFIG.proposalDeposit) {
+                    const required = DAO_CONFIG.proposalDeposit.toLocaleString();
+                    showStatus(`Proposal requires ${required} $GIVE tokens deposit`, 'error');
+                    return;
+                }
+                
+                const proposalParams = {
+                    title: title,
+                    description: description,
+                    type: category === 'RAFFLE' ? 'raffle' : 'governance',
+                    category: category
+                };
+                
+                await createRaffleProposal(proposalParams, category);
+                
+                // Clear form
+                document.getElementById('proposalTitle').value = '';
+                document.getElementById('proposalDescription').value = '';
+                
+                showStatus('Proposal created successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error creating proposal:', error);
+                showStatus('Failed to create proposal: ' + error.message, 'error');
+            }
+        }
+        
+        // Update category requirements display
+        function updateCategoryRequirements() {
+            const category = document.getElementById('proposalCategory').value;
+            const categoryConfig = DAO_CONFIG.proposalCategories[category];
+            
+            const requirementsHTML = `
+                <div><strong>Voting Period:</strong> <span style="color: #14f195;">${Math.round(categoryConfig.votingPeriod / (60 * 60 * 1000))} hours</span></div>
+                <div><strong>Required Votes:</strong> <span style="color: #9945FF;">${categoryConfig.votingThreshold} votes</span></div>
+                <div><strong>Quorum:</strong> <span style="color: #ff6b7a;">${categoryConfig.requiredQuorum} voting power</span></div>
+                <div style="margin-top: 1rem; color: #888; font-size: 0.9rem;">${categoryConfig.description}</div>
+            `;
+            
+            document.getElementById('categoryRequirements').innerHTML = requirementsHTML;
+        }
+        
+        // Update user's voting status in proposal creation
+        async function updateUserVotingStatus() {
+            if (!connected) return;
+            
+            const userAddress = wallet.publicKey.toString();
+            const votingPower = await getVotingPower(userAddress);
+            const votingTier = await getVotingTier(userAddress);
+            const userTokens = await getStakedGiveAmount(userAddress);
+            
+            document.getElementById('yourVotingPower').textContent = `${votingPower} vote${votingPower !== 1 ? 's' : ''}`;
+            document.getElementById('yourVotingTier').textContent = votingTier;
+            
+            const canCreate = userTokens >= DAO_CONFIG.proposalDeposit;
+            document.getElementById('canCreateProposal').innerHTML = canCreate 
+                ? '<span style="color: #14f195;">✅ Yes</span>'
+                : `<span style="color: #ff6b7a;">❌ Need ${DAO_CONFIG.proposalDeposit.toLocaleString()} $GIVE</span>`;
+        }
+
         // Tab Management
-        function showTab(tabName) {
+        async function showTab(tabName) {
             // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
@@ -990,45 +1362,205 @@
             
             // If switching to DAO tab, update the interface
             if (tabName === 'dao') {
-                updateDaoInterface();
+                await updateDaoInterface();
+                updateCategoryRequirements();
+                await updateUserVotingStatus();
             }
         }
 
         // DAO VERIFICATION FUNCTIONS
 
-        // Check if wallet is a DAO member
-        function isDaoMember(walletAddress) {
-            return DAO_CONFIG.daoMembers.includes(walletAddress);
+        // Check if wallet is a DAO member (legacy or token-based)
+        async function isDaoMember(walletAddress) {
+            // Check legacy DAO membership first
+            if (DAO_CONFIG.daoMembers.includes(walletAddress)) {
+                return true;
+            }
+            
+            // Check token-based voting eligibility
+            if (DAO_CONFIG.tokenBasedVoting) {
+                return await checkGiveTokenStaking(walletAddress);
+            }
+            
+            return false;
         }
 
-        // Create a raffle proposal (goes to DAO for verification)
-        async function createRaffleProposal(raffleParams) {
+        // Check if wallet has enough staked $GIVE tokens for voting rights
+        async function checkGiveTokenStaking(walletAddress) {
             try {
+                const publicKey = new PublicKey(walletAddress);
+                
+                // Get all token accounts for this wallet
+                const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+                    publicKey,
+                    {
+                        mint: new PublicKey(GIVE_TOKEN_CONFIG.tokenMint)
+                    }
+                );
+                
+                let totalStaked = 0;
+                let hasValidStake = false;
+                
+                for (const account of tokenAccounts.value) {
+                    const tokenAmount = account.account.data.parsed.info.tokenAmount;
+                    const balance = parseInt(tokenAmount.amount);
+                    
+                    // Convert from token units to actual tokens (accounting for decimals)
+                    const tokenBalance = balance / Math.pow(10, GIVE_TOKEN_CONFIG.decimals);
+                    
+                    // Check if this account has enough tokens
+                    if (tokenBalance >= GIVE_TOKEN_CONFIG.minimumStakeForVoting) {
+                        // In a full implementation, you'd check staking contract/program
+                        // For now, treat holding tokens as "staking"
+                        totalStaked += tokenBalance;
+                        hasValidStake = true;
+                    }
+                }
+                
+                console.log(`$GIVE Token Check: ${walletAddress.slice(0,8)}... has ${totalStaked.toLocaleString()} $GIVE tokens`);
+                
+                return hasValidStake;
+                
+            } catch (error) {
+                console.error('Error checking $GIVE token staking:', error);
+                return false;
+            }
+        }
+
+        // Get voting power based on staked $GIVE tokens with tier system and delegation
+        async function getVotingPower(walletAddress, includeDelegated = true) {
+            try {
+                let basePower = 0;
+                
+                // Legacy DAO members get base voting power
+                if (DAO_CONFIG.daoMembers.includes(walletAddress)) {
+                    basePower = 1;
+                } else {
+                    // Calculate tier-based voting power for token holders
+                    const stakedAmount = await getStakedGiveAmount(walletAddress);
+                    
+                    if (stakedAmount >= GIVE_TOKEN_CONFIG.minimumStakeForVoting) {
+                        // Find the highest tier this wallet qualifies for
+                        const tiers = GIVE_TOKEN_CONFIG.votingTiers.sort((a, b) => b.threshold - a.threshold);
+                        
+                        for (const tier of tiers) {
+                            if (stakedAmount >= tier.threshold) {
+                                basePower = Math.min(tier.votes, GIVE_TOKEN_CONFIG.maxVotingPower);
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // Add delegated voting power if requested
+                let delegatedPowerTotal = 0;
+                if (includeDelegated && delegatedPower.has(walletAddress)) {
+                    delegatedPowerTotal = delegatedPower.get(walletAddress) || 0;
+                }
+                
+                const totalPower = basePower + delegatedPowerTotal;
+                return Math.min(totalPower, GIVE_TOKEN_CONFIG.maxVotingPower);
+                
+            } catch (error) {
+                console.error('Error calculating voting power:', error);
+                return 0;
+            }
+        }
+        
+        // Get voting tier name for display
+        async function getVotingTier(walletAddress) {
+            try {
+                if (DAO_CONFIG.daoMembers.includes(walletAddress)) {
+                    return "Legacy DAO Member";
+                }
+                
+                const stakedAmount = await getStakedGiveAmount(walletAddress);
+                const tiers = GIVE_TOKEN_CONFIG.votingTiers.sort((a, b) => b.threshold - a.threshold);
+                
+                for (const tier of tiers) {
+                    if (stakedAmount >= tier.threshold) {
+                        return tier.name;
+                    }
+                }
+                
+                return "Not Qualified";
+            } catch (error) {
+                return "Unknown";
+            }
+        }
+
+        // Get the amount of staked $GIVE tokens for a wallet
+        async function getStakedGiveAmount(walletAddress) {
+            try {
+                const publicKey = new PublicKey(walletAddress);
+                
+                const tokenAccounts = await connection.getParsedTokenAccountsByOwner(
+                    publicKey,
+                    {
+                        mint: new PublicKey(GIVE_TOKEN_CONFIG.tokenMint)
+                    }
+                );
+                
+                let totalTokens = 0;
+                
+                for (const account of tokenAccounts.value) {
+                    const tokenAmount = account.account.data.parsed.info.tokenAmount;
+                    const balance = parseInt(tokenAmount.amount);
+                    const tokenBalance = balance / Math.pow(10, GIVE_TOKEN_CONFIG.decimals);
+                    totalTokens += tokenBalance;
+                }
+                
+                return totalTokens;
+                
+            } catch (error) {
+                console.error('Error getting staked $GIVE amount:', error);
+                return 0;
+            }
+        }
+
+        // Create a proposal with category support
+        async function createRaffleProposal(raffleParams, category = 'RAFFLE') {
+            try {
+                // Validate category
+                if (!DAO_CONFIG.proposalCategories[category]) {
+                    throw new Error('Invalid proposal category');
+                }
+                
+                const categoryConfig = DAO_CONFIG.proposalCategories[category];
+                
                 proposalCounter++;
                 const proposalId = `proposal_${Date.now()}_${proposalCounter}`;
                 
                 const proposal = {
                     id: proposalId,
                     creator: wallet.publicKey.toString(),
+                    category: category,
+                    categoryConfig: categoryConfig,
                     raffleData: raffleParams,
                     status: PROPOSAL_STATUS.VOTING,
                     createdAt: Date.now(),
-                    votingEndsAt: Date.now() + DAO_CONFIG.votingPeriod,
+                    votingEndsAt: Date.now() + categoryConfig.votingPeriod,
                     votes: {
                         approve: 0,
                         reject: 0,
                         voters: []
                     },
-                    comments: []
+                    comments: [],
+                    // Category-specific thresholds
+                    requiredApprovals: categoryConfig.votingThreshold,
+                    requiredQuorum: categoryConfig.requiredQuorum
                 };
 
                 raffleProposals.set(proposalId, proposal);
                 daoVotes.set(proposalId, new Map());
 
-                showStatus('Raffle proposal submitted to DAO for verification! 🗳️', 'success');
+                showStatus(`${categoryConfig.name} submitted to DAO for verification! 🗳️`, 'success');
                 
                 // Update DAO interface to show new proposal
-                updateDaoInterface();
+                await updateDaoInterface();
+                
+                // Update governance analytics
+                updateGovernanceAnalytics();
                 
                 // Notify DAO members (in production, this would be on-chain)
                 await notifyDaoMembers(proposal);
@@ -1049,10 +1581,20 @@
             // For now, just log the proposal for DAO review
         }
 
-        // Vote on a raffle proposal (DAO members only)
+        // Vote on a raffle proposal (DAO members and $GIVE token stakers only)
         async function voteOnProposal(proposalId, vote, reason = '') {
-            if (!connected || !isDaoMember(wallet.publicKey.toString())) {
-                showStatus('Only DAO members can vote on proposals', 'error');
+            if (!connected) {
+                showStatus('Please connect your wallet to vote', 'error');
+                return false;
+            }
+
+            const voterAddress = wallet.publicKey.toString();
+            
+            // Check voting eligibility (legacy DAO member or $GIVE token staker)
+            const isEligible = await isDaoMember(voterAddress);
+            if (!isEligible) {
+                const requiredStake = GIVE_TOKEN_CONFIG.minimumStakeForVoting.toLocaleString();
+                showStatus(`Voting requires staking at least ${requiredStake} $GIVE tokens`, 'error');
                 return false;
             }
 
@@ -1073,7 +1615,6 @@
                 return false;
             }
 
-            const voterAddress = wallet.publicKey.toString();
             const votes = daoVotes.get(proposalId);
             
             // Check if already voted
@@ -1082,14 +1623,26 @@
                 return false;
             }
 
-            // Record vote
-            votes.set(voterAddress, { vote, reason, timestamp: Date.now() });
+            // Get voting power based on staked tokens
+            const votingPower = await getVotingPower(voterAddress);
+            if (votingPower === 0) {
+                showStatus('Insufficient voting power', 'error');
+                return false;
+            }
+
+            // Record vote with voting power
+            votes.set(voterAddress, { 
+                vote, 
+                reason, 
+                timestamp: Date.now(),
+                votingPower: votingPower
+            });
             
-            // Update proposal vote counts
+            // Update proposal vote counts (weighted by voting power)
             if (vote === 'approve') {
-                proposal.votes.approve++;
+                proposal.votes.approve += votingPower;
             } else {
-                proposal.votes.reject++;
+                proposal.votes.reject += votingPower;
             }
             
             proposal.votes.voters.push({
@@ -1833,27 +2386,146 @@
 
         // DAO Interface Management Functions
 
-        function updateDaoInterface() {
+        async function updateDaoInterface() {
             if (!connected) return;
 
-            // Update DAO role status
             const userAddress = wallet.publicKey.toString();
-            const isDaoMember = DAO_CONFIG.daoMembers.includes(userAddress);
             
-            document.getElementById('daoRoleStatus').innerHTML = isDaoMember 
-                ? '<strong>Status:</strong> <span style="color: #14f195;">DAO Member ✓</span>'
-                : '<strong>Status:</strong> <span style="color: #ff6b7a;">Not a DAO Member</span>';
+            // Get comprehensive voting information
+            const isLegacyMember = DAO_CONFIG.daoMembers.includes(userAddress);
+            const hasTokenStake = await checkGiveTokenStaking(userAddress);
+            const votingPower = await getVotingPower(userAddress);
+            const basePower = await getVotingPower(userAddress, false); // Without delegation
+            const stakedAmount = await getStakedGiveAmount(userAddress);
+            const votingTier = await getVotingTier(userAddress);
+            const delegationInfo = getDelegationInfo(userAddress);
             
-            // Update configuration display
+            // Update DAO role status with tier information
+            let statusHTML = '';
+            if (isLegacyMember) {
+                statusHTML = '<strong>Status:</strong> <span style="color: #14f195;">Legacy DAO Member ✓</span>';
+            } else if (hasTokenStake) {
+                statusHTML = `<strong>Status:</strong> <span style="color: #14f195;">${votingTier} ✓</span>`;
+            } else {
+                statusHTML = '<strong>Status:</strong> <span style="color: #ff6b7a;">Not Eligible</span>';
+            }
+            
+            document.getElementById('daoRoleStatus').innerHTML = statusHTML;
+            
+            // Update voting power display with breakdown
+            let powerDisplay = `${votingPower} vote${votingPower !== 1 ? 's' : ''}`;
+            if (delegationInfo.delegatedPowerReceived > 0) {
+                powerDisplay += ` (${basePower} own + ${delegationInfo.delegatedPowerReceived} delegated)`;
+            }
+            document.getElementById('votingPower').textContent = powerDisplay;
+            
+            // Enhanced token information with tier breakdown
+            let tierInfoHTML = '';
+            if (hasTokenStake || isLegacyMember) {
+                tierInfoHTML = `
+                    <div style="margin-top: 0.5rem; padding: 0.75rem; background: rgba(20, 241, 149, 0.1); border-radius: 6px;">
+                        <strong>Tier:</strong> <span style="color: #14f195;">${votingTier}</span>
+                        <br><strong>Base Power:</strong> ${basePower} vote${basePower !== 1 ? 's' : ''}
+                    </div>
+                `;
+            }
+            
+            // Delegation status
+            let delegationHTML = '';
+            if (delegationInfo.hasDelegated) {
+                delegationHTML = `
+                    <div style="margin-top: 0.5rem; padding: 0.75rem; background: rgba(153, 69, 255, 0.1); border-radius: 6px;">
+                        <strong>⚡ Delegated To:</strong> <span style="color: #9945FF;">${delegationInfo.delegatedTo.slice(0,8)}...${delegationInfo.delegatedTo.slice(-4)}</span>
+                        <br><button onclick="removeDelegation()" style="margin-top: 0.5rem; padding: 0.25rem 0.75rem; background: #ff6b7a; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 0.8rem;">Remove Delegation</button>
+                    </div>
+                `;
+            } else if (votingPower > 0) {
+                delegationHTML = `
+                    <div style="margin-top: 0.5rem; padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border-radius: 6px;">
+                        <strong>Delegation:</strong> <span style="color: #888;">Available</span>
+                        <br><input type="text" id="delegateAddress" placeholder="Delegate wallet address..." style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid #444; border-radius: 4px; color: white;">
+                        <br><button onclick="delegateVotingPower(document.getElementById('delegateAddress').value)" style="margin-top: 0.5rem; padding: 0.25rem 0.75rem; background: #9945FF; border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 0.8rem;">Delegate Power</button>
+                    </div>
+                `;
+            }
+            
+            if (delegationInfo.delegatedPowerReceived > 0) {
+                delegationHTML += `
+                    <div style="margin-top: 0.5rem; padding: 0.75rem; background: rgba(20, 241, 149, 0.1); border-radius: 6px;">
+                        <strong>🎯 Received Power:</strong> <span style="color: #14f195;">${delegationInfo.delegatedPowerReceived} vote${delegationInfo.delegatedPowerReceived !== 1 ? 's' : ''}</span>
+                        <br><span style="color: #888; font-size: 0.9rem;">Others have delegated their power to you</span>
+                    </div>
+                `;
+            }
+            
+            // Complete token information panel
+            const tokenInfoHTML = `
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+                    <h5 style="color: #14f195; margin-bottom: 0.5rem;">🗳️ Voting Power System</h5>
+                    <div><strong>Your Balance:</strong> <span style="color: #14f195;">${stakedAmount.toLocaleString()} $GIVE</span></div>
+                    <div><strong>Required for Voting:</strong> <span style="color: #9945FF;">${GIVE_TOKEN_CONFIG.minimumStakeForVoting.toLocaleString()} $GIVE</span></div>
+                    <div><strong>Max Voting Power:</strong> <span style="color: #888;">${GIVE_TOKEN_CONFIG.maxVotingPower} votes</span></div>
+                    ${tierInfoHTML}
+                    ${delegationHTML}
+                    <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div><strong>Contract:</strong> <span style="color: #888; font-size: 0.8rem;">${GIVE_TOKEN_CONFIG.tokenMint.slice(0,8)}...${GIVE_TOKEN_CONFIG.tokenMint.slice(-8)}</span></div>
+                        ${!hasTokenStake && !isLegacyMember ? 
+                            '<div style="color: #ff6b7a; font-size: 0.9rem; margin-top: 0.5rem;">⚠️ Insufficient $GIVE tokens for voting rights</div>' : 
+                            '<div style="color: #14f195; font-size: 0.9rem; margin-top: 0.5rem;">✅ Voting rights active</div>'
+                        }
+                    </div>
+                </div>
+            `;
+            
+            // Add token info after DAO role status
+            const daoRoleContainer = document.getElementById('daoRoleStatus').parentElement;
+            let tokenInfoContainer = daoRoleContainer.querySelector('.token-info');
+            if (!tokenInfoContainer) {
+                tokenInfoContainer = document.createElement('div');
+                tokenInfoContainer.className = 'token-info';
+                daoRoleContainer.appendChild(tokenInfoContainer);
+            }
+            tokenInfoContainer.innerHTML = tokenInfoHTML;
+            
+            // Update configuration display with enhanced metrics
             document.getElementById('daoMemberCount').textContent = DAO_CONFIG.daoMembers.length;
             document.getElementById('approvalThreshold').textContent = `${DAO_CONFIG.votingThreshold} vote${DAO_CONFIG.votingThreshold > 1 ? 's' : ''}`;
-            document.getElementById('requiredQuorum').textContent = `${DAO_CONFIG.requiredQuorum} member${DAO_CONFIG.requiredQuorum > 1 ? 's' : ''}`;
+            document.getElementById('requiredQuorum').textContent = `${DAO_CONFIG.requiredQuorum} power required`;
+            
+            // Add voting tier information panel
+            const configTierInfoHTML = `
+                <div style="margin-top: 1rem; padding: 1rem; background: rgba(153, 69, 255, 0.05); border-radius: 8px;">
+                    <h5 style="color: #9945FF; margin-bottom: 0.5rem;">🏆 Voting Tiers</h5>
+                    ${GIVE_TOKEN_CONFIG.votingTiers.map(tier => `
+                        <div style="display: flex; justify-content: space-between; padding: 0.25rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <span>${tier.name}:</span>
+                            <span style="color: #14f195;">${tier.threshold.toLocaleString()} $GIVE = ${tier.votes} vote${tier.votes !== 1 ? 's' : ''}</span>
+                        </div>
+                    `).join('')}
+                    <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #888;">
+                        Maximum voting power: ${GIVE_TOKEN_CONFIG.maxVotingPower} votes
+                    </div>
+                </div>
+            `;
+            
+            // Add tier info to the configuration section
+            const configSection = document.getElementById('approvalThreshold').parentElement;
+            let tierInfoContainer = configSection.querySelector('.tier-info');
+            if (!tierInfoContainer) {
+                tierInfoContainer = document.createElement('div');
+                tierInfoContainer.className = 'tier-info';
+                configSection.appendChild(tierInfoContainer);
+            }
+            tierInfoContainer.innerHTML = configTierInfoHTML;
             
             // Update active proposals
-            updateActiveProposalsDisplay();
+            await updateActiveProposalsDisplay();
             
             // Update proposal history
             updateProposalHistoryDisplay();
+            
+            // Update governance analytics
+            updateGovernanceAnalytics();
         }
 
         function updateActiveProposalsDisplay() {
@@ -2065,6 +2737,12 @@
             
             // Initialize stats
             updateDashboardStats();
+            
+            // Add event listener for proposal category changes
+            const categorySelect = document.getElementById('proposalCategory');
+            if (categorySelect) {
+                categorySelect.addEventListener('change', updateCategoryRequirements);
+            }
         });
     </script>
 </body>

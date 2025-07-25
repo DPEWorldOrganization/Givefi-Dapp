@@ -43,21 +43,30 @@ async function checkEndpoint(url, description) {
             res.on('data', chunk => data += chunk);
             res.on('end', () => {
                 const hasDao = data.includes('DAO_CONFIG') && data.includes('createRaffleProposal');
-                log(`✅ ${description}: ${res.statusCode} - DAO System: ${hasDao ? 'Active' : 'Missing'}`, 
-                    hasDao ? 'green' : 'red');
-                resolve({ success: res.statusCode === 200, hasDao });
+                const hasGlassTheme = data.includes('--glass-bg') && data.includes('marketplace-grid');
+                const hasLiveData = data.includes('ActivityFeed') && data.includes('live-data-card');
+                
+                const features = [];
+                if (hasDao) features.push('DAO');
+                if (hasGlassTheme) features.push('Glass Theme');
+                if (hasLiveData) features.push('Live Data');
+                
+                const featureStr = features.length > 0 ? features.join(', ') : 'None';
+                log(`✅ ${description}: ${res.statusCode} - Features: [${featureStr}]`, 
+                    features.length >= 2 ? 'green' : 'yellow');
+                resolve({ success: res.statusCode === 200, hasDao, hasGlassTheme, hasLiveData });
             });
         });
 
         req.on('error', (err) => {
             log(`❌ ${description}: Failed - ${err.message}`, 'red');
-            resolve({ success: false, hasDao: false });
+            resolve({ success: false, hasDao: false, hasGlassTheme: false, hasLiveData: false });
         });
 
         req.on('timeout', () => {
             log(`⏰ ${description}: Timeout`, 'yellow');
             req.destroy();
-            resolve({ success: false, hasDao: false });
+            resolve({ success: false, hasDao: false, hasGlassTheme: false, hasLiveData: false });
         });
 
         req.end();
@@ -81,29 +90,52 @@ async function verifyDeployment() {
     // Summary
     log('\n📊 DEPLOYMENT STATUS SUMMARY:', 'cyan');
     
-    const localStatus = localMain.success && localMain.hasDao ? 'Active' : 'Issues';
-    const prodStatus = prodMain.success && prodMain.hasDao ? 'Active' : 'Issues';
+    const localDaoActive = localMain.success && localMain.hasDao;
+    const localGlassActive = localIndex.success && localIndex.hasGlassTheme;
+    const localLiveActive = localIndex.success && localIndex.hasLiveData;
     
-    log(`🖥️  Local Development: ${localStatus}`, localStatus === 'Active' ? 'green' : 'red');
-    log(`🌍 Production Site: ${prodStatus}`, prodStatus === 'Active' ? 'green' : 'red');
+    const prodDaoActive = prodMain.success && prodMain.hasDao;
+    const prodGlassActive = prodIndex.success && prodIndex.hasGlassTheme;
+    const prodLiveActive = prodIndex.success && prodIndex.hasLiveData;
+    
+    log(`🖥️  Local Development:`, 'blue');
+    log(`   DAO System: ${localDaoActive ? '✅ Active' : '❌ Missing'}`, localDaoActive ? 'green' : 'red');
+    log(`   Glass Theme: ${localGlassActive ? '✅ Active' : '❌ Missing'}`, localGlassActive ? 'green' : 'red');
+    log(`   Live Data: ${localLiveActive ? '✅ Active' : '❌ Missing'}`, localLiveActive ? 'green' : 'red');
+    
+    log(`🌍 Production Site:`, 'blue');
+    log(`   DAO System: ${prodDaoActive ? '✅ Active' : '❌ Missing'}`, prodDaoActive ? 'green' : 'red');
+    log(`   Glass Theme: ${prodGlassActive ? '✅ Active' : '❌ Missing'}`, prodGlassActive ? 'green' : 'red');
+    log(`   Live Data: ${prodLiveActive ? '✅ Active' : '❌ Missing'}`, prodLiveActive ? 'green' : 'red');
 
-    if (prodStatus === 'Active') {
-        log('\n🎉 SUCCESS: DAO governance system is LIVE in production!', 'green');
-        log('✅ Community can now verify raffle proposals before deployment', 'green');
-        log('✅ Admin access is secured with wallet authentication', 'green');
-        log('✅ All raffle submissions go through DAO verification', 'green');
+    const allLocalActive = localDaoActive && localGlassActive && localLiveActive;
+    const allProdActive = prodDaoActive && prodGlassActive && prodLiveActive;
+
+    if (allProdActive) {
+        log('\n🎉 SUCCESS: Complete marketplace system is LIVE in production!', 'green');
+        log('✅ DAO governance system with $GIVE token staking', 'green');
+        log('✅ Glass dark theme with marketplace layout', 'green');
+        log('✅ Live activity feeds and real-time data', 'green');
+        log('✅ Community-driven raffle verification process', 'green');
+    } else if (prodDaoActive) {
+        log('\n⚠️  PARTIAL DEPLOYMENT: DAO system live, marketplace features need deployment', 'yellow');
     } else {
-        log('\n⚠️  ISSUES DETECTED: Production deployment needs attention', 'yellow');
+        log('\n❌ ISSUES DETECTED: Production deployment needs attention', 'red');
     }
 
     // Next steps
     log('\n📋 NEXT STEPS:', 'cyan');
-    log('1. Test wallet connection on admin panel', 'yellow');
-    log('2. Create a test raffle proposal', 'yellow');  
-    log('3. Verify DAO voting functionality', 'yellow');
-    log('4. Monitor proposal approval workflow', 'yellow');
+    if (!allProdActive) {
+        log('1. Deploy updated index.html with glass marketplace theme', 'yellow');
+        log('2. Test new marketplace layout and live data feeds', 'yellow');
+    }
+    log('3. Test wallet connection on admin panel', 'yellow');
+    log('4. Create a test raffle proposal through DAO', 'yellow');  
+    log('5. Verify DAO voting functionality with $GIVE tokens', 'yellow');
+    log('6. Monitor proposal approval workflow', 'yellow');
+    log('7. Test marketplace search and filter functionality', 'yellow');
 
-    return prodStatus === 'Active';
+    return allProdActive;
 }
 
 if (require.main === module) {
