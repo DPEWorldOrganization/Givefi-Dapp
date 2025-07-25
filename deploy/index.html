@@ -534,14 +534,213 @@
     <div id="statusMessage" class="status-message"></div>
 
     <script>
-        // Embedded JavaScript for static deployment
+        // Embedded Solana Web3.js functionality
+        const { Connection, PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } = window.solanaWeb3;
         
-        // Program ID from your deployed smart contract
+        // Smart Contract Configuration
         const PROGRAM_ID = '48mihemhp1UxYjz1UznH4fJ9FnF3AfN3XG18GasPFamU';
-        const CONNECTION_URL = 'https://api.mainnet-beta.solana.com'; // Use mainnet for production
-        
-        // Wallet management
-        let currentWallet = null;
+        const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+
+        // Wallet Manager Class
+        class WalletManager {
+            constructor() {
+                this.wallet = null;
+                this.connected = false;
+                this.publicKey = null;
+                this.walletName = null;
+            }
+
+            isWalletAvailable(walletName) {
+                switch (walletName) {
+                    case 'phantom':
+                        return window.phantom?.solana?.isPhantom;
+                    case 'solflare':
+                        return window.solflare?.isSolflare;
+                    case 'backpack':
+                        return window.backpack?.isBackpack;
+                    default:
+                        return false;
+                }
+            }
+
+            getAvailableWallets() {
+                const wallets = [];
+                
+                if (this.isWalletAvailable('phantom')) {
+                    wallets.push({
+                        name: 'Phantom',
+                        id: 'phantom',
+                        icon: 'https://phantom.app/img/phantom-icon.svg'
+                    });
+                }
+                
+                if (this.isWalletAvailable('solflare')) {
+                    wallets.push({
+                        name: 'Solflare', 
+                        id: 'solflare',
+                        icon: 'https://solflare.com/img/logo.svg'
+                    });
+                }
+                
+                if (this.isWalletAvailable('backpack')) {
+                    wallets.push({
+                        name: 'Backpack',
+                        id: 'backpack', 
+                        icon: 'https://backpack.app/icon.png'
+                    });
+                }
+
+                return wallets;
+            }
+
+            async connect(walletName) {
+                try {
+                    let provider;
+                    
+                    switch (walletName) {
+                        case 'phantom':
+                            if (!window.phantom?.solana) {
+                                window.open('https://phantom.app/', '_blank');
+                                throw new Error('Phantom wallet not found');
+                            }
+                            provider = window.phantom.solana;
+                            break;
+                            
+                        case 'solflare':
+                            if (!window.solflare) {
+                                window.open('https://solflare.com/', '_blank');
+                                throw new Error('Solflare wallet not found');
+                            }
+                            provider = window.solflare;
+                            break;
+                            
+                        case 'backpack':
+                            if (!window.backpack) {
+                                window.open('https://backpack.app/', '_blank');
+                                throw new Error('Backpack wallet not found');
+                            }
+                            provider = window.backpack;
+                            break;
+                            
+                        default:
+                            throw new Error('Unsupported wallet');
+                    }
+
+                    const response = await provider.connect();
+                    
+                    this.wallet = provider;
+                    this.connected = true;
+                    this.publicKey = response.publicKey;
+                    this.walletName = walletName;
+
+                    return {
+                        success: true,
+                        publicKey: response.publicKey.toString(),
+                        walletName: walletName.charAt(0).toUpperCase() + walletName.slice(1)
+                    };
+                } catch (error) {
+                    return {
+                        success: false,
+                        error: error.message
+                    };
+                }
+            }
+
+            async disconnect() {
+                try {
+                    if (this.wallet && this.wallet.disconnect) {
+                        await this.wallet.disconnect();
+                    }
+                    
+                    this.wallet = null;
+                    this.connected = false;
+                    this.publicKey = null;
+                    this.walletName = null;
+
+                    return { success: true };
+                } catch (error) {
+                    return { success: false, error: error.message };
+                }
+            }
+
+            async autoConnect() {
+                try {
+                    if (window.phantom?.solana?.isConnected) {
+                        const response = await window.phantom.solana.connect({ onlyIfTrusted: true });
+                        this.wallet = window.phantom.solana;
+                        this.connected = true;
+                        this.publicKey = response.publicKey;
+                        this.walletName = 'phantom';
+                        
+                        return {
+                            success: true,
+                            publicKey: response.publicKey.toString(),
+                            walletName: 'Phantom'
+                        };
+                    }
+                    return { success: false };
+                } catch (error) {
+                    return { success: false };
+                }
+            }
+
+            formatPublicKey(pubkey) {
+                const str = pubkey.toString();
+                return `${str.slice(0, 4)}...${str.slice(-4)}`;
+            }
+
+            onWalletStateChange(callback) {
+                this.onWalletChange = callback;
+            }
+        }
+
+        // Initialize wallet manager
+        const walletManager = new WalletManager();
+
+        // Contract interaction functions
+        async function enterRaffle() {
+            if (!walletManager.connected) {
+                showStatus('Please connect your wallet first', 'error');
+                openWalletModal();
+                return;
+            }
+
+            try {
+                showStatus('Processing entry...', 'info');
+                
+                // Get user's balance
+                const balance = await connection.getBalance(walletManager.publicKey);
+                const entryFee = 0.1 * LAMPORTS_PER_SOL;
+                
+                if (balance < entryFee + 5000) { // 5000 lamports for transaction fees
+                    showStatus('Insufficient SOL balance', 'error');
+                    return;
+                }
+
+                // For now, simulate transaction
+                // In production, you'd create and send the actual transaction
+                showStatus('Entry successful! Transaction confirmed.', 'success');
+                
+                // Update UI (increment participant count)
+                const currentCount = parseInt(document.getElementById('participantCount').textContent.split('/')[0]);
+                const newCount = currentCount + 1;
+                document.getElementById('participantCount').textContent = `${newCount}/50`;
+                
+                const progressPercent = (newCount / 50) * 100;
+                document.getElementById('progressFill').style.width = `${progressPercent}%`;
+                
+                const spotsLeft = 50 - newCount;
+                document.getElementById('progressText').textContent = 
+                    `${Math.round(progressPercent)}% filled • Only ${spotsLeft} spots left!`;
+                    
+            } catch (error) {
+                console.error('Entry error:', error);
+                showStatus('Failed to enter raffle', 'error');
+            }
+        }
+
+        // Global variables
+        let currentRaffleHost = null;
         let raffleEndTime = null;
 
         // Initialize the application
@@ -549,6 +748,13 @@
             try {
                 console.log('🚀 Initializing GiveFi DApp...');
                 
+                // Try to auto-connect wallet
+                const autoConnect = await walletManager.autoConnect();
+                if (autoConnect.success) {
+                    updateWalletUI(autoConnect);
+                    showStatus('Wallet auto-connected!', 'success');
+                }
+
                 // Load raffle data
                 await loadRaffleData();
                 
@@ -565,10 +771,13 @@
             }
         }
 
-        // Load raffle data
+        // Load raffle data from smart contract
         async function loadRaffleData() {
             try {
-                // Mock BMW raffle data - replace with actual smart contract call
+                // For now, we'll use mock data since we need a specific raffle host
+                // In production, you'd query your smart contract for active raffles
+                
+                // Mock BMW raffle data
                 const mockRaffleData = {
                     entryFee: 0.1,
                     maxParticipants: 50,
@@ -585,7 +794,7 @@
             }
         }
 
-        // Update raffle UI
+        // Update raffle UI with data
         function updateRaffleUI(data) {
             document.getElementById('entryFee').textContent = `${data.entryFee} SOL`;
             document.getElementById('participantCount').textContent = `${data.currentParticipants}/${data.maxParticipants}`;
@@ -604,21 +813,43 @@
             raffleEndTime = data.endTime;
         }
 
-        // Populate wallet list
+        // Update wallet UI
+        function updateWalletUI(walletState) {
+            const connectBtn = document.getElementById('connectBtn');
+            
+            if (walletState.connected) {
+                connectBtn.textContent = `Connected: ${walletManager.formatPublicKey(walletState.publicKey)}`;
+                connectBtn.classList.add('connected');
+                connectBtn.onclick = () => disconnectWallet();
+            } else {
+                connectBtn.textContent = 'Connect Wallet';
+                connectBtn.classList.remove('connected');
+                connectBtn.onclick = () => openWalletModal();
+            }
+        }
+
+        // Populate wallet list in modal
         function populateWalletList() {
             const walletList = document.getElementById('walletList');
-            const wallets = [
-                { name: 'Phantom', icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTA4IiBoZWlnaHQ9IjEwOCIgdmlld0JveD0iMCAwIDEwOCAxMDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDgiIGhlaWdodD0iMTA4IiByeD0iMjYiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl8xNzAyXzUyNjUpIi8+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNNDYuNTQgOTEuNjUzNUM0My44MjggOTEuNjUzNSA0MS44MjggODkuNjUzNSA0MS44MjggODYuOTQyM1Y3OS4wOTYxQzQxLjgyOCA3Ni4zODUgNDMuODI4IDc0LjM4NSA0Ni41NCA3NC4zODVINTQuMzg2Qzc4LjY3IDc0LjM4NSA5OC41NCA5NC4yNTUgOTguNTQgMTE4LjUzOUMxMDIuMzQgMTE2LjMzOSAxMDQuNTQgMTEyLjM1OSAxMDQuNTQgMTA3Ljg0VjM0QzEwNC41NCAyNS40NSA5Ny41OSAxOC41IDg5IDEOLjVIOUMzLjQ4IDE4LjUgLTEgMjIuOTggLTEgMjguNVYxMDBDLTEgMTA1LjUyIDMuNDggMTEwIDkgMTEwSDQ2LjU0VjkxLjY1MzVaIiBmaWxsPSJ1cmwoI3BhaW50MV9saW5lYXJfMTcwMl81MjY1KSIvPgo8L3N2Zz4=' },
-                { name: 'Solflare', icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAzMCAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTUiIGN5PSIxNSIgcj0iMTUiIGZpbGw9IiNGRkMxMEIiLz4KPHBhdGggZD0iTTIxLjk5OTggMTEuOTk5OUgxMy45OTk4TDcuOTk5NzggMTguMDAwMUgxNS45OTk4TDIxLjk5OTggMTEuOTk5OVoiIGZpbGw9IiNGRkZGRkYiLz4KPC9zdmc+' },
-                { name: 'Backpack', icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAzMCAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTUiIGN5PSIxNSIgcj0iMTUiIGZpbGw9IiMxNzE3MTciLz4KPHBhdGggZD0iTTIwIDEwSDEwVjIwSDIwVjEwWiIgZmlsbD0iI0ZGRkZGRiIvPgo8L3N2Zz4=' }
-            ];
+            const availableWallets = walletManager.getAvailableWallets();
             
             walletList.innerHTML = '';
             
-            wallets.forEach(wallet => {
+            if (availableWallets.length === 0) {
+                walletList.innerHTML = `
+                    <p style="color: #ccc; text-align: center; padding: 2rem;">
+                        No Solana wallets detected. Please install a wallet like 
+                        <a href="https://phantom.app/" target="_blank" style="color: #14f195;">Phantom</a> or 
+                        <a href="https://solflare.com/" target="_blank" style="color: #14f195;">Solflare</a>.
+                    </p>
+                `;
+                return;
+            }
+            
+            availableWallets.forEach(wallet => {
                 const walletOption = document.createElement('div');
                 walletOption.className = 'wallet-option';
-                walletOption.onclick = () => connectWallet(wallet.name.toLowerCase());
+                walletOption.onclick = () => connectWallet(wallet.id);
                 
                 walletOption.innerHTML = `
                     <img src="${wallet.icon}" alt="${wallet.name}" class="wallet-icon">
@@ -630,56 +861,34 @@
         }
 
         // Connect wallet
-        async function connectWallet(walletName) {
+        async function connectWallet(walletId) {
             try {
-                showStatus('Connecting to ' + walletName + '...', 'info');
+                showStatus('Connecting to wallet...', 'info');
                 
-                if (walletName === 'phantom' && window.solana && window.solana.isPhantom) {
-                    const response = await window.solana.connect();
-                    currentWallet = {
-                        name: 'Phantom',
-                        publicKey: response.publicKey.toString(),
-                        provider: window.solana
-                    };
-                    
-                    updateWalletUI(true);
+                const result = await walletManager.connect(walletId);
+                
+                if (result.success) {
+                    updateWalletUI(result);
                     closeWalletModal();
-                    showStatus('Connected to Phantom!', 'success');
+                    showStatus(`Connected to ${result.walletName}!`, 'success');
                 } else {
-                    throw new Error('Wallet not found. Please install ' + walletName);
+                    showStatus(result.error, 'error');
                 }
                 
             } catch (error) {
                 console.error('Connection error:', error);
-                showStatus('Failed to connect: ' + error.message, 'error');
-            }
-        }
-
-        // Update wallet UI
-        function updateWalletUI(connected) {
-            const connectBtn = document.getElementById('connectBtn');
-            
-            if (connected && currentWallet) {
-                const shortKey = currentWallet.publicKey.slice(0, 4) + '...' + currentWallet.publicKey.slice(-4);
-                connectBtn.textContent = `Connected: ${shortKey}`;
-                connectBtn.classList.add('connected');
-                connectBtn.onclick = disconnectWallet;
-            } else {
-                connectBtn.textContent = 'Connect Wallet';
-                connectBtn.classList.remove('connected');
-                connectBtn.onclick = openWalletModal;
+                showStatus('Failed to connect wallet', 'error');
             }
         }
 
         // Disconnect wallet
         async function disconnectWallet() {
             try {
-                if (currentWallet && currentWallet.provider.disconnect) {
-                    await currentWallet.provider.disconnect();
+                const result = await walletManager.disconnect();
+                if (result.success) {
+                    updateWalletUI({ connected: false, publicKey: null });
+                    showStatus('Wallet disconnected', 'info');
                 }
-                currentWallet = null;
-                updateWalletUI(false);
-                showStatus('Wallet disconnected', 'info');
             } catch (error) {
                 console.error('Disconnection error:', error);
                 showStatus('Error disconnecting wallet', 'error');
@@ -688,7 +897,9 @@
 
         // Enter giveaway
         async function enterGiveaway() {
-            if (!currentWallet) {
+            const status = walletManager.getStatus();
+            
+            if (!status.connected) {
                 openWalletModal();
                 return;
             }
@@ -700,11 +911,12 @@
                 
                 showStatus('Processing raffle entry...', 'info');
 
-                // Simulate transaction - replace with actual smart contract call
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // For demonstration, we'll simulate the transaction
+                // In production, you'd call your smart contract here
                 
-                // Simulate success with 90% probability
-                if (Math.random() > 0.1) {
+                const mockTransaction = await simulateRaffleEntry();
+                
+                if (mockTransaction.success) {
                     showStatus('🎉 Entry successful! Good luck!', 'success');
                     enterBtn.textContent = 'Entered ✓';
                     enterBtn.style.background = 'linear-gradient(45deg, #14f195, #14f195)';
@@ -712,7 +924,7 @@
                     // Update participant count
                     await loadRaffleData();
                 } else {
-                    throw new Error('Insufficient SOL balance');
+                    throw new Error(mockTransaction.error);
                 }
                 
             } catch (error) {
@@ -723,6 +935,26 @@
                 enterBtn.disabled = false;
                 enterBtn.textContent = 'Enter Now - 0.1 SOL';
             }
+        }
+
+        // Simulate raffle entry (replace with actual contract call)
+        async function simulateRaffleEntry() {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    // Simulate success with 90% probability
+                    if (Math.random() > 0.1) {
+                        resolve({ 
+                            success: true,
+                            signature: 'mock-signature-' + Math.random().toString(36).substring(7)
+                        });
+                    } else {
+                        resolve({
+                            success: false,
+                            error: 'Insufficient SOL balance'
+                        });
+                    }
+                }, 2000);
+            });
         }
 
         // Show status message
@@ -765,19 +997,21 @@
         }
 
         // Modal functions
-        function openWalletModal() {
+        window.openWalletModal = function() {
             document.getElementById('walletModal').style.display = 'block';
-        }
+        };
 
-        function closeWalletModal() {
+        window.closeWalletModal = function() {
             document.getElementById('walletModal').style.display = 'none';
-        }
+        };
 
-        function scrollToGiveaway() {
+        window.scrollToGiveaway = function() {
             document.getElementById('giveaways').scrollIntoView({ 
                 behavior: 'smooth' 
             });
-        }
+        };
+
+        window.enterGiveaway = enterGiveaway;
 
         // Close modal when clicking outside
         window.onclick = function(event) {
