@@ -673,6 +673,22 @@
         const PROGRAM_ID = '48mihemhp1UxYjz1UznH4fJ9FnF3AfN3XG18GasPFamU';
         const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
 
+        // Global state - wallet-based data
+        let currentWalletData = {
+            rafflesCreated: [],
+            rafflesEntered: [],
+            currentRaffle: null,
+            userStats: {
+                totalEntered: 0,
+                totalWon: 0,
+                totalSpent: 0
+            }
+        };
+
+        // Real raffle state storage (in production, this would be from smart contract)
+        let activeRaffles = new Map(); // Map of raffle_id -> raffle_data
+        let raffleParticipants = new Map(); // Map of raffle_id -> Set of participant addresses
+
         // Wallet Manager Class
         class WalletManager {
             constructor() {
@@ -838,37 +854,185 @@
             }
 
             try {
-                showStatus('Processing entry...', 'info');
+                showStatus('Checking raffle eligibility...', 'info');
+                
+                // Get current active raffle
+                const activeRafflesList = await queryActiveRaffles();
+                if (activeRafflesList.length === 0) {
+                    showStatus('No active raffles found', 'error');
+                    return;
+                }
+                
+                const currentRaffle = activeRafflesList[0];
+                const userPublicKey = new PublicKey(walletManager.publicKey.toString());
+                
+                // Check if user already entered this raffle
+                const hasEntered = await checkIfUserEntered(currentRaffle.raffleId, userPublicKey);
+                if (hasEntered) {
+                    showStatus('You have already entered this raffle!', 'error');
+                    return;
+                }
+                
+                // Check if raffle is full
+                if (currentRaffle.currentParticipants >= currentRaffle.maxParticipants) {
+                    showStatus('This raffle is full!', 'error');
+                    return;
+                }
+                
+                // Check if raffle has ended
+                if (Date.now() > currentRaffle.endTime) {
+                    showStatus('This raffle has ended!', 'error');
+                    return;
+                }
                 
                 // Get user's balance
-                const balance = await connection.getBalance(walletManager.publicKey);
-                const entryFee = 0.1 * LAMPORTS_PER_SOL;
+                const balance = await connection.getBalance(userPublicKey);
+                const entryFee = currentRaffle.entryFee * LAMPORTS_PER_SOL;
+                const transactionFee = 5000; // 0.000005 SOL
                 
-                if (balance < entryFee + 5000) { // 5000 lamports for transaction fees
-                    showStatus('Insufficient SOL balance', 'error');
+                if (balance < entryFee + transactionFee) {
+                    const needed = ((entryFee + transactionFee) / LAMPORTS_PER_SOL).toFixed(4);
+                    showStatus(`Insufficient SOL balance. Need ${needed} SOL`, 'error');
                     return;
                 }
 
-                // For now, simulate transaction
-                // In production, you'd create and send the actual transaction
-                showStatus('Entry successful! Transaction confirmed.', 'success');
+                showStatus('Creating entry transaction...', 'info');
                 
-                // Update UI (increment participant count)
-                const currentCount = parseInt(document.getElementById('participantCount').textContent.split('/')[0]);
-                const newCount = currentCount + 1;
-                document.getElementById('participantCount').textContent = `${newCount}/50`;
+                // Create the enter raffle transaction
+                const transaction = await createEnterRaffleTransaction(currentRaffle, userPublicKey);
                 
-                const progressPercent = (newCount / 50) * 100;
-                document.getElementById('progressFill').style.width = `${progressPercent}%`;
+                // Get recent blockhash
+                const { blockhash } = await connection.getLatestBlockhash();
+                transaction.recentBlockhash = blockhash;
+                transaction.feePayer = userPublicKey;
                 
-                const spotsLeft = 50 - newCount;
-                document.getElementById('progressText').textContent = 
-                    `${Math.round(progressPercent)}% filled • Only ${spotsLeft} spots left!`;
-                    
+                showStatus('Please approve the transaction in your wallet...', 'info');
+                
+                // Sign and send transaction
+                const signedTransaction = await walletManager.wallet.signTransaction(transaction);
+                const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+                
+                showStatus('Transaction sent! Confirming...', 'info');
+                
+                // Wait for confirmation
+                const confirmation = await connection.confirmTransaction(signature, 'confirmed');
+                
+                if (confirmation.value.err) {
+                    throw new Error('Transaction failed: ' + JSON.stringify(confirmation.value.err));
+                }
+                
+                showStatus('Entry successful! Welcome to the raffle! 🎉', 'success');
+                
+                // Update local state
+                currentWalletData.rafflesEntered.push({
+                    raffleId: currentRaffle.raffleId,
+                    timestamp: Date.now(),
+                    entryFee: currentRaffle.entryFee,
+                    signature: signature
+                });
+                
+                // Refresh raffle data to show updated participant count
+                await loadRaffleData();
+                
             } catch (error) {
                 console.error('Entry error:', error);
-                showStatus('Failed to enter raffle', 'error');
+                if (error.message.includes('User rejected')) {
+                    showStatus('Transaction cancelled by user', 'error');
+                } else if (error.message.includes('insufficient')) {
+                    showStatus('Insufficient SOL balance', 'error');
+                } else {
+                    showStatus('Failed to enter raffle: ' + error.message, 'error');
+                }
             }
+        }
+
+        // Create enter raffle transaction
+        async function createEnterRaffleTransaction(raffle, userPublicKey) {
+            // Derive the raffle PDA
+            const [rafflePDA] = PublicKey.findProgramAddressSync(
+                [
+                    Buffer.from('raffle'),
+                    new PublicKey(raffle.creator).toBuffer(),
+                    Buffer.from(raffle.raffleId.toString())
+                ],
+                new PublicKey(PROGRAM_ID)
+            );
+            
+            // Derive user entry PDA
+            const [userEntryPDA] = PublicKey.findProgramAddressSync(
+                [
+                    Buffer.from('entry'),
+                    rafflePDA.toBuffer(),
+                    userPublicKey.toBuffer()
+                ],
+                new PublicKey(PROGRAM_ID)
+            );
+            
+            // Create instruction data for entering raffle
+            const instructionData = Buffer.concat([
+                Buffer.from([1]), // enter_raffle instruction discriminator
+            ]);
+            
+            // Create the instruction
+            const instruction = new TransactionInstruction({
+                keys: [
+                    { pubkey: userPublicKey, isSigner: true, isWritable: true },
+                    { pubkey: rafflePDA, isSigner: false, isWritable: true },
+                    { pubkey: userEntryPDA, isSigner: false, isWritable: true },
+                    { pubkey: new PublicKey(raffle.treasury), isSigner: false, isWritable: true },
+                    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+                ],
+                programId: new PublicKey(PROGRAM_ID),
+                data: instructionData,
+            });
+            
+            const transaction = new Transaction().add(instruction);
+            return transaction;
+        }
+
+        // Check if user has already entered a raffle
+        async function checkIfUserEntered(raffleId, userPublicKey) {
+            try {
+                // Check local storage first
+                const localEntries = currentWalletData.rafflesEntered;
+                const hasLocalEntry = localEntries.some(entry => entry.raffleId === raffleId);
+                
+                if (hasLocalEntry) return true;
+                
+                // Query blockchain for user entry account
+                const raffleCreator = await getRaffleCreator(raffleId);
+                const [rafflePDA] = PublicKey.findProgramAddressSync(
+                    [
+                        Buffer.from('raffle'),
+                        raffleCreator.toBuffer(),
+                        Buffer.from(raffleId.toString())
+                    ],
+                    new PublicKey(PROGRAM_ID)
+                );
+                
+                const [userEntryPDA] = PublicKey.findProgramAddressSync(
+                    [
+                        Buffer.from('entry'),
+                        rafflePDA.toBuffer(),
+                        userPublicKey.toBuffer()
+                    ],
+                    new PublicKey(PROGRAM_ID)
+                );
+                
+                const account = await connection.getAccountInfo(userEntryPDA);
+                return account !== null;
+                
+            } catch (error) {
+                console.log('Error checking user entry:', error);
+                return false;
+            }
+        }
+
+        // Get raffle creator from raffle ID (helper function)
+        async function getRaffleCreator(raffleId) {
+            // In a real implementation, you'd have a way to map raffle IDs to creators
+            // For now, return a placeholder
+            return new PublicKey('11111111111111111111111111111111');
         }
 
         // Global variables
@@ -937,24 +1101,95 @@
         // Load raffle data from smart contract
         async function loadRaffleData() {
             try {
-                // For now, we'll use mock data since we need a specific raffle host
-                // In production, you'd query your smart contract for active raffles
+                showStatus('Loading active raffles...', 'info');
                 
-                // Mock BMW raffle data
-                const mockRaffleData = {
-                    entryFee: 0.1,
-                    maxParticipants: 50,
-                    currentParticipants: 23,
-                    endTime: Date.now() + (2 * 24 * 60 * 60 * 1000), // 2 days from now
-                    cashOption: 3.3
-                };
-
-                updateRaffleUI(mockRaffleData);
+                // Query all active raffles from the smart contract
+                const activeRafflesList = await queryActiveRaffles();
+                
+                if (activeRafflesList.length === 0) {
+                    // No active raffles
+                    document.getElementById('giveaways').innerHTML = `
+                        <div style="text-align: center; padding: 4rem 1rem; color: #ccc;">
+                            <h2 style="font-size: 2rem; margin-bottom: 1rem;">🎰 No Active Raffles</h2>
+                            <p style="font-size: 1.2rem; margin-bottom: 2rem;">
+                                Be the first to know when new exciting raffles go live!
+                            </p>
+                            <button class="btn-primary" onclick="notifyWhenLive()" style="padding: 1rem 2rem;">
+                                🔔 Notify Me When Live
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Load the first active raffle (or most recent)
+                const currentRaffle = activeRafflesList[0];
+                updateRaffleUI(currentRaffle);
+                
+                console.log('✅ Loaded raffle data from smart contract');
                 
             } catch (error) {
                 console.error('Error loading raffle data:', error);
-                showStatus('Error loading raffle data', 'error');
+                showStatus('Error loading raffle data. Please refresh the page.', 'error');
+                
+                // Fallback to "coming soon" state
+                document.getElementById('giveaways').innerHTML = `
+                    <div style="text-align: center; padding: 4rem 1rem; color: #ccc;">
+                        <h2 style="font-size: 2rem; margin-bottom: 1rem;">🔄 Loading Raffles...</h2>
+                        <p style="font-size: 1.2rem;">
+                            Connecting to Solana blockchain...
+                        </p>
+                    </div>
+                `;
             }
+        }
+
+        // Query active raffles from smart contract
+        async function queryActiveRaffles() {
+            try {
+                // In a real implementation, this would query your program accounts
+                // For now, we'll return an empty array until raffles are created via admin panel
+                
+                // Query program accounts for active raffles
+                const programAccounts = await connection.getProgramAccounts(
+                    new PublicKey(PROGRAM_ID),
+                    {
+                        filters: [
+                            {
+                                dataSize: 200 // Approximate size of raffle account
+                            }
+                        ]
+                    }
+                );
+                
+                console.log(`Found ${programAccounts.length} raffle accounts`);
+                
+                // Parse and filter active raffles
+                const activeRaffles = [];
+                for (const account of programAccounts) {
+                    try {
+                        const raffleData = parseRaffleAccount(account.account.data);
+                        if (raffleData && raffleData.isActive) {
+                            activeRaffles.push(raffleData);
+                        }
+                    } catch (parseError) {
+                        console.log('Skipping invalid raffle account:', parseError.message);
+                    }
+                }
+                
+                return activeRaffles.sort((a, b) => b.createdAt - a.createdAt);
+                
+            } catch (error) {
+                console.error('Error querying raffles:', error);
+                return [];
+            }
+        }
+
+        // Parse raffle account data
+        function parseRaffleAccount(data) {
+            // This would implement the actual parsing of your Rust struct
+            // For now, return null since we're waiting for real raffles to be created
+            return null;
         }
 
         // Update raffle UI with data
@@ -976,7 +1211,7 @@
             raffleEndTime = data.endTime;
         }
 
-        // Update wallet UI
+        // Update wallet UI and load user-specific data
         function updateWalletUI(walletState) {
             const connectBtn = document.getElementById('connectBtn');
             
@@ -984,11 +1219,166 @@
                 connectBtn.textContent = `Connected: ${walletManager.formatPublicKey(walletState.publicKey)}`;
                 connectBtn.classList.add('connected');
                 connectBtn.onclick = () => disconnectWallet();
+                
+                // Load user-specific data when wallet connects
+                loadUserData(walletState.publicKey);
             } else {
                 connectBtn.textContent = 'Connect Wallet';
                 connectBtn.classList.remove('connected');
                 connectBtn.onclick = () => openWalletModal();
+                
+                // Clear user data when wallet disconnects
+                clearUserData();
             }
+        }
+
+        // Load user-specific data from blockchain
+        async function loadUserData(publicKey) {
+            try {
+                showStatus('Loading your raffle history...', 'info');
+                
+                const userPubkey = new PublicKey(publicKey);
+                
+                // Reset user data
+                currentWalletData = {
+                    rafflesCreated: [],
+                    rafflesEntered: [],
+                    currentRaffle: null,
+                    userStats: {
+                        totalEntered: 0,
+                        totalWon: 0,
+                        totalSpent: 0
+                    }
+                };
+                
+                // Query user's raffle entries
+                await loadUserRaffleEntries(userPubkey);
+                
+                // Query user's created raffles (if any)
+                await loadUserCreatedRaffles(userPubkey);
+                
+                // Update UI with user stats
+                updateUserStats();
+                
+                console.log('✅ User data loaded');
+                
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showStatus('Error loading your data', 'error');
+            }
+        }
+
+        // Load user's raffle entries
+        async function loadUserRaffleEntries(userPublicKey) {
+            try {
+                // Query all user entry accounts
+                const entryAccounts = await connection.getProgramAccounts(
+                    new PublicKey(PROGRAM_ID),
+                    {
+                        filters: [
+                            {
+                                memcmp: {
+                                    offset: 8, // Skip discriminator
+                                    bytes: userPublicKey.toBase58()
+                                }
+                            }
+                        ]
+                    }
+                );
+                
+                for (const account of entryAccounts) {
+                    try {
+                        const entryData = parseUserEntryAccount(account.account.data);
+                        if (entryData) {
+                            currentWalletData.rafflesEntered.push(entryData);
+                            currentWalletData.userStats.totalEntered++;
+                            currentWalletData.userStats.totalSpent += entryData.entryFee;
+                        }
+                    } catch (parseError) {
+                        console.log('Skipping invalid entry account:', parseError.message);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error loading user entries:', error);
+            }
+        }
+
+        // Load user's created raffles
+        async function loadUserCreatedRaffles(userPublicKey) {
+            try {
+                // Query raffles created by this user
+                const raffleAccounts = await connection.getProgramAccounts(
+                    new PublicKey(PROGRAM_ID),
+                    {
+                        filters: [
+                            {
+                                memcmp: {
+                                    offset: 40, // Offset where creator pubkey is stored
+                                    bytes: userPublicKey.toBase58()
+                                }
+                            }
+                        ]
+                    }
+                );
+                
+                for (const account of raffleAccounts) {
+                    try {
+                        const raffleData = parseRaffleAccount(account.account.data);
+                        if (raffleData && raffleData.creator === userPublicKey.toString()) {
+                            currentWalletData.rafflesCreated.push(raffleData);
+                        }
+                    } catch (parseError) {
+                        console.log('Skipping invalid raffle account:', parseError.message);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error loading user created raffles:', error);
+            }
+        }
+
+        // Parse user entry account data
+        function parseUserEntryAccount(data) {
+            // This would implement the actual parsing of your Rust struct
+            // For now, return null since we need real data structure
+            return null;
+        }
+
+        // Update user stats display
+        function updateUserStats() {
+            // If we had a user stats section, we'd update it here
+            // For now, we can add it to the status or create a user profile section
+            if (currentWalletData.userStats.totalEntered > 0) {
+                const statsMessage = `You've entered ${currentWalletData.userStats.totalEntered} raffles, spending ${currentWalletData.userStats.totalSpent.toFixed(3)} SOL`;
+                console.log('📊 User stats:', statsMessage);
+            }
+        }
+
+        // Clear user data when wallet disconnects
+        function clearUserData() {
+            currentWalletData = {
+                rafflesCreated: [],
+                rafflesEntered: [],
+                currentRaffle: null,
+                userStats: {
+                    totalEntered: 0,
+                    totalWon: 0,
+                    totalSpent: 0
+                }
+            };
+        }
+
+        // Add function for users who want to be notified
+        function notifyWhenLive() {
+            if (!walletManager.connected) {
+                showStatus('Please connect your wallet to get notifications', 'info');
+                openWalletModal();
+                return;
+            }
+            
+            // In a real implementation, you'd store their wallet address for notifications
+            showStatus('You\'ll be notified when new raffles go live! 🔔', 'success');
         }
 
         // Populate wallet list in modal

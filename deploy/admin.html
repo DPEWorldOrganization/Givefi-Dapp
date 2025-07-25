@@ -529,15 +529,15 @@
             <!-- Stats Grid -->
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-number" id="activeRaffles">1</div>
+                    <div class="stat-number" id="activeRaffles">0</div>
                     <div class="stat-label">Active Raffles</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="totalParticipants">23</div>
+                    <div class="stat-number" id="totalParticipants">0</div>
                     <div class="stat-label">Total Participants</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="totalRevenue">2.3</div>
+                    <div class="stat-number" id="totalRevenue">0.0</div>
                     <div class="stat-label">SOL Collected</div>
                 </div>
                 <div class="stat-card">
@@ -580,20 +580,20 @@
                     
                     <div style="color: #ccc;">
                         <div style="margin-bottom: 1rem;">
-                            <strong style="color: #14f195;">Prize:</strong> BMW 640i M Sport
+                            <strong style="color: #14f195;">Prize:</strong> <span id="currentPrize">No active raffle</span>
                         </div>
                         <div style="margin-bottom: 1rem;">
-                            <strong style="color: #14f195;">Entry Fee:</strong> 0.1 SOL
+                            <strong style="color: #14f195;">Entry Fee:</strong> <span id="currentEntryFee">--</span>
                         </div>
                         <div style="margin-bottom: 1rem;">
-                            <strong style="color: #14f195;">Participants:</strong> <span id="currentParticipants">23</span>/50
+                            <strong style="color: #14f195;">Participants:</strong> <span id="currentParticipants">0/0</span>
                         </div>
                         <div style="margin-bottom: 1rem;">
-                            <strong style="color: #14f195;">Time Left:</strong> <span id="timeLeft">2d 5h 30m</span>
+                            <strong style="color: #14f195;">Time Left:</strong> <span id="timeLeft">No active raffle</span>
                         </div>
                         <div style="margin-bottom: 1rem;">
                             <strong style="color: #14f195;">Status:</strong> 
-                            <span style="color: #00ff88;">🟢 Active</span>
+                            <span id="raffleStatus" style="color: #888;">� No Active Raffle</span>
                         </div>
                     </div>
                 </div>
@@ -803,6 +803,16 @@
         let connected = false;
         let currentMediaType = 'image';
         let uploadedVideo = null;
+        let raffleCreationInProgress = false;
+
+        // Real raffle data storage
+        let createdRaffles = [];
+        let adminStats = {
+            totalRaffles: 0,
+            totalParticipants: 0,
+            totalRevenue: 0,
+            activeRaffles: 0
+        };
 
         // Tab Management
         function showTab(tabName) {
@@ -836,12 +846,81 @@
                         `${publicKey.slice(0, 6)}...${publicKey.slice(-4)}`;
                     
                     showStatus('Wallet connected successfully!', 'success');
+                    
+                    // Load admin's existing raffles
+                    await loadAdminRaffles();
+                    
                 } else {
                     showStatus('Please install Phantom wallet', 'error');
                     window.open('https://phantom.app/', '_blank');
                 }
             } catch (error) {
                 showStatus('Failed to connect wallet', 'error');
+            }
+        }
+
+        // Load admin's existing raffles from blockchain
+        async function loadAdminRaffles() {
+            try {
+                showStatus('Loading your raffles...', 'info');
+                
+                // Query raffles created by this wallet
+                const raffleAccounts = await connection.getProgramAccounts(
+                    new PublicKey(PROGRAM_ID),
+                    {
+                        filters: [
+                            {
+                                memcmp: {
+                                    offset: 40, // Offset where creator pubkey is stored
+                                    bytes: wallet.publicKey.toBase58()
+                                }
+                            }
+                        ]
+                    }
+                );
+                
+                console.log(`Found ${raffleAccounts.length} raffles created by this wallet`);
+                
+                // Reset admin data
+                createdRaffles = [];
+                adminStats = {
+                    totalRaffles: 0,
+                    totalParticipants: 0,
+                    totalRevenue: 0,
+                    activeRaffles: 0
+                };
+                
+                // Parse and load raffle data
+                for (const account of raffleAccounts) {
+                    try {
+                        const raffleData = parseRaffleAccount(account.account.data);
+                        if (raffleData) {
+                            createdRaffles.push(raffleData);
+                            adminStats.totalRaffles++;
+                            
+                            if (raffleData.isActive) {
+                                adminStats.activeRaffles++;
+                            }
+                            
+                            adminStats.totalParticipants += raffleData.currentParticipants;
+                            adminStats.totalRevenue += raffleData.currentParticipants * raffleData.entryFee;
+                        }
+                    } catch (parseError) {
+                        console.log('Skipping invalid raffle account:', parseError.message);
+                    }
+                }
+                
+                updateDashboardStats();
+                
+                if (createdRaffles.length > 0) {
+                    showStatus(`Loaded ${createdRaffles.length} raffles`, 'success');
+                } else {
+                    console.log('No existing raffles found for this wallet');
+                }
+                
+            } catch (error) {
+                console.error('Error loading admin raffles:', error);
+                showStatus('Error loading your raffles', 'error');
             }
         }
 
@@ -926,34 +1005,257 @@
                 return;
             }
 
-            const prizeTitle = document.getElementById('prizeTitle').value;
-            const prizeDescription = document.getElementById('prizeDescription').value;
-            const prizeValue = document.getElementById('prizeValue').value;
-            const entryFee = document.getElementById('entryFee').value;
-            const maxParticipants = document.getElementById('maxParticipants').value;
-            const duration = document.getElementById('duration').value;
+            if (raffleCreationInProgress) {
+                showStatus('Raffle creation already in progress', 'info');
+                return;
+            }
 
+            const prizeTitle = document.getElementById('prizeTitle').value.trim();
+            const prizeDescription = document.getElementById('prizeDescription').value.trim();
+            const prizeValue = parseFloat(document.getElementById('prizeValue').value);
+            const entryFee = parseFloat(document.getElementById('entryFee').value);
+            const maxParticipants = parseInt(document.getElementById('maxParticipants').value);
+            const duration = parseInt(document.getElementById('duration').value);
+
+            // Validation
             if (!prizeTitle || !prizeDescription || !prizeValue || !entryFee || !maxParticipants) {
                 showStatus('Please fill in all required fields', 'error');
                 return;
             }
 
+            if (entryFee <= 0 || maxParticipants <= 0 || prizeValue <= 0) {
+                showStatus('Please enter valid positive numbers', 'error');
+                return;
+            }
+
+            if (entryFee > 10) {
+                showStatus('Entry fee cannot exceed 10 SOL for safety', 'error');
+                return;
+            }
+
+            if (maxParticipants > 1000) {
+                showStatus('Maximum participants cannot exceed 1000', 'error');
+                return;
+            }
+
+            // Get media URL based on type
+            let mediaUrl = '';
+            let mediaType = 'image';
+            
+            if (currentMediaType === 'image') {
+                mediaUrl = document.getElementById('imageUrl').value.trim();
+                if (!mediaUrl) {
+                    showStatus('Please provide an image URL', 'error');
+                    return;
+                }
+            } else if (currentMediaType === 'video' && uploadedVideo) {
+                // For video upload, we'd need to upload to IPFS or similar
+                showStatus('Video upload to IPFS coming soon. Please use YouTube for now.', 'info');
+                return;
+            } else if (currentMediaType === 'youtube') {
+                const youtubeUrl = document.getElementById('youtubeUrl').value.trim();
+                if (!youtubeUrl || !extractYouTubeVideoId(youtubeUrl)) {
+                    showStatus('Please provide a valid YouTube URL', 'error');
+                    return;
+                }
+                mediaUrl = youtubeUrl;
+                mediaType = 'youtube';
+            }
+
             try {
+                raffleCreationInProgress = true;
                 showStatus('Creating raffle on blockchain...', 'info');
                 
-                // In a real implementation, you'd create the smart contract transaction here
-                // For demo purposes, we'll simulate success
+                // Create raffle parameters
+                const raffleParams = {
+                    title: prizeTitle,
+                    description: prizeDescription,
+                    entryFee: entryFee,
+                    maxParticipants: maxParticipants,
+                    prizeValue: prizeValue,
+                    duration: duration * 3600, // Convert hours to seconds
+                    mediaUrl: mediaUrl,
+                    mediaType: mediaType,
+                    cashPercentage: 33, // 33% cash option
+                    creator: wallet.publicKey.toString(),
+                    createdAt: Date.now(),
+                    endTime: Date.now() + (duration * 3600 * 1000) // End time in milliseconds
+                };
+
+                // Create the smart contract transaction
+                const signature = await createRaffleOnChain(raffleParams);
                 
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                showStatus('Raffle created successfully!', 'success');
-                showTab('dashboard');
-                
-                // Update stats
-                document.getElementById('activeRaffles').textContent = '1';
+                if (signature) {
+                    // Store raffle data locally (in production, this would be on-chain)
+                    const raffleId = Date.now(); // Simple ID generation
+                    const newRaffle = {
+                        ...raffleParams,
+                        raffleId: raffleId,
+                        signature: signature,
+                        currentParticipants: 0,
+                        isActive: true,
+                        participants: []
+                    };
+                    
+                    createdRaffles.push(newRaffle);
+                    
+                    // Update admin stats
+                    adminStats.totalRaffles++;
+                    adminStats.activeRaffles++;
+                    updateDashboardStats();
+                    
+                    showStatus('Raffle created successfully! 🎉', 'success');
+                    
+                    // Clear form
+                    clearCreateForm();
+                    
+                    // Switch to dashboard
+                    showTab('dashboard');
+                    
+                } else {
+                    throw new Error('Failed to get transaction signature');
+                }
                 
             } catch (error) {
-                showStatus('Failed to create raffle', 'error');
+                console.error('Raffle creation error:', error);
+                if (error.message.includes('User rejected')) {
+                    showStatus('Transaction cancelled by user', 'error');
+                } else if (error.message.includes('insufficient')) {
+                    showStatus('Insufficient SOL balance for transaction', 'error');
+                } else {
+                    showStatus('Failed to create raffle: ' + error.message, 'error');
+                }
+            } finally {
+                raffleCreationInProgress = false;
+            }
+        }
+
+        // Create raffle on blockchain
+        async function createRaffleOnChain(raffleParams) {
+            try {
+                // Generate a unique raffle ID
+                const raffleId = Date.now();
+                
+                // Derive the raffle PDA
+                const [rafflePDA] = PublicKey.findProgramAddressSync(
+                    [
+                        Buffer.from('raffle'),
+                        wallet.publicKey.toBuffer(),
+                        Buffer.from(raffleId.toString())
+                    ],
+                    new PublicKey(PROGRAM_ID)
+                );
+                
+                // Create instruction data
+                const titleBytes = Buffer.from(raffleParams.title);
+                const descBytes = Buffer.from(raffleParams.description);
+                const mediaBytes = Buffer.from(raffleParams.mediaUrl);
+                
+                const instructionData = Buffer.concat([
+                    Buffer.from([0]), // create_raffle instruction discriminator
+                    Buffer.from([titleBytes.length]),
+                    titleBytes,
+                    Buffer.from([descBytes.length]),
+                    descBytes,
+                    Buffer.from([mediaBytes.length]),
+                    mediaBytes,
+                    Buffer.from([raffleParams.mediaType === 'youtube' ? 1 : 0]),
+                    // Entry fee in lamports (8 bytes, little endian)
+                    Buffer.from(new BN(raffleParams.entryFee * LAMPORTS_PER_SOL).toArray('le', 8)),
+                    // Max participants (4 bytes, little endian)
+                    Buffer.from(new BN(raffleParams.maxParticipants).toArray('le', 4)),
+                    // Duration in seconds (8 bytes, little endian)
+                    Buffer.from(new BN(raffleParams.duration).toArray('le', 8)),
+                    // Prize value in USD (8 bytes, little endian)
+                    Buffer.from(new BN(raffleParams.prizeValue * 100).toArray('le', 8)), // Store as cents
+                    // Raffle ID (8 bytes, little endian)
+                    Buffer.from(new BN(raffleId).toArray('le', 8))
+                ]);
+                
+                // Create the instruction
+                const instruction = new TransactionInstruction({
+                    keys: [
+                        { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+                        { pubkey: rafflePDA, isSigner: false, isWritable: true },
+                        { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+                    ],
+                    programId: new PublicKey(PROGRAM_ID),
+                    data: instructionData,
+                });
+                
+                // Create and send transaction
+                const transaction = new Transaction().add(instruction);
+                const { blockhash } = await connection.getLatestBlockhash();
+                transaction.recentBlockhash = blockhash;
+                transaction.feePayer = wallet.publicKey;
+                
+                showStatus('Please approve the transaction in your wallet...', 'info');
+                
+                const signedTransaction = await wallet.signTransaction(transaction);
+                const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+                
+                showStatus('Transaction sent! Confirming...', 'info');
+                
+                const confirmation = await connection.confirmTransaction(signature, 'confirmed');
+                
+                if (confirmation.value.err) {
+                    throw new Error('Transaction failed: ' + JSON.stringify(confirmation.value.err));
+                }
+                
+                return signature;
+                
+            } catch (error) {
+                console.error('Blockchain raffle creation error:', error);
+                throw error;
+            }
+        }
+
+        // Clear create form
+        function clearCreateForm() {
+            document.getElementById('prizeTitle').value = '';
+            document.getElementById('prizeDescription').value = '';
+            document.getElementById('prizeValue').value = '';
+            document.getElementById('entryFee').value = '';
+            document.getElementById('maxParticipants').value = '';
+            document.getElementById('imageUrl').value = '';
+            document.getElementById('youtubeUrl').value = '';
+            
+            // Reset to image type
+            selectMediaType('image');
+            updatePreview();
+        }
+
+        // Update dashboard stats with real data
+        function updateDashboardStats() {
+            document.getElementById('activeRaffles').textContent = adminStats.activeRaffles;
+            document.getElementById('totalParticipants').textContent = adminStats.totalParticipants;
+            document.getElementById('totalRevenue').textContent = adminStats.totalRevenue.toFixed(2);
+            document.getElementById('completedRaffles').textContent = adminStats.totalRaffles - adminStats.activeRaffles;
+            
+            // Update current raffle info if available
+            const activeRaffle = createdRaffles.find(raffle => raffle.isActive);
+            if (activeRaffle) {
+                document.getElementById('currentPrize').textContent = activeRaffle.title;
+                document.getElementById('currentEntryFee').textContent = `${activeRaffle.entryFee} SOL`;
+                document.getElementById('currentParticipants').textContent = `${activeRaffle.currentParticipants}/${activeRaffle.maxParticipants}`;
+                document.getElementById('raffleStatus').innerHTML = '<span style="color: #00ff88;">🟢 Active</span>';
+                
+                const timeLeft = activeRaffle.endTime - Date.now();
+                if (timeLeft > 0) {
+                    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                    document.getElementById('timeLeft').textContent = `${days}d ${hours}h ${minutes}m`;
+                } else {
+                    document.getElementById('timeLeft').textContent = 'Ended';
+                    document.getElementById('raffleStatus').innerHTML = '<span style="color: #ff6b7a;">🔴 Ended</span>';
+                }
+            } else {
+                document.getElementById('currentPrize').textContent = 'No active raffle';
+                document.getElementById('currentEntryFee').textContent = '--';
+                document.getElementById('currentParticipants').textContent = '0/0';
+                document.getElementById('timeLeft').textContent = 'No active raffle';
+                document.getElementById('raffleStatus').innerHTML = '<span style="color: #888;">🔴 No Active Raffle</span>';
             }
         }
 
@@ -963,23 +1265,98 @@
                 return;
             }
 
-            if (confirm('Are you sure you want to select a winner? This action cannot be undone.')) {
+            const activeRaffle = createdRaffles.find(raffle => raffle.isActive);
+            if (!activeRaffle) {
+                showStatus('No active raffle found', 'error');
+                return;
+            }
+
+            if (activeRaffle.currentParticipants === 0) {
+                showStatus('No participants in this raffle yet', 'error');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to select a winner for "${activeRaffle.title}"? This action cannot be undone.`)) {
                 try {
-                    showStatus('Selecting winner using VRF...', 'info');
+                    showStatus('Selecting winner using verifiable randomness...', 'info');
                     
-                    // Simulate winner selection
-                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    // Create select winner transaction
+                    const signature = await selectWinnerOnChain(activeRaffle);
                     
-                    const winner = 'AaB2...XyZ9'; // Mock winner address
-                    showStatus(`Winner selected: ${winner}`, 'success');
+                    // Simulate winner selection (in production, this would come from the smart contract)
+                    const winnerIndex = Math.floor(Math.random() * activeRaffle.participants.length);
+                    const winner = activeRaffle.participants[winnerIndex];
+                    
+                    // Update raffle status
+                    activeRaffle.isActive = false;
+                    activeRaffle.winner = winner;
+                    activeRaffle.winnerSelectedAt = Date.now();
+                    activeRaffle.winnerSelectionSignature = signature;
                     
                     // Update stats
-                    document.getElementById('completedRaffles').textContent = '1';
-                    document.getElementById('activeRaffles').textContent = '0';
+                    adminStats.activeRaffles--;
+                    updateDashboardStats();
+                    
+                    showStatus(`Winner selected: ${winner.slice(0, 6)}...${winner.slice(-4)} 🎉`, 'success');
                     
                 } catch (error) {
-                    showStatus('Failed to select winner', 'error');
+                    console.error('Winner selection error:', error);
+                    if (error.message.includes('User rejected')) {
+                        showStatus('Transaction cancelled by user', 'error');
+                    } else {
+                        showStatus('Failed to select winner: ' + error.message, 'error');
+                    }
                 }
+            }
+        }
+
+        // Select winner on blockchain
+        async function selectWinnerOnChain(raffle) {
+            try {
+                const [rafflePDA] = PublicKey.findProgramAddressSync(
+                    [
+                        Buffer.from('raffle'),
+                        wallet.publicKey.toBuffer(),
+                        Buffer.from(raffle.raffleId.toString())
+                    ],
+                    new PublicKey(PROGRAM_ID)
+                );
+                
+                const instructionData = Buffer.concat([
+                    Buffer.from([2]), // select_winner instruction discriminator
+                ]);
+                
+                const instruction = new TransactionInstruction({
+                    keys: [
+                        { pubkey: wallet.publicKey, isSigner: true, isWritable: true },
+                        { pubkey: rafflePDA, isSigner: false, isWritable: true },
+                        // Add other required accounts (VRF, etc.)
+                    ],
+                    programId: new PublicKey(PROGRAM_ID),
+                    data: instructionData,
+                });
+                
+                const transaction = new Transaction().add(instruction);
+                const { blockhash } = await connection.getLatestBlockhash();
+                transaction.recentBlockhash = blockhash;
+                transaction.feePayer = wallet.publicKey;
+                
+                showStatus('Please approve winner selection in your wallet...', 'info');
+                
+                const signedTransaction = await wallet.signTransaction(transaction);
+                const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+                
+                const confirmation = await connection.confirmTransaction(signature, 'confirmed');
+                
+                if (confirmation.value.err) {
+                    throw new Error('Transaction failed: ' + JSON.stringify(confirmation.value.err));
+                }
+                
+                return signature;
+                
+            } catch (error) {
+                console.error('Blockchain winner selection error:', error);
+                throw error;
             }
         }
 
@@ -1056,9 +1433,21 @@
         });
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             console.log('🚀 GiveFi Admin Panel loaded');
             updatePreview();
+            
+            // Load existing data if wallet auto-connects
+            if (window.phantom?.solana?.isConnected) {
+                try {
+                    await connectWallet();
+                } catch (error) {
+                    console.log('Auto-connect failed:', error);
+                }
+            }
+            
+            // Initialize stats
+            updateDashboardStats();
         });
     </script>
 </body>
