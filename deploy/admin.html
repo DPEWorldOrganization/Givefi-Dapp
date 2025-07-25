@@ -507,7 +507,8 @@
             
             <nav class="admin-nav">
                 <a href="#dashboard" class="nav-link active" onclick="showTab('dashboard')">Dashboard</a>
-                <a href="#create" class="nav-link" onclick="showTab('create')">Create Raffle</a>
+                <a href="#create" class="nav-link" onclick="showTab('create')">Create Proposal</a>
+                <a href="#dao" class="nav-link" onclick="showTab('dao')">DAO Governance</a>
                 <a href="#manage" class="nav-link" onclick="showTab('manage')">Manage</a>
                 <a href="../index.html" class="nav-link">View Live Site</a>
             </nav>
@@ -782,6 +783,83 @@
                 </div>
             </div>
         </div>
+
+        <!-- DAO Governance Tab -->
+        <div id="dao" class="tab-content">
+            <h2 style="font-size: 2.5rem; margin-bottom: 2rem; text-align: center;">
+                🗳️ DAO Governance
+            </h2>
+
+            <div class="admin-card" style="margin-bottom: 2rem;">
+                <div class="card-header">
+                    <div class="card-icon">🏛️</div>
+                    <div class="card-title">DAO Status & Configuration</div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div>
+                        <h4 style="color: #14f195; margin-bottom: 1rem;">Your DAO Role</h4>
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 10px;">
+                            <div id="daoRoleStatus" style="margin-bottom: 1rem;">
+                                <strong>Status:</strong> <span style="color: #14f195;">Checking...</span>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <strong>Voting Power:</strong> <span style="color: #14f195;" id="votingPower">1 vote</span>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <strong>DAO Members:</strong> <span style="color: #14f195;" id="daoMemberCount">1</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 style="color: #14f195; margin-bottom: 1rem;">DAO Configuration</h4>
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 10px;">
+                            <div style="margin-bottom: 1rem;">
+                                <strong>Approval Threshold:</strong> <span style="color: #14f195;" id="approvalThreshold">1 vote</span>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <strong>Voting Period:</strong> <span style="color: #14f195;">24 hours</span>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <strong>Required Quorum:</strong> <span style="color: #14f195;" id="requiredQuorum">1 member</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Proposals -->
+            <div class="admin-card" style="margin-bottom: 2rem;">
+                <div class="card-header">
+                    <div class="card-icon">📋</div>
+                    <div class="card-title">Active Proposals</div>
+                </div>
+
+                <div id="activeProposals" style="min-height: 200px;">
+                    <div style="text-align: center; padding: 3rem; color: #888;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🗳️</div>
+                        <p>No active proposals</p>
+                        <p style="font-size: 0.9rem;">Create a raffle proposal to get started!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Proposal History -->
+            <div class="admin-card">
+                <div class="card-header">
+                    <div class="card-icon">📜</div>
+                    <div class="card-title">Proposal History</div>
+                </div>
+
+                <div id="proposalHistory" style="min-height: 200px;">
+                    <div style="text-align: center; padding: 3rem; color: #888;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+                        <p>No proposal history</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Status Message -->
@@ -803,10 +881,23 @@
         const PROGRAM_ID = '48mihemhp1UxYjz1UznH4fJ9FnF3AfN3XG18GasPFamU';
         const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
         
+        // DAO VERIFICATION SYSTEM
+        const DAO_CONFIG = {
+            // DAO wallet addresses authorized to vote on proposals
+            daoMembers: [
+                '5YMBWHdvqpcKy2Ae6tmhFe81rGb8gHkkkRVpkdWQiV7T', // Your address - DAO founder
+                // Add more DAO member addresses here
+                // 'ANOTHER_DAO_MEMBER_ADDRESS',
+            ],
+            votingThreshold: 1, // Minimum votes needed to approve (adjust based on DAO size)
+            votingPeriod: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+            requiredQuorum: 1, // Minimum DAO members that must vote
+        };
+        
         // ADMIN ACCESS CONTROL - Add your wallet address here
         const AUTHORIZED_ADMIN_WALLETS = [
-            // Replace this with your actual wallet address
-            'YOUR_WALLET_ADDRESS_HERE',
+            // Your authorized admin wallet address
+            '5YMBWHdvqpcKy2Ae6tmhFe81rGb8gHkkkRVpkdWQiV7T',
             // You can add multiple admin wallets if needed
             // 'ANOTHER_ADMIN_WALLET_ADDRESS',
         ];
@@ -826,6 +917,21 @@
             totalParticipants: 0,
             totalRevenue: 0,
             activeRaffles: 0
+        };
+
+        // DAO PROPOSAL SYSTEM
+        let raffleProposals = new Map(); // Map of proposal_id -> proposal_data
+        let daoVotes = new Map(); // Map of proposal_id -> Map of voter_address -> vote
+        let proposalCounter = 0;
+
+        // DAO Proposal States
+        const PROPOSAL_STATUS = {
+            PENDING: 'pending',
+            VOTING: 'voting', 
+            APPROVED: 'approved',
+            REJECTED: 'rejected',
+            EXPIRED: 'expired',
+            DEPLOYED: 'deployed'
         };
 
         // Admin Access Control Functions
@@ -881,7 +987,266 @@
             
             // Update nav
             event.target.classList.add('active');
+            
+            // If switching to DAO tab, update the interface
+            if (tabName === 'dao-governance') {
+                updateDaoInterface();
+            }
         }
+
+        // DAO VERIFICATION FUNCTIONS
+
+        // Check if wallet is a DAO member
+        function isDaoMember(walletAddress) {
+            return DAO_CONFIG.daoMembers.includes(walletAddress);
+        }
+
+        // Create a raffle proposal (goes to DAO for verification)
+        async function createRaffleProposal(raffleParams) {
+            try {
+                proposalCounter++;
+                const proposalId = `proposal_${Date.now()}_${proposalCounter}`;
+                
+                const proposal = {
+                    id: proposalId,
+                    creator: wallet.publicKey.toString(),
+                    raffleData: raffleParams,
+                    status: PROPOSAL_STATUS.VOTING,
+                    createdAt: Date.now(),
+                    votingEndsAt: Date.now() + DAO_CONFIG.votingPeriod,
+                    votes: {
+                        approve: 0,
+                        reject: 0,
+                        voters: []
+                    },
+                    comments: []
+                };
+
+                raffleProposals.set(proposalId, proposal);
+                daoVotes.set(proposalId, new Map());
+
+                showStatus('Raffle proposal submitted to DAO for verification! 🗳️', 'success');
+                
+                // Update DAO interface to show new proposal
+                updateDaoInterface();
+                
+                // Notify DAO members (in production, this would be on-chain)
+                await notifyDaoMembers(proposal);
+                
+                return proposalId;
+            } catch (error) {
+                console.error('Error creating proposal:', error);
+                throw error;
+            }
+        }
+
+        // Notify DAO members of new proposal
+        async function notifyDaoMembers(proposal) {
+            // In production, this would send on-chain notifications
+            console.log('📢 DAO Notification: New raffle proposal', proposal.id);
+            
+            // You could integrate with notification services here
+            // For now, just log the proposal for DAO review
+        }
+
+        // Vote on a raffle proposal (DAO members only)
+        async function voteOnProposal(proposalId, vote, reason = '') {
+            if (!connected || !isDaoMember(wallet.publicKey.toString())) {
+                showStatus('Only DAO members can vote on proposals', 'error');
+                return false;
+            }
+
+            const proposal = raffleProposals.get(proposalId);
+            if (!proposal) {
+                showStatus('Proposal not found', 'error');
+                return false;
+            }
+
+            if (proposal.status !== PROPOSAL_STATUS.VOTING) {
+                showStatus('Voting period has ended for this proposal', 'error');
+                return false;
+            }
+
+            if (Date.now() > proposal.votingEndsAt) {
+                proposal.status = PROPOSAL_STATUS.EXPIRED;
+                showStatus('Voting period has expired', 'error');
+                return false;
+            }
+
+            const voterAddress = wallet.publicKey.toString();
+            const votes = daoVotes.get(proposalId);
+            
+            // Check if already voted
+            if (votes.has(voterAddress)) {
+                showStatus('You have already voted on this proposal', 'error');
+                return false;
+            }
+
+            // Record vote
+            votes.set(voterAddress, { vote, reason, timestamp: Date.now() });
+            
+            // Update proposal vote counts
+            if (vote === 'approve') {
+                proposal.votes.approve++;
+            } else {
+                proposal.votes.reject++;
+            }
+            
+            proposal.votes.voters.push({
+                address: voterAddress,
+                vote: vote,
+                reason: reason,
+                timestamp: Date.now()
+            });
+
+            // Check if proposal should be finalized
+            await checkProposalStatus(proposalId);
+            
+            // Update DAO interface to reflect vote
+            updateDaoInterface();
+            
+            showStatus(`Vote recorded: ${vote.toUpperCase()}`, 'success');
+            return true;
+        }
+
+        // Check if proposal has enough votes to be approved/rejected
+        async function checkProposalStatus(proposalId) {
+            const proposal = raffleProposals.get(proposalId);
+            if (!proposal || proposal.status !== PROPOSAL_STATUS.VOTING) return;
+
+            const totalVotes = proposal.votes.approve + proposal.votes.reject;
+            
+            // Check if quorum reached
+            if (totalVotes >= DAO_CONFIG.requiredQuorum) {
+                // Check if threshold met for approval
+                if (proposal.votes.approve >= DAO_CONFIG.votingThreshold) {
+                    proposal.status = PROPOSAL_STATUS.APPROVED;
+                    showStatus('🎉 Proposal APPROVED by DAO! Raffle can now be deployed.', 'success');
+                    
+                    // Auto-deploy if approved (or require manual deployment)
+                    await deployApprovedRaffle(proposal);
+                    
+                } else if (proposal.votes.reject >= DAO_CONFIG.votingThreshold) {
+                    proposal.status = PROPOSAL_STATUS.REJECTED;
+                    showStatus('❌ Proposal REJECTED by DAO.', 'info');
+                }
+                
+                // Update interface after status change
+                updateDaoInterface();
+            }
+        }
+
+        // Deploy an approved raffle to the blockchain
+        async function deployApprovedRaffle(proposal) {
+            try {
+                showStatus('Deploying DAO-approved raffle to blockchain...', 'info');
+                
+                // Create the smart contract transaction
+                const signature = await createRaffleOnChain(proposal.raffleData);
+                
+                if (signature) {
+                    // Mark as deployed
+                    proposal.status = PROPOSAL_STATUS.DEPLOYED;
+                    proposal.deploymentSignature = signature;
+                    proposal.deployedAt = Date.now();
+                    
+                    // Add to active raffles
+                    const raffleId = Date.now();
+                    const newRaffle = {
+                        ...proposal.raffleData,
+                        raffleId: raffleId,
+                        signature: signature,
+                        currentParticipants: 0,
+                        isActive: true,
+                        participants: [],
+                        daoApproved: true,
+                        proposalId: proposal.id
+                    };
+                    
+                    createdRaffles.push(newRaffle);
+                    
+                    // Update admin stats
+                    adminStats.totalRaffles++;
+                    adminStats.activeRaffles++;
+                    updateDashboardStats();
+                    
+                    // Update DAO interface
+                    updateDaoInterface();
+                    
+                    showStatus('✅ DAO-approved raffle deployed successfully!', 'success');
+                } else {
+                    throw new Error('Failed to deploy raffle');
+                }
+            } catch (error) {
+                console.error('Deployment error:', error);
+                showStatus('Failed to deploy raffle: ' + error.message, 'error');
+            }
+        }
+
+        // Get all pending proposals for DAO review
+        function getPendingProposals() {
+            return Array.from(raffleProposals.values())
+                .filter(p => p.status === PROPOSAL_STATUS.VOTING)
+                .sort((a, b) => b.createdAt - a.createdAt);
+        }
+
+        // Get proposal voting status
+        function getProposalVotingStatus(proposalId) {
+            const proposal = raffleProposals.get(proposalId);
+            if (!proposal) return null;
+
+            const timeLeft = proposal.votingEndsAt - Date.now();
+            const hoursLeft = Math.max(0, Math.floor(timeLeft / (1000 * 60 * 60)));
+            
+            return {
+                proposal: proposal,
+                timeLeft: hoursLeft,
+                needsVotes: DAO_CONFIG.votingThreshold - proposal.votes.approve,
+                hasUserVoted: daoVotes.get(proposalId)?.has(wallet?.publicKey?.toString()) || false
+            };
+        }
+
+        // DAO Utility Functions
+
+        function getPendingProposals() {
+            return Array.from(raffleProposals.values())
+                .filter(proposal => proposal.status === PROPOSAL_STATUS.VOTING)
+                .sort((a, b) => b.createdAt - a.createdAt);
+        }
+
+        function getProposalVotingStatus(proposalId) {
+            const proposal = raffleProposals.get(proposalId);
+            if (!proposal) return { hasUserVoted: false, userVote: null };
+            
+            const userAddress = wallet?.publicKey?.toString();
+            if (!userAddress) return { hasUserVoted: false, userVote: null };
+            
+            const userVote = proposal.voters.find(v => v.address === userAddress);
+            return {
+                hasUserVoted: !!userVote,
+                userVote: userVote?.vote || null
+            };
+        }
+
+        function checkExpiredProposals() {
+            const now = Date.now();
+            let hasChanges = false;
+            
+            raffleProposals.forEach((proposal, id) => {
+                if (proposal.status === PROPOSAL_STATUS.VOTING && now > proposal.votingEndsAt) {
+                    proposal.status = PROPOSAL_STATUS.EXPIRED;
+                    hasChanges = true;
+                    console.log(`Proposal ${id} expired`);
+                }
+            });
+            
+            if (hasChanges) {
+                updateDaoInterface();
+            }
+        }
+
+        // Check for expired proposals every minute
+        setInterval(checkExpiredProposals, 60000);
 
         // Wallet Management
         async function connectWallet() {
@@ -910,6 +1275,9 @@
                     
                     // Load admin's existing raffles
                     await loadAdminRaffles();
+                    
+                    // Update DAO interface
+                    updateDaoInterface();
                     
                 } else {
                     showStatus('Please install Phantom wallet', 'error');
@@ -1150,7 +1518,7 @@
 
             try {
                 raffleCreationInProgress = true;
-                showStatus('Creating raffle on blockchain...', 'info');
+                showStatus('Submitting raffle proposal to DAO for verification...', 'info');
                 
                 // Create raffle parameters
                 const raffleParams = {
@@ -1168,38 +1536,20 @@
                     endTime: Date.now() + (duration * 3600 * 1000) // End time in milliseconds
                 };
 
-                // Create the smart contract transaction
-                const signature = await createRaffleOnChain(raffleParams);
+                // Submit to DAO for verification instead of direct creation
+                const proposalId = await createRaffleProposal(raffleParams);
                 
-                if (signature) {
-                    // Store raffle data locally (in production, this would be on-chain)
-                    const raffleId = Date.now(); // Simple ID generation
-                    const newRaffle = {
-                        ...raffleParams,
-                        raffleId: raffleId,
-                        signature: signature,
-                        currentParticipants: 0,
-                        isActive: true,
-                        participants: []
-                    };
-                    
-                    createdRaffles.push(newRaffle);
-                    
-                    // Update admin stats
-                    adminStats.totalRaffles++;
-                    adminStats.activeRaffles++;
-                    updateDashboardStats();
-                    
-                    showStatus('Raffle created successfully! 🎉', 'success');
+                if (proposalId) {
+                    showStatus('🗳️ Raffle proposal submitted to DAO! Voting period: 24 hours', 'success');
                     
                     // Clear form
                     clearCreateForm();
                     
-                    // Switch to dashboard
-                    showTab('dashboard');
+                    // Switch to DAO tab to show proposals
+                    showTab('dao');
                     
                 } else {
-                    throw new Error('Failed to get transaction signature');
+                    throw new Error('Failed to create proposal');
                 }
                 
             } catch (error) {
@@ -1479,6 +1829,156 @@
                 return;
             }
             showStatus('Export feature coming soon', 'info');
+        }
+
+        // DAO Interface Management Functions
+
+        function updateDaoInterface() {
+            if (!connected) return;
+
+            // Update DAO role status
+            const userAddress = wallet.publicKey.toString();
+            const isDaoMember = DAO_CONFIG.daoMembers.includes(userAddress);
+            
+            document.getElementById('daoRoleStatus').innerHTML = isDaoMember 
+                ? '<strong>Status:</strong> <span style="color: #14f195;">DAO Member ✓</span>'
+                : '<strong>Status:</strong> <span style="color: #ff6b7a;">Not a DAO Member</span>';
+            
+            // Update configuration display
+            document.getElementById('daoMemberCount').textContent = DAO_CONFIG.daoMembers.length;
+            document.getElementById('approvalThreshold').textContent = `${DAO_CONFIG.votingThreshold} vote${DAO_CONFIG.votingThreshold > 1 ? 's' : ''}`;
+            document.getElementById('requiredQuorum').textContent = `${DAO_CONFIG.requiredQuorum} member${DAO_CONFIG.requiredQuorum > 1 ? 's' : ''}`;
+            
+            // Update active proposals
+            updateActiveProposalsDisplay();
+            
+            // Update proposal history
+            updateProposalHistoryDisplay();
+        }
+
+        function updateActiveProposalsDisplay() {
+            const activeProposalsContainer = document.getElementById('activeProposals');
+            const pendingProposals = getPendingProposals();
+            
+            if (pendingProposals.length === 0) {
+                activeProposalsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: #888;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🗳️</div>
+                        <p>No active proposals</p>
+                        <p style="font-size: 0.9rem;">Create a raffle proposal to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const userAddress = wallet?.publicKey?.toString();
+            const isDaoMember = DAO_CONFIG.daoMembers.includes(userAddress);
+            
+            let html = '';
+            pendingProposals.forEach(proposal => {
+                const votingStatus = getProposalVotingStatus(proposal.id);
+                const timeLeft = Math.max(0, Math.floor((proposal.votingEndsAt - Date.now()) / (1000 * 60 * 60)));
+                
+                html += `
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; border: 1px solid rgba(255, 255, 255, 0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                            <div>
+                                <h4 style="color: #fff; margin-bottom: 0.5rem;">${proposal.raffleData.title}</h4>
+                                <p style="color: #ccc; font-size: 0.9rem;">Prize Value: $${proposal.raffleData.prizeValue.toLocaleString()}</p>
+                                <p style="color: #ccc; font-size: 0.9rem;">Entry Fee: ${proposal.raffleData.entryFee} SOL</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="background: rgba(255, 193, 7, 0.2); color: #ffc107; padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.8rem; margin-bottom: 0.5rem;">
+                                    VOTING
+                                </div>
+                                <p style="color: #888; font-size: 0.8rem;">${timeLeft}h remaining</p>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(0, 0, 0, 0.2); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                            <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 0.5rem;"><strong>Description:</strong></p>
+                            <p style="color: #ccc; font-size: 0.9rem;">${proposal.raffleData.description}</p>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div>
+                                <span style="color: #14f195;">✓ ${proposal.votes.approve}</span>
+                                <span style="color: #888; margin: 0 1rem;">|</span>
+                                <span style="color: #ff6b7a;">✗ ${proposal.votes.reject}</span>
+                                <span style="color: #888; margin-left: 1rem;">(${DAO_CONFIG.votingThreshold} needed)</span>
+                            </div>
+                            <div>
+                                ${votingStatus.hasUserVoted 
+                                    ? '<span style="color: #888; font-size: 0.9rem;">Already voted</span>'
+                                    : isDaoMember 
+                                        ? `<button class="btn btn-success" onclick="voteOnProposal('${proposal.id}', 'approve')" style="margin-right: 0.5rem; padding: 0.5rem 1rem; font-size: 0.9rem;">Approve</button>
+                                           <button class="btn btn-danger" onclick="voteOnProposal('${proposal.id}', 'reject')" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Reject</button>`
+                                        : '<span style="color: #888; font-size: 0.9rem;">DAO members only</span>'
+                                }
+                            </div>
+                        </div>
+                        
+                        <div style="font-size: 0.8rem; color: #888;">
+                            <strong>Proposed by:</strong> ${proposal.creator.slice(0, 8)}...${proposal.creator.slice(-8)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            activeProposalsContainer.innerHTML = html;
+        }
+
+        function updateProposalHistoryDisplay() {
+            const historyContainer = document.getElementById('proposalHistory');
+            const allProposals = Array.from(raffleProposals.values())
+                .filter(p => p.status !== PROPOSAL_STATUS.VOTING)
+                .sort((a, b) => b.createdAt - a.createdAt);
+            
+            if (allProposals.length === 0) {
+                historyContainer.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: #888;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+                        <p>No proposal history</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            allProposals.slice(0, 10).forEach(proposal => { // Show last 10
+                const statusColor = {
+                    [PROPOSAL_STATUS.APPROVED]: '#14f195',
+                    [PROPOSAL_STATUS.REJECTED]: '#ff6b7a',
+                    [PROPOSAL_STATUS.EXPIRED]: '#888',
+                    [PROPOSAL_STATUS.DEPLOYED]: '#00d2ff'
+                }[proposal.status];
+
+                const statusText = {
+                    [PROPOSAL_STATUS.APPROVED]: 'APPROVED',
+                    [PROPOSAL_STATUS.REJECTED]: 'REJECTED',
+                    [PROPOSAL_STATUS.EXPIRED]: 'EXPIRED',
+                    [PROPOSAL_STATUS.DEPLOYED]: 'DEPLOYED'
+                }[proposal.status];
+
+                html += `
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 3px solid ${statusColor};">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h5 style="color: #fff; margin-bottom: 0.25rem;">${proposal.raffleData.title}</h5>
+                                <p style="color: #ccc; font-size: 0.8rem;">$${proposal.raffleData.prizeValue.toLocaleString()} • ${new Date(proposal.createdAt).toLocaleDateString()}</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="background: rgba(${statusColor.replace('#', '').match(/.{2}/g).map(x => parseInt(x, 16)).join(', ')}, 0.2); color: ${statusColor}; padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.8rem;">
+                                    ${statusText}
+                                </div>
+                                <p style="color: #888; font-size: 0.7rem; margin-top: 0.25rem;">✓${proposal.votes.approve} ✗${proposal.votes.reject}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            historyContainer.innerHTML = html;
         }
 
         function pauseRaffle() {
