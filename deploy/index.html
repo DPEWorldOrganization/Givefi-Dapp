@@ -270,82 +270,6 @@
 
         .media-toggle:hover {
             background: rgba(0, 0, 0, 0.9);
-        }
-
-        /* Admin Panel Styles for Video Upload */
-        .video-upload-section {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 1.5rem;
-            border-radius: 15px;
-            margin-bottom: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .video-input-group {
-            margin-bottom: 1rem;
-        }
-
-        .video-input-group label {
-            display: block;
-            color: #14f195;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-        }
-
-        .video-input {
-            width: 100%;
-            padding: 0.8rem;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: white;
-            font-size: 1rem;
-        }
-
-        .video-input:focus {
-            outline: none;
-            border-color: #14f195;
-            box-shadow: 0 0 0 2px rgba(20, 241, 149, 0.2);
-        }
-
-        .video-preview {
-            margin-top: 1rem;
-            max-width: 300px;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .video-preview video,
-        .video-preview iframe {
-            width: 100%;
-            height: 150px;
-        }
-
-        .video-type-selector {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .video-type-btn {
-            padding: 0.8rem 1.5rem;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .video-type-btn.active {
-            background: #14f195;
-            color: #0a0a0a;
-            border-color: #14f195;
-        }
-
-        .video-type-btn:hover {
-            background: rgba(20, 241, 149, 0.2);
-            border-color: #14f195;
         }        .giveaway-title {
             font-size: 2.2rem;
             margin-bottom: 1rem;
@@ -687,90 +611,12 @@
         </div>
     </div>
 
-    <!-- Admin Panel for Video Configuration (Hidden by default) -->
-    <section id="adminPanel" style="display: none; padding: 2rem 1rem; background: rgba(0, 0, 0, 0.8);">
-        <div class="container">
-            <h2 style="color: #14f195; margin-bottom: 2rem;">🎬 Raffle Media Configuration</h2>
-            
-            <div class="video-upload-section">
-                <h3 style="color: white; margin-bottom: 1rem;">Media Type</h3>
-                
-                <div class="video-type-selector">
-                    <button class="video-type-btn active" onclick="selectMediaType('image')" id="imageTypeBtn">
-                        🖼️ Image
-                    </button>
-                    <button class="video-type-btn" onclick="selectMediaType('video')" id="videoTypeBtn">
-                        🎥 Video Upload
-                    </button>
-                    <button class="video-type-btn" onclick="selectMediaType('youtube')" id="youtubeTypeBtn">
-                        📺 YouTube Link
-                    </button>
-                </div>
-
-                <!-- Image URL Input -->
-                <div class="video-input-group" id="imageInputGroup">
-                    <label for="imageUrl">Image URL:</label>
-                    <input type="url" 
-                           id="imageUrl" 
-                           class="video-input" 
-                           placeholder="https://example.com/image.jpg"
-                           value="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&h=300&fit=crop">
-                </div>
-
-                <!-- Video Upload Input -->
-                <div class="video-input-group" id="videoInputGroup" style="display: none;">
-                    <label for="videoFile">Upload Video File:</label>
-                    <input type="file" 
-                           id="videoFile" 
-                           class="video-input" 
-                           accept="video/*"
-                           onchange="handleVideoUpload(event)">
-                    <small style="color: #ccc; display: block; margin-top: 0.5rem;">
-                        Supported formats: MP4, WebM, OGV (Max size: 50MB)
-                    </small>
-                </div>
-
-                <!-- YouTube URL Input -->
-                <div class="video-input-group" id="youtubeInputGroup" style="display: none;">
-                    <label for="youtubeUrl">YouTube Video URL:</label>
-                    <input type="url" 
-                           id="youtubeUrl" 
-                           class="video-input" 
-                           placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-                           onchange="handleYouTubeUrl(event)">
-                    <small style="color: #ccc; display: block; margin-top: 0.5rem;">
-                        Paste any YouTube video URL (watch, share, or embed link)
-                    </small>
-                </div>
-
-                <!-- Media Preview -->
-                <div class="video-preview" id="mediaPreview">
-                    <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&h=300&fit=crop" 
-                         alt="Preview" 
-                         style="width: 100%; height: 150px; object-fit: cover; border-radius: 10px;">
-                </div>
-
-                <!-- Apply Button -->
-                <button onclick="applyMediaChanges()" 
-                        style="background: #14f195; color: #0a0a0a; border: none; padding: 1rem 2rem; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 1rem;">
-                    Apply Changes
-                </button>
-            </div>
-
-            <!-- Toggle Admin Panel Button -->
-            <button onclick="toggleAdminPanel()" 
-                    style="background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2); padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer;">
-                Hide Admin Panel
-            </button>
-        </div>
-    </section>
-
-    <!-- Quick Admin Access Button (Floating) -->
-    <button id="adminToggleBtn" 
-            onclick="toggleAdminPanel()"
-            style="position: fixed; bottom: 20px; right: 20px; background: #14f195; color: #0a0a0a; border: none; padding: 1rem; border-radius: 50%; font-size: 1.2rem; cursor: pointer; z-index: 1000; box-shadow: 0 4px 15px rgba(20, 241, 149, 0.3);">
+    <!-- Admin Access Button (Floating) -->
+    <a href="admin.html" 
+       id="adminToggleBtn"
+       style="position: fixed; bottom: 20px; right: 20px; background: #14f195; color: #0a0a0a; border: none; padding: 1rem; border-radius: 50%; font-size: 1.2rem; cursor: pointer; z-index: 1000; box-shadow: 0 4px 15px rgba(20, 241, 149, 0.3); text-decoration: none; display: flex; align-items: center; justify-content: center;">
         ⚙️
-    </button>
+    </a>
 
     <!-- Status Message -->
     <div id="statusMessage" class="status-message"></div>
@@ -984,195 +830,34 @@
         // Global variables
         let currentRaffleHost = null;
         let raffleEndTime = null;
-        let currentMediaType = 'image';
-        let videoFile = null;
 
-        // Media Management Functions
-        
-        // Toggle between different media types in the raffle display
+        // Simple media toggle for display
         function toggleMedia() {
             const image = document.getElementById('raffleImage');
             const video = document.getElementById('raffleVideo');
             const youtube = document.getElementById('youtubeContainer');
             const toggleBtn = document.getElementById('mediaToggle');
 
-            if (currentMediaType === 'image') {
-                // If we have video or YouTube, show those instead
-                if (video.src && video.style.display === 'none') {
+            if (image.style.display !== 'none') {
+                // Currently showing image, switch to video/youtube if available
+                if (video.src) {
                     image.style.display = 'none';
                     video.style.display = 'block';
                     youtube.style.display = 'none';
                     toggleBtn.textContent = '🖼️ View Image';
-                } else if (youtube.querySelector('iframe').src && youtube.style.display === 'none') {
+                } else if (youtube.querySelector('iframe').src) {
                     image.style.display = 'none';
                     video.style.display = 'none';
                     youtube.style.display = 'block';
                     toggleBtn.textContent = '🖼️ View Image';
                 }
             } else {
-                // Switch back to image
+                // Currently showing video/youtube, switch back to image
                 image.style.display = 'block';
                 video.style.display = 'none';
                 youtube.style.display = 'none';
                 toggleBtn.textContent = '📺 View Video';
             }
-        }
-
-        // Admin Panel Functions
-        
-        function toggleAdminPanel() {
-            const panel = document.getElementById('adminPanel');
-            const toggleBtn = document.getElementById('adminToggleBtn');
-            
-            if (panel.style.display === 'none') {
-                panel.style.display = 'block';
-                toggleBtn.textContent = '✖️';
-            } else {
-                panel.style.display = 'none';
-                toggleBtn.textContent = '⚙️';
-            }
-        }
-
-        function selectMediaType(type) {
-            // Update active button
-            document.querySelectorAll('.video-type-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(type + 'TypeBtn').classList.add('active');
-            
-            // Show/hide appropriate input groups
-            document.getElementById('imageInputGroup').style.display = type === 'image' ? 'block' : 'none';
-            document.getElementById('videoInputGroup').style.display = type === 'video' ? 'block' : 'none';
-            document.getElementById('youtubeInputGroup').style.display = type === 'youtube' ? 'block' : 'none';
-            
-            currentMediaType = type;
-        }
-
-        function handleVideoUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            // Check file size (50MB limit)
-            if (file.size > 50 * 1024 * 1024) {
-                showStatus('Video file too large. Please use a file smaller than 50MB.', 'error');
-                return;
-            }
-
-            // Check file type
-            if (!file.type.startsWith('video/')) {
-                showStatus('Please select a valid video file.', 'error');
-                return;
-            }
-
-            videoFile = file;
-            
-            // Create preview
-            const url = URL.createObjectURL(file);
-            const preview = document.getElementById('mediaPreview');
-            preview.innerHTML = `
-                <video controls style="width: 100%; height: 150px; border-radius: 10px;">
-                    <source src="${url}" type="${file.type}">
-                    Your browser does not support the video tag.
-                </video>
-            `;
-
-            showStatus('Video uploaded successfully! Click "Apply Changes" to use it.', 'success');
-        }
-
-        function handleYouTubeUrl(event) {
-            const url = event.target.value.trim();
-            if (!url) return;
-
-            const videoId = extractYouTubeVideoId(url);
-            if (!videoId) {
-                showStatus('Invalid YouTube URL. Please use a valid YouTube video link.', 'error');
-                return;
-            }
-
-            // Create preview
-            const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-            const preview = document.getElementById('mediaPreview');
-            preview.innerHTML = `
-                <iframe src="${embedUrl}" 
-                        width="100%" 
-                        height="150" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen
-                        style="border-radius: 10px;">
-                </iframe>
-            `;
-
-            showStatus('YouTube video loaded successfully! Click "Apply Changes" to use it.', 'success');
-        }
-
-        function extractYouTubeVideoId(url) {
-            const patterns = [
-                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
-                /youtube\.com\/watch\?.*v=([^&\n?#]+)/
-            ];
-
-            for (const pattern of patterns) {
-                const match = url.match(pattern);
-                if (match) return match[1];
-            }
-            return null;
-        }
-
-        function applyMediaChanges() {
-            const mediaContainer = document.getElementById('mediaContainer');
-            const image = document.getElementById('raffleImage');
-            const video = document.getElementById('raffleVideo');
-            const youtube = document.getElementById('youtubeContainer');
-            const toggleBtn = document.getElementById('mediaToggle');
-
-            // Hide all media first
-            image.style.display = 'none';
-            video.style.display = 'none';
-            youtube.style.display = 'none';
-            toggleBtn.style.display = 'none';
-
-            if (currentMediaType === 'image') {
-                const imageUrl = document.getElementById('imageUrl').value.trim();
-                if (imageUrl) {
-                    image.src = imageUrl;
-                    image.style.display = 'block';
-                    showStatus('Image updated successfully!', 'success');
-                } else {
-                    showStatus('Please enter a valid image URL.', 'error');
-                    return;
-                }
-            } 
-            else if (currentMediaType === 'video' && videoFile) {
-                const videoUrl = URL.createObjectURL(videoFile);
-                video.src = videoUrl;
-                video.style.display = 'block';
-                toggleBtn.style.display = 'block';
-                toggleBtn.textContent = '🖼️ View Image';
-                
-                // Show image as fallback
-                image.style.display = 'none';
-                
-                showStatus('Video applied successfully!', 'success');
-            }
-            else if (currentMediaType === 'youtube') {
-                const youtubeUrl = document.getElementById('youtubeUrl').value.trim();
-                const videoId = extractYouTubeVideoId(youtubeUrl);
-                
-                if (videoId) {
-                    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-                    youtube.querySelector('iframe').src = embedUrl;
-                    youtube.style.display = 'block';
-                    toggleBtn.style.display = 'block';
-                    toggleBtn.textContent = '🖼️ View Image';
-                    
-                    showStatus('YouTube video applied successfully!', 'success');
-                } else {
-                    showStatus('Please enter a valid YouTube URL.', 'error');
-                    return;
-                }
-            }
-
-            // Close admin panel after applying
-            toggleAdminPanel();
         }
 
         // Initialize the application
