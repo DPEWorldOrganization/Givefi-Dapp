@@ -1,8 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token, TokenAccount, Transfer};
-use switchboard_solana::{VrfAccountData, VrfRequestRandomness, VrfSettle};
 
-declare_id!("5MrnsrCYpTrbv4iZKD51Caz8sXnQVZFZPMZ31FwgcTqz");
+declare_id!("48mihemhp1UxYjz1UznH4fJ9FnF3AfN3XG18GasPFamU");
 
 #[program]
 pub mod givefi {
@@ -160,83 +159,36 @@ pub mod givefi {
         require!(giveaway.winner.is_none(), GivefiError::WinnerAlreadyDrawn);
         require!(giveaway.current_entries >= giveaway.min_participants, GivefiError::MinParticipantsNotMet);
 
-        // Request randomness from Switchboard VRF
-        let vrf_request = VrfRequestRandomness {
-            authority: ctx.accounts.giveaway.to_account_info(),
-            vrf: ctx.accounts.vrf.to_account_info(),
-            oracle_queue: ctx.accounts.oracle_queue.to_account_info(),
-            queue_authority: ctx.accounts.queue_authority.to_account_info(),
-            data_buffer: ctx.accounts.data_buffer.to_account_info(),
-            permission: ctx.accounts.permission.to_account_info(),
-            escrow: ctx.accounts.escrow.to_account_info(),
-            payer_wallet: ctx.accounts.payer.to_account_info(),
-            payer_authority: ctx.accounts.payer.to_account_info(),
-            recent_blockhashes: ctx.accounts.recent_blockhashes.to_account_info(),
-            program_state: ctx.accounts.program_state.to_account_info(),
-            token_program: ctx.accounts.token_program.to_account_info(),
-        };
-
-        let giveaway_id_bytes = giveaway.id.to_le_bytes();
-        let seeds = &[b"giveaway", &giveaway_id_bytes[..], &[giveaway.bump]];
-        let signer = &[&seeds[..]];
-
-        let cpi_ctx = CpiContext::new_with_signer(
-            ctx.accounts.switchboard_program.to_account_info(),
-            vrf_request,
-            signer,
-        );
-
-        switchboard_solana::cpi::vrf_request_randomness(cpi_ctx)?;
-
+        // For now, mark randomness as requested and use fallback method
+        // TODO: Implement proper Switchboard VRF integration when updated
         giveaway.randomness_requested = true;
+        
+        msg!("Randomness requested for giveaway {}", giveaway.id);
         Ok(())
     }
 
     pub fn settle_randomness_and_pick_winner(ctx: Context<SettleRandomness>) -> Result<()> {
         let giveaway = &mut ctx.accounts.giveaway;
+        let clock = Clock::get()?;
 
         require!(giveaway.is_active, GivefiError::GiveawayNotActive);
         require!(giveaway.randomness_requested, GivefiError::RandomnessNotRequested);
         require!(giveaway.winner.is_none(), GivefiError::WinnerAlreadyDrawn);
 
-        // Settle the VRF and get the random result
-        let vrf_settle = VrfSettle {
-            vrf: ctx.accounts.vrf.to_account_info(),
-            authority: ctx.accounts.giveaway.to_account_info(),
-        };
-
-        let giveaway_id_bytes = giveaway.id.to_le_bytes();
-        let seeds = &[b"giveaway", &giveaway_id_bytes[..], &[giveaway.bump]];
-        let signer = &[&seeds[..]];
-
-        let cpi_ctx = CpiContext::new_with_signer(
-            ctx.accounts.switchboard_program.to_account_info(),
-            vrf_settle,
-            signer,
-        );
-
-        switchboard_solana::cpi::vrf_settle(cpi_ctx)?;
-
-        // Get the random result from the VRF account
-        let vrf_account_info = &ctx.accounts.vrf;
-        let vrf = VrfAccountData::new(vrf_account_info)?;
-        let result_buffer = vrf.get_result()?;
+        // Use clock-based randomness as temporary solution
+        // TODO: Implement proper VRF settlement when Switchboard is updated
+        let slot = clock.slot;
+        let timestamp = clock.unix_timestamp;
         
-        if result_buffer == [0u8; 32] {
-            return Err(GivefiError::RandomnessNotSettled.into());
-        }
-
-        // Convert the random bytes to a number and pick winner
-        let random_value = u64::from_le_bytes([
-            result_buffer[0], result_buffer[1], result_buffer[2], result_buffer[3],
-            result_buffer[4], result_buffer[5], result_buffer[6], result_buffer[7]
-        ]);
-
-        let winning_entry = random_value % giveaway.current_entries;
+        // Combine slot and timestamp for pseudo-randomness
+        let random_seed = ((slot as u64) ^ (timestamp as u64)).wrapping_mul(16777619);
+        let winning_entry = random_seed % giveaway.current_entries;
+        
         giveaway.winner = Some(winning_entry);
         giveaway.is_successful = true;
         giveaway.is_active = false;
 
+        msg!("Winner selected: entry #{}", winning_entry);
         Ok(())
     }
 
@@ -250,24 +202,24 @@ pub mod givefi {
 
         if giveaway.current_entries >= giveaway.min_participants {
             giveaway.is_successful = true;
-            // Use recent blockhash as fallback randomness source (better than timestamp)
-            let recent_blockhashes = &ctx.accounts.recent_blockhashes;
-            let most_recent = Clock::get()?.slot;
             
-            // Use slot hash for randomness (still not perfect but better than timestamp)
-            let slot_hash = recent_blockhashes.slot_hashes.get(0)
-                .ok_or(GivefiError::SlotHashUnavailable)?;
+            // Use clock-based pseudo-randomness as fallback
+            let slot = clock.slot;
+            let timestamp = clock.unix_timestamp;
+            let epoch = clock.epoch;
             
-            let random_bytes = slot_hash.hash.to_bytes();
-            let random_num = u64::from_le_bytes([
-                random_bytes[0], random_bytes[1], random_bytes[2], random_bytes[3],
-                random_bytes[4], random_bytes[5], random_bytes[6], random_bytes[7]
-            ]);
-
-            let winning_entry = random_num % giveaway.current_entries;
+            // Combine multiple clock values for better pseudo-randomness
+            let random_seed = ((slot as u64) ^ (timestamp as u64) ^ (epoch as u64))
+                .wrapping_mul(16777619)
+                .wrapping_add(1013904223);
+            
+            let winning_entry = random_seed % giveaway.current_entries;
             giveaway.winner = Some(winning_entry);
+            
+            msg!("Fallback winner selected: entry #{}", winning_entry);
         } else {
             giveaway.is_successful = false;
+            msg!("Giveaway failed: insufficient participants");
         }
 
         giveaway.is_active = false;
@@ -621,29 +573,6 @@ pub struct RequestRandomness<'info> {
     )]
     pub giveaway: Account<'info, Giveaway>,
     pub authority: Signer<'info>,
-    /// CHECK: Switchboard VRF account
-    #[account(mut)]
-    pub vrf: AccountInfo<'info>,
-    /// CHECK: Switchboard Oracle Queue account
-    pub oracle_queue: AccountInfo<'info>,
-    /// CHECK: Switchboard Queue Authority
-    pub queue_authority: AccountInfo<'info>,
-    /// CHECK: Switchboard Data Buffer
-    pub data_buffer: AccountInfo<'info>,
-    /// CHECK: Switchboard Permission account
-    pub permission: AccountInfo<'info>,
-    /// CHECK: Switchboard Escrow account
-    #[account(mut)]
-    pub escrow: AccountInfo<'info>,
-    /// CHECK: Recent blockhashes sysvar
-    pub recent_blockhashes: AccountInfo<'info>,
-    /// CHECK: Switchboard program state
-    pub program_state: AccountInfo<'info>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    pub token_program: Program<'info, Token>,
-    /// CHECK: Switchboard program
-    pub switchboard_program: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -655,11 +584,6 @@ pub struct SettleRandomness<'info> {
     )]
     pub giveaway: Account<'info, Giveaway>,
     pub authority: Signer<'info>,
-    /// CHECK: Switchboard VRF account
-    #[account(mut)]
-    pub vrf: AccountInfo<'info>,
-    /// CHECK: Switchboard program
-    pub switchboard_program: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]
@@ -671,8 +595,6 @@ pub struct DrawWinner<'info> {
     )]
     pub giveaway: Account<'info, Giveaway>,
     pub authority: Signer<'info>,
-    /// CHECK: Recent blockhashes sysvar
-    pub recent_blockhashes: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]

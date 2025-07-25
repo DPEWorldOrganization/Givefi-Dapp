@@ -83,15 +83,118 @@
             50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
         }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
-            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+        /* Advertisement Banner */
+        .ad-banner-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, rgba(20, 241, 149, 0.15), rgba(153, 69, 255, 0.15));
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 1001;
+            overflow: hidden;
+        }
+
+        .ad-banner {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0 2rem;
+            position: relative;
+        }
+
+        .ad-banner:hover {
+            background: rgba(20, 241, 149, 0.1);
+        }
+
+        .ad-content {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .ad-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .ad-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .ad-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ad-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .ad-sponsored {
+            background: rgba(20, 241, 149, 0.2);
+            color: var(--primary-green);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid rgba(20, 241, 149, 0.3);
+        }
+
+        .ad-timer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            background: var(--primary-green);
+            transition: width 0.1s linear;
+        }
+
+        .ad-controls {
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 6px;
+        }
+
+        .ad-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ad-dot.active {
+            background: var(--primary-green);
+            transform: scale(1.2);
         }
 
         /* Glass Header */
         .glass-header {
             position: fixed;
-            top: 0;
+            top: 60px; /* Offset for ad banner */
             left: 0;
             right: 0;
             height: 80px;
@@ -575,10 +678,10 @@
             height: 8px;
             background: var(--primary-green);
             border-radius: 50%;
-            animation: pulse 2s infinite;
+            animation: pulseScale 2s infinite;
         }
 
-        @keyframes pulse {
+        @keyframes pulseScale {
             0%, 100% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.2); opacity: 0.7; }
         }
@@ -739,10 +842,10 @@
             height: 8px;
             background: var(--primary-green);
             border-radius: 50%;
-            animation: pulse 2s infinite;
+            animation: pulseGlow 2s infinite;
         }
 
-        @keyframes pulse {
+        @keyframes pulseGlow {
             0% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.5; transform: scale(1.2); }
             100% { opacity: 1; transform: scale(1); }
@@ -891,7 +994,7 @@
             color: #ff6b6b;
         }
 
-        /* Responsive Design */
+        /* Responsive Design - Enhanced Mobile Support */
         @media (max-width: 1200px) {
             .marketplace-grid {
                 grid-template-columns: 1fr;
@@ -915,52 +1018,120 @@
         }
 
         @media (max-width: 768px) {
+            /* Mobile Ad Banner */
+            .ad-banner-container {
+                height: 50px;
+            }
+
+            .ad-banner {
+                padding: 0 1rem;
+            }
+
+            .ad-logo {
+                width: 32px;
+                height: 32px;
+            }
+
+            .ad-title {
+                font-size: 0.9rem;
+            }
+
+            .ad-description {
+                font-size: 0.75rem;
+            }
+
+            .ad-sponsored {
+                font-size: 0.7rem;
+                padding: 3px 6px;
+            }
+
+            .ad-controls {
+                right: 0.5rem;
+            }
+
+            .ad-dot {
+                width: 6px;
+                height: 6px;
+            }
+
+            /* Mobile Header */
+            .glass-header {
+                top: 50px; /* Adjusted for smaller ad banner */
+                height: 70px;
+                padding: 0 1rem;
+                flex-wrap: wrap;
+            }
+
+            .logo-section {
+                gap: 0.5rem;
+            }
+
+            .logo-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
+            }
+
+            .logo-text {
+                font-size: 1.3rem;
+            }
+
+            .nav-links {
+                display: none; /* Hide navigation on mobile */
+            }
+
+            .wallet-connect {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+
+            .wallet-connect span {
+                display: none; /* Only show icon on mobile */
+            }
+
+            /* Mobile Marketplace */
+            .marketplace-container {
+                margin-top: 120px; /* Account for mobile ad banner + header */
+                padding: 0 1rem;
+            }
+
             .main-header {
-                padding: 0 15px;
+                padding: 0 1rem;
                 height: auto;
                 min-height: 70px;
+                flex-direction: column;
+                gap: 1rem;
             }
 
             .header-content {
                 flex-direction: column;
-                gap: 15px;
+                gap: 1rem;
                 align-items: stretch;
-            }
-
-            .logo-section {
-                justify-content: center;
-            }
-
-            .logo-section h1 {
-                font-size: 1.8rem;
+                width: 100%;
             }
 
             .search-container {
-                order: 3;
                 width: 100%;
+                max-width: none;
             }
 
             .search-input {
                 width: 100%;
                 font-size: 16px; /* Prevent zoom on iOS */
+                padding: 12px 20px;
             }
 
             .header-actions {
-                order: 2;
                 justify-content: center;
                 flex-wrap: wrap;
                 gap: 10px;
             }
 
             .action-btn {
-                padding: 8px 16px;
+                padding: 10px 16px;
                 font-size: 0.9rem;
-                min-width: 100px;
-            }
-
-            .marketplace-container {
-                margin-top: 200px; /* Account for taller mobile header + ad banner */
-                padding: 0 10px;
+                min-width: 120px;
+                white-space: nowrap;
             }
 
             .stats-bar {
@@ -971,6 +1142,7 @@
 
             .stat-card {
                 padding: 12px;
+                min-height: 80px;
             }
 
             .stat-value {
@@ -979,8 +1151,10 @@
 
             .stat-label {
                 font-size: 0.75rem;
+                line-height: 1.2;
             }
 
+            /* Mobile Raffle Cards */
             .raffle-grid {
                 grid-template-columns: 1fr;
                 gap: 15px;
@@ -988,7 +1162,119 @@
 
             .raffle-card {
                 max-width: none;
+                margin: 0;
             }
+
+            .raffle-image {
+                height: 200px;
+            }
+
+            .raffle-content {
+                padding: 15px;
+            }
+
+            .raffle-title {
+                font-size: 1.1rem;
+                line-height: 1.3;
+            }
+
+            .raffle-meta {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .meta-item {
+                font-size: 0.8rem;
+            }
+
+            .raffle-stats {
+                margin: 15px 0;
+            }
+
+            .progress-info {
+                flex-direction: column;
+                gap: 5px;
+                text-align: center;
+            }
+
+            .countdown {
+                flex-wrap: wrap;
+                gap: 8px;
+                justify-content: center;
+            }
+
+            .countdown-item {
+                min-width: 60px;
+            }
+
+            .raffle-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .enter-btn,
+            .view-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            /* Extra small mobile devices */
+            .marketplace-container {
+                padding: 0 0.5rem;
+            }
+
+            .raffle-card {
+                border-radius: 12px;
+            }
+
+            .raffle-content {
+                padding: 12px;
+            }
+
+            .raffle-title {
+                font-size: 1rem;
+            }
+
+            .stats-bar {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .stat-card {
+                padding: 10px;
+                min-height: 70px;
+                text-align: center;
+            }
+
+            .countdown {
+                gap: 6px;
+            }
+
+            .countdown-item {
+                min-width: 50px;
+                padding: 8px 4px;
+            }
+
+            .countdown-value {
+                font-size: 1rem;
+            }
+
+            .countdown-label {
+                font-size: 0.7rem;
+            }
+
+            /* Prevent horizontal scrolling */
+            body {
+                overflow-x: hidden;
+            }
+
+            .glass-header,
+            .ad-banner-container {
+                padding: 0 0.5rem;
+            }
+        }
 
             .raffle-title {
                 font-size: 1.1rem;
@@ -1235,6 +1521,189 @@
                 width: 6px;
                 height: 6px;
             }
+        }
+
+        /* Admin Controls Styles */
+        .admin-controls {
+            background: linear-gradient(135deg, rgba(255, 69, 0, 0.1), rgba(255, 140, 0, 0.1));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px;
+            position: relative;
+        }
+
+        .admin-panel h3 {
+            color: #ff8c00;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-btn {
+            background: linear-gradient(135deg, #ff4500, #ff8c00);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 69, 0, 0.3);
+        }
+
+        .admin-btn-small {
+            background: linear-gradient(135deg, #ff4500, #ff8c00);
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .admin-btn-cancel {
+            background: linear-gradient(135deg, #666, #888);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .admin-duration-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255, 140, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .admin-duration-control label {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .admin-duration-control input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            border-radius: 6px;
+            padding: 5px 10px;
+            color: var(--text-primary);
+            width: 100px;
+        }
+
+        /* Admin Ad Form Styles */
+        .admin-ad-form-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .admin-ad-form {
+            background: var(--glass-bg);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .admin-ad-form h3 {
+            color: #ff8c00;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff8c00;
+            box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        /* Status Message Styles */
+        .status-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 15px 25px;
+            color: var(--text-primary);
+            font-weight: 600;
+            z-index: 3000;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+
+        .status-message.success {
+            border-color: #14f195;
+            background: linear-gradient(135deg, rgba(20, 241, 149, 0.1), rgba(20, 241, 149, 0.05));
+        }
+
+        .status-message.error {
+            border-color: #ff4757;
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.1), rgba(255, 71, 87, 0.05));
+        }
+
+        .status-message.info {
+            border-color: #3742fa;
+            background: linear-gradient(135deg, rgba(55, 66, 250, 0.1), rgba(55, 66, 250, 0.05));
         }
 
         /* Mobile Filter Toggle Button */
@@ -1509,10 +1978,10 @@
             border-radius: 10px;
             margin-bottom: 2rem;
             font-weight: 600;
-            animation: pulse 2s infinite;
+            animation: pulseFade 2s infinite;
         }
 
-        @keyframes pulse {
+        @keyframes pulseFade {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.8; }
         }
@@ -2413,6 +2882,12 @@
         // Smart Contract Configuration
         const PROGRAM_ID = '48mihemhp1UxYjz1UznH4fJ9FnF3AfN3XG18GasPFamU';
         const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
+        
+        // Admin Configuration
+        const ADMIN_WALLET_ADDRESS = '5YMBWHdvqpcKy2Ae6tmhFe81rGb8gHkkkRVpkdWQiV7T'; // Your admin wallet address
+        // Example: const ADMIN_WALLET_ADDRESS = '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU';
+        let currentWallet = null;
+        let isAdminConnected = false;
 
         // Marketplace State
         let marketplaceState = {
@@ -2557,32 +3032,146 @@
             }
 
             // DAO Functions for managing ads
-            addAdvertisement(ad) {
-                if (this.advertisements.length < 5) {
-                    this.advertisements.push(ad);
+            addAdvertisement(adData, isAdmin = false) {
+                // Admin override check
+                if (isAdmin && isAdminConnected) {
+                    const adminAd = {
+                        id: Date.now(),
+                        title: adData.title,
+                        description: adData.description,
+                        logo: adData.logo,
+                        link: adData.link,
+                        giveAmountPaid: 0, // Admin ads are free
+                        duration: adData.duration || this.adDuration,
+                        active: true,
+                        startTime: Date.now(),
+                        endTime: Date.now() + (adData.totalDuration || 86400000), // 24 hours default
+                        isAdminAd: true,
+                        priority: 1 // Admin ads get priority
+                    };
+                    
+                    // Insert admin ad at the beginning
+                    this.advertisements.unshift(adminAd);
+                    console.log(`Admin Advertisement added: ${adminAd.title} - FREE (Admin Override)`);
+                    this.updateAdDisplay();
+                    this.updateAdControls();
                     return true;
                 }
-                return false; // Max 5 ads
+                
+                // Regular DAO process - Verify $GIVE payment and DAO approval
+                if (!this.verifyGivePayment(adData.giveAmountPaid)) {
+                    console.error('Insufficient $GIVE payment for advertisement');
+                    return false;
+                }
+                
+                const newAd = {
+                    id: Date.now(),
+                    title: adData.title,
+                    description: adData.description,
+                    logo: adData.logo,
+                    link: adData.link,
+                    giveAmountPaid: adData.giveAmountPaid,
+                    duration: adData.duration || this.adDuration,
+                    active: true,
+                    startTime: Date.now(),
+                    endTime: Date.now() + (adData.totalDuration || 86400000), // 24 hours default
+                    isAdminAd: false,
+                    priority: 0
+                };
+                
+                this.advertisements.push(newAd);
+                console.log(`Advertisement added: ${newAd.title} - Paid ${newAd.giveAmountPaid} $GIVE`);
+                return true;
             }
 
-            removeAdvertisement(adId) {
-                this.advertisements = this.advertisements.filter(ad => ad.id !== adId);
+            verifyGivePayment(amount) {
+                // In production, this would verify the actual $GIVE token transfer
+                // For now, we'll simulate the verification
+                return amount >= 1000; // Minimum 1000 $GIVE tokens required
+            }
+
+            removeAdvertisement(adId, isAdmin = false) {
+                // Admin can remove any ad, regular users can only remove their own
+                if (isAdmin && isAdminConnected) {
+                    this.advertisements = this.advertisements.filter(ad => ad.id !== adId);
+                    console.log(`Admin removed advertisement: ${adId}`);
+                } else {
+                    // Regular users would need verification here
+                    console.log('Only admin can remove advertisements');
+                    return false;
+                }
+                
                 if (this.currentAdIndex >= this.advertisements.length) {
                     this.currentAdIndex = 0;
                 }
                 this.currentAd = this.advertisements[this.currentAdIndex];
                 this.updateAdDisplay();
                 this.updateAdControls();
+                return true;
             }
 
-            updateAdDuration(newDuration) {
+            // Admin function to pause/resume ads
+            adminPauseAd(adId) {
+                if (!isAdminConnected) {
+                    console.error('Admin access required');
+                    return false;
+                }
+                
+                const ad = this.advertisements.find(a => a.id === adId);
+                if (ad) {
+                    ad.active = false;
+                    console.log(`Admin paused advertisement: ${ad.title}`);
+                    return true;
+                }
+                return false;
+            }
+
+            adminResumeAd(adId) {
+                if (!isAdminConnected) {
+                    console.error('Admin access required');
+                    return false;
+                }
+                
+                const ad = this.advertisements.find(a => a.id === adId);
+                if (ad) {
+                    ad.active = true;
+                    console.log(`Admin resumed advertisement: ${ad.title}`);
+                    return true;
+                }
+                return false;
+            }
+
+            // Admin function to change ad duration
+            adminSetAdDuration(newDuration) {
+                if (!isAdminConnected) {
+                    console.error('Admin access required');
+                    return false;
+                }
+                
                 this.adDuration = newDuration;
+                console.log(`Admin set ad duration to: ${newDuration}ms`);
+                this.startRotation(); // Restart with new duration
+                return true;
+            }
+
+            removeExpiredAds() {
+                const now = Date.now();
+                this.advertisements = this.advertisements.filter(ad => 
+                    ad.active && ad.endTime > now
+                );
+            }
+
+            pause() {
+                if (this.adInterval) {
+                    clearInterval(this.adInterval);
+                    this.adInterval = null;
+                }
+            }
+
+            resume() {
                 this.startRotation();
             }
         }
-
-        // Initialize Advertisement Manager
-        const adManager = new AdvertisementManager();
 
         // Mobile Functions
         function toggleMobileFilters() {
@@ -2592,9 +3181,262 @@
             }
         }
 
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Advertisement Manager
+            if (typeof AdvertisementManager !== 'undefined') {
+                window.adManager = new AdvertisementManager();
+                initializeAdControls();
+            }
+            
+            // Check for auto-connect wallet
+            checkAutoConnectWallet();
+            
+            // Other initializations...
+            if (typeof connectWallet === 'function') {
+                // Wallet initialization if needed
+            }
+        });
+
+        async function checkAutoConnectWallet() {
+            try {
+                const { solana } = window;
+                if (solana && solana.isConnected) {
+                    currentWallet = solana.publicKey.toString();
+                    checkAdminStatus(currentWallet);
+                    updateWalletDisplay();
+                }
+            } catch (error) {
+                console.log('No auto-connect available');
+            }
+        }
+
         // Advertisement Functions
         function openAdLink() {
-            adManager.openCurrentAdLink();
+            if (window.adManager) {
+                window.adManager.openCurrentAdLink();
+            }
+        }
+
+        // Add click handlers for ad control dots
+        function initializeAdControls() {
+            const dots = document.querySelectorAll('.ad-dot');
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    window.adManager.goToAd(index);
+                });
+            });
+        }
+
+        // Admin Advertisement Functions
+        function showAdminAdForm() {
+            if (!isAdminConnected) {
+                showStatusMessage('Admin access required', 'error');
+                return;
+            }
+
+            const form = document.createElement('div');
+            form.id = 'adminAdForm';
+            form.className = 'admin-ad-form-overlay';
+            form.innerHTML = `
+                <div class="admin-ad-form">
+                    <h3>Add Admin Advertisement (FREE)</h3>
+                    <form onsubmit="submitAdminAd(event)">
+                        <div class="form-group">
+                            <label>Title:</label>
+                            <input type="text" id="adminAdTitle" required maxlength="50">
+                        </div>
+                        <div class="form-group">
+                            <label>Description:</label>
+                            <input type="text" id="adminAdDescription" required maxlength="100">
+                        </div>
+                        <div class="form-group">
+                            <label>Link URL:</label>
+                            <input type="url" id="adminAdLink" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Logo URL (optional):</label>
+                            <input type="url" id="adminAdLogo">
+                        </div>
+                        <div class="form-group">
+                            <label>Duration (hours):</label>
+                            <input type="number" id="adminAdDuration" value="24" min="1" max="168">
+                        </div>
+                        <div class="form-buttons">
+                            <button type="submit" class="admin-btn">Add Advertisement</button>
+                            <button type="button" onclick="closeAdminAdForm()" class="admin-btn-cancel">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            
+            document.body.appendChild(form);
+        }
+
+        function submitAdminAd(event) {
+            event.preventDefault();
+            
+            if (!isAdminConnected) {
+                showStatusMessage('Admin access required', 'error');
+                return;
+            }
+
+            const adData = {
+                title: document.getElementById('adminAdTitle').value,
+                description: document.getElementById('adminAdDescription').value,
+                link: document.getElementById('adminAdLink').value,
+                logo: document.getElementById('adminAdLogo').value || getDefaultAdLogo(),
+                totalDuration: parseInt(document.getElementById('adminAdDuration').value) * 3600000 // Convert hours to ms
+            };
+
+            const success = window.adManager.addAdvertisement(adData, true); // true = admin override
+            
+            if (success) {
+                showStatusMessage('Admin advertisement added successfully!', 'success');
+                closeAdminAdForm();
+            } else {
+                showStatusMessage('Failed to add advertisement', 'error');
+            }
+        }
+
+        function closeAdminAdForm() {
+            const form = document.getElementById('adminAdForm');
+            if (form) {
+                form.remove();
+            }
+        }
+
+        function pauseAllAds() {
+            if (!isAdminConnected) {
+                showStatusMessage('Admin access required', 'error');
+                return;
+            }
+            
+            window.adManager.pause();
+            showStatusMessage('All advertisements paused', 'success');
+        }
+
+        function resumeAllAds() {
+            if (!isAdminConnected) {
+                showStatusMessage('Admin access required', 'error');
+                return;
+            }
+            
+            window.adManager.resume();
+            showStatusMessage('All advertisements resumed', 'success');
+        }
+
+        function updateAdDuration() {
+            if (!isAdminConnected) {
+                showStatusMessage('Admin access required', 'error');
+                return;
+            }
+            
+            const newDuration = parseInt(document.getElementById('adminDuration').value);
+            window.adManager.adminSetAdDuration(newDuration);
+            showStatusMessage(`Ad duration updated to ${newDuration}ms`, 'success');
+        }
+
+        function getDefaultAdLogo() {
+            return "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiByeD0iMTIiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8dGV4dCB4PSIyNSIgeT0iMzAiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyMCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkE8L3RleHQ+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MCIgeDE9IjAiIHkxPSIwIiB4Mj0iNTAiIHkyPSI1MCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMTRGMTk1Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzk5NDVGRiIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=";
+        }
+
+        function updateWalletDisplay() {
+            const walletBtn = document.querySelector('.connect-wallet-btn');
+            if (walletBtn && currentWallet) {
+                const shortAddress = currentWallet.slice(0, 4) + '...' + currentWallet.slice(-4);
+                walletBtn.textContent = shortAddress;
+                
+                if (isAdminConnected) {
+                    walletBtn.style.background = 'linear-gradient(135deg, #ff4500, #ff8c00)';
+                    walletBtn.title = 'Admin Wallet Connected';
+                }
+            }
+        }
+
+        function showStatusMessage(message, type = 'info') {
+            const statusEl = document.getElementById('statusMessage');
+            if (statusEl) {
+                statusEl.textContent = message;
+                statusEl.className = `status-message ${type}`;
+                statusEl.style.display = 'block';
+                
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // Wallet connection and admin detection
+        async function connectWallet() {
+            try {
+                const { solana } = window;
+                if (!solana) {
+                    showStatusMessage('Please install Phantom wallet', 'error');
+                    return null;
+                }
+
+                const response = await solana.connect();
+                currentWallet = response.publicKey.toString();
+                
+                // Check if connected wallet is admin
+                checkAdminStatus(currentWallet);
+                
+                showStatusMessage('Wallet connected successfully!', 'success');
+                updateWalletDisplay();
+                return response.publicKey;
+            } catch (error) {
+                console.error('Error connecting wallet:', error);
+                showStatusMessage('Failed to connect wallet', 'error');
+                return null;
+            }
+        }
+
+        function checkAdminStatus(walletAddress) {
+            isAdminConnected = (walletAddress === ADMIN_WALLET_ADDRESS);
+            
+            if (isAdminConnected) {
+                console.log('🛡️ Admin wallet connected - Full privileges enabled');
+                showStatusMessage('Admin mode activated', 'success');
+                showAdminControls();
+            } else {
+                console.log('👤 Regular user connected');
+                hideAdminControls();
+            }
+        }
+
+        function showAdminControls() {
+            // Show admin advertisement controls
+            const adminControls = document.createElement('div');
+            adminControls.id = 'adminControls';
+            adminControls.className = 'admin-controls';
+            adminControls.innerHTML = `
+                <div class="admin-panel">
+                    <h3>🛡️ Admin Advertisement Controls</h3>
+                    <button onclick="showAdminAdForm()" class="admin-btn">Add Admin Ad (FREE)</button>
+                    <button onclick="showAdManagement()" class="admin-btn">Manage Ads</button>
+                    <button onclick="pauseAllAds()" class="admin-btn">Pause All Ads</button>
+                    <button onclick="resumeAllAds()" class="admin-btn">Resume All Ads</button>
+                    <div class="admin-duration-control">
+                        <label>Ad Duration (ms):</label>
+                        <input type="number" id="adminDuration" value="10000" min="1000" max="30000">
+                        <button onclick="updateAdDuration()" class="admin-btn-small">Update</button>
+                    </div>
+                </div>
+            `;
+            
+            // Insert admin controls after the header
+            const header = document.getElementById('header');
+            if (header && !document.getElementById('adminControls')) {
+                header.insertAdjacentElement('afterend', adminControls);
+            }
+        }
+
+        function hideAdminControls() {
+            const adminControls = document.getElementById('adminControls');
+            if (adminControls) {
+                adminControls.remove();
+            }
         }
 
         // Global state - wallet-based data
