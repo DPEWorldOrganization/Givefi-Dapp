@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GiveFi Admin - Raffle Management Dashboard</title>
+    <title>GiveFi Admin Panel - Raffle Management Dashboard</title>
     
     <!-- Solana Web3.js -->
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.js"></script>
@@ -21,34 +21,34 @@
             background: #0a0a0a;
             color: #ffffff;
             line-height: 1.6;
-            min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* Animated Background */
-        .bg-animation {
+        /* Admin Background */
+        .admin-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(45deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533a7b 100%);
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533a7b 100%);
             background-size: 400% 400%;
-            animation: gradientShift 15s ease infinite;
-            z-index: -2;
+            animation: adminGradient 20s ease infinite;
+            z-index: -1;
         }
 
-        @keyframes gradientShift {
+        @keyframes adminGradient {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
 
         /* Header */
-        .header {
+        .admin-header {
             background: rgba(0, 0, 0, 0.8);
-            padding: 1rem 0;
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(20, 241, 149, 0.2);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -57,20 +57,28 @@
         .header-content {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 0 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 2rem;
         }
 
-        .logo {
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .admin-logo h1 {
             font-size: 1.8rem;
             font-weight: 700;
-            color: #14f195;
-            text-decoration: none;
+            background: linear-gradient(135deg, #14f195, #9945FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .header-nav {
+        .admin-nav {
             display: flex;
             gap: 2rem;
             align-items: center;
@@ -79,116 +87,110 @@
         .nav-link {
             color: #ccc;
             text-decoration: none;
-            transition: color 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
         }
 
-        .nav-link:hover {
+        .nav-link:hover, .nav-link.active {
             color: #14f195;
+            background: rgba(20, 241, 149, 0.1);
         }
 
-        .connect-btn {
-            background: linear-gradient(135deg, #14f195 0%, #9945ff 100%);
-            color: #0a0a0a;
-            border: none;
+        .wallet-status {
             padding: 0.8rem 1.5rem;
-            border-radius: 25px;
+            background: rgba(20, 241, 149, 0.1);
+            border: 1px solid #14f195;
+            border-radius: 8px;
+            color: #14f195;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        .connect-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(20, 241, 149, 0.3);
+        .wallet-status:hover {
+            background: #14f195;
+            color: #0a0a0a;
         }
 
-        .connected {
-            background: rgba(20, 241, 149, 0.2);
-            color: #14f195;
-            border: 1px solid #14f195;
-        }
-
-        /* Main Container */
-        .container {
+        /* Main Content */
+        .admin-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 2rem 1rem;
         }
 
-        /* Dashboard Grid */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: 1fr 2fr;
+            grid-template-columns: 1fr 1fr;
             gap: 2rem;
             margin-bottom: 3rem;
         }
 
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .admin-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(20, 241, 149, 0.1);
+            border-color: rgba(20, 241, 149, 0.3);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
             gap: 1rem;
             margin-bottom: 2rem;
         }
 
-        .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 1.5rem;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-        }
-
-        .stat-number {
+        .card-icon {
             font-size: 2rem;
-            font-weight: 700;
-            color: #14f195;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-            color: #ccc;
-            font-size: 0.9rem;
-        }
-
-        /* Section Cards */
-        .section-card {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 2rem;
+            background: linear-gradient(135deg, #14f195, #9945FF);
+            padding: 1rem;
             border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 2rem;
-            backdrop-filter: blur(10px);
-        }
-
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #14f195;
-            margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
         }
 
         /* Form Elements */
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .form-label {
             display: block;
             color: #14f195;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.8rem;
             font-weight: 600;
+            font-size: 1rem;
         }
 
         .form-input {
             width: 100%;
-            padding: 0.8rem;
+            padding: 1rem;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
+            border-radius: 10px;
             color: white;
             font-size: 1rem;
             transition: all 0.3s ease;
@@ -197,33 +199,47 @@
         .form-input:focus {
             outline: none;
             border-color: #14f195;
-            box-shadow: 0 0 0 2px rgba(20, 241, 149, 0.2);
+            box-shadow: 0 0 0 3px rgba(20, 241, 149, 0.2);
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .form-textarea {
-            min-height: 100px;
+            min-height: 120px;
             resize: vertical;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
         }
 
         /* Buttons */
         .btn {
-            padding: 0.8rem 1.5rem;
+            padding: 1rem 2rem;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: 600;
+            font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 1rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .btn-primary {
-            background: #14f195;
+            background: linear-gradient(135deg, #14f195, #9945FF);
             color: #0a0a0a;
         }
 
         .btn-primary:hover {
-            background: #11d182;
             transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(20, 241, 149, 0.3);
         }
 
         .btn-secondary {
@@ -234,135 +250,139 @@
 
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.2);
+            border-color: #14f195;
         }
 
         .btn-danger {
-            background: #ff6b7a;
+            background: linear-gradient(135deg, #ff6b7a, #ff4757);
             color: white;
         }
 
         .btn-danger:hover {
-            background: #ff5566;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 107, 122, 0.3);
         }
 
         /* Media Upload */
-        .media-selector {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .media-type-btn {
-            padding: 0.8rem 1.5rem;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: white;
-            cursor: pointer;
+        .media-upload-area {
+            border: 2px dashed rgba(20, 241, 149, 0.3);
+            border-radius: 15px;
+            padding: 3rem 1rem;
+            text-align: center;
             transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
         }
 
-        .media-type-btn.active {
-            background: #14f195;
-            color: #0a0a0a;
+        .media-upload-area:hover {
             border-color: #14f195;
+            background: rgba(20, 241, 149, 0.05);
         }
 
-        .media-type-btn:hover {
-            background: rgba(20, 241, 149, 0.2);
+        .media-upload-area.dragover {
             border-color: #14f195;
+            background: rgba(20, 241, 149, 0.1);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #ccc;
+        }
+
+        .upload-subtext {
+            font-size: 0.9rem;
+            color: #888;
         }
 
         .media-preview {
-            margin-top: 1rem;
-            border-radius: 10px;
+            margin-top: 2rem;
+            border-radius: 15px;
             overflow: hidden;
-            max-width: 400px;
+            max-height: 300px;
         }
 
         .media-preview img,
-        .media-preview video,
-        .media-preview iframe {
+        .media-preview video {
             width: 100%;
-            height: 200px;
+            height: auto;
+            max-height: 300px;
             object-fit: cover;
         }
 
-        /* Raffle Management */
-        .raffle-card {
-            background: rgba(255, 255, 255, 0.08);
-            padding: 1.5rem;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 1rem;
-        }
-
-        .raffle-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .raffle-status {
-            padding: 0.3rem 0.8rem;
-            border-radius: 15px;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-
-        .status-active {
-            background: rgba(20, 241, 149, 0.2);
-            color: #14f195;
-        }
-
-        .status-ended {
-            background: rgba(255, 107, 122, 0.2);
-            color: #ff6b7a;
-        }
-
-        .status-draft {
-            background: rgba(255, 193, 7, 0.2);
-            color: #ffc107;
-        }
-
-        /* Progress Bars */
-        .progress-bar {
+        .media-preview iframe {
             width: 100%;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 1rem 0;
+            height: 300px;
+            border: none;
         }
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #14f195 0%, #9945ff 100%);
-            transition: width 0.3s ease;
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
         }
 
-        /* Tabs */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #14f195, #9945FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #ccc;
+            font-size: 1rem;
+        }
+
+        /* Tab System */
+        .tab-container {
+            margin-bottom: 2rem;
+        }
+
         .tab-nav {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 2rem;
         }
 
         .tab-btn {
-            padding: 1rem 1.5rem;
+            padding: 1rem 2rem;
             background: none;
             border: none;
             color: #ccc;
             cursor: pointer;
-            border-bottom: 2px solid transparent;
             transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
         }
 
         .tab-btn.active {
             color: #14f195;
             border-bottom-color: #14f195;
+        }
+
+        .tab-btn:hover {
+            color: #14f195;
         }
 
         .tab-content {
@@ -373,310 +393,402 @@
             display: block;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .header-content {
-                padding: 0 1rem;
-            }
-
-            .container {
-                padding: 1rem;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .media-selector {
-                flex-direction: column;
-            }
-        }
-
         /* Status Messages */
         .status-message {
             position: fixed;
-            top: 20px;
+            top: 100px;
             right: 20px;
             padding: 1rem 1.5rem;
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: 600;
             z-index: 1000;
             transform: translateX(400px);
-            transition: transform 0.3s ease;
+            opacity: 0;
+            transition: all 0.3s ease;
         }
 
         .status-message.show {
             transform: translateX(0);
+            opacity: 1;
         }
 
         .status-success {
-            background: rgba(20, 241, 149, 0.9);
+            background: linear-gradient(135deg, #14f195, #00d2ff);
             color: #0a0a0a;
         }
 
         .status-error {
-            background: rgba(255, 107, 122, 0.9);
+            background: linear-gradient(135deg, #ff6b7a, #ff4757);
             color: white;
         }
 
         .status-info {
-            background: rgba(52, 152, 219, 0.9);
+            background: linear-gradient(135deg, #9945FF, #14f195);
             color: white;
+        }
+
+        /* Preview Modal */
+        .preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-content {
+            max-width: 90vw;
+            max-height: 90vh;
+            background: #1a1a1a;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .preview-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            z-index: 10;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .admin-nav {
+                order: -1;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .tab-nav {
+                flex-wrap: wrap;
+            }
+
+            .tab-btn {
+                padding: 0.8rem 1rem;
+                font-size: 0.9rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="bg-animation"></div>
+    <div class="admin-bg"></div>
 
     <!-- Header -->
-    <header class="header">
+    <header class="admin-header">
         <div class="header-content">
-            <a href="/" class="logo">🎯 GiveFi Admin</a>
-            <nav class="header-nav">
-                <a href="/" class="nav-link">Back to Raffles</a>
-                <a href="#" class="nav-link">Documentation</a>
-                <button class="connect-btn" id="connectBtn" onclick="openWalletModal()">Connect Wallet</button>
+            <div class="admin-logo">
+                <span style="font-size: 2rem;">⚡</span>
+                <h1>GiveFi Admin</h1>
+            </div>
+            
+            <nav class="admin-nav">
+                <a href="#dashboard" class="nav-link active" onclick="showTab('dashboard')">Dashboard</a>
+                <a href="#create" class="nav-link" onclick="showTab('create')">Create Raffle</a>
+                <a href="#manage" class="nav-link" onclick="showTab('manage')">Manage</a>
+                <a href="../index.html" class="nav-link">View Live Site</a>
             </nav>
+
+            <div class="wallet-status" id="walletStatus" onclick="connectWallet()">
+                Connect Wallet
+            </div>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <div class="container">
-        <!-- Stats Dashboard -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-number" id="totalRaffles">5</div>
-                <div class="stat-label">Total Raffles</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="activeRaffles">2</div>
-                <div class="stat-label">Active Raffles</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="totalParticipants">847</div>
-                <div class="stat-label">Total Participants</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="totalRevenue">42.3</div>
-                <div class="stat-label">Total SOL Earned</div>
-            </div>
-        </div>
+    <!-- Main Content -->
+    <main class="admin-container">
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <h2 style="font-size: 2.5rem; margin-bottom: 2rem; text-align: center;">
+                🏆 Raffle Dashboard
+            </h2>
 
-        <!-- Tab Navigation -->
-        <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab('create')">📝 Create Raffle</button>
-            <button class="tab-btn" onclick="switchTab('manage')">🎯 Manage Raffles</button>
-            <button class="tab-btn" onclick="switchTab('analytics')">📊 Analytics</button>
-            <button class="tab-btn" onclick="switchTab('settings')">⚙️ Settings</button>
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="activeRaffles">1</div>
+                    <div class="stat-label">Active Raffles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalParticipants">23</div>
+                    <div class="stat-label">Total Participants</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalRevenue">2.3</div>
+                    <div class="stat-label">SOL Collected</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="completedRaffles">0</div>
+                    <div class="stat-label">Completed Raffles</div>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Quick Actions -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <div class="card-icon">🚀</div>
+                        <div class="card-title">Quick Actions</div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <button class="btn btn-primary" onclick="showTab('create')">
+                            ➕ Create New Raffle
+                        </button>
+                        <button class="btn btn-secondary" onclick="viewLiveSite()">
+                            👁️ View Live Site
+                        </button>
+                        <button class="btn btn-secondary" onclick="selectWinner()">
+                            🎯 Select Winner
+                        </button>
+                        <button class="btn btn-danger" onclick="endRaffle()">
+                            ⏹️ End Current Raffle
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Current Raffle Status -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <div class="card-icon">🎰</div>
+                        <div class="card-title">Current Raffle</div>
+                    </div>
+                    
+                    <div style="color: #ccc;">
+                        <div style="margin-bottom: 1rem;">
+                            <strong style="color: #14f195;">Prize:</strong> BMW 640i M Sport
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong style="color: #14f195;">Entry Fee:</strong> 0.1 SOL
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong style="color: #14f195;">Participants:</strong> <span id="currentParticipants">23</span>/50
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong style="color: #14f195;">Time Left:</strong> <span id="timeLeft">2d 5h 30m</span>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong style="color: #14f195;">Status:</strong> 
+                            <span style="color: #00ff88;">🟢 Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Create Raffle Tab -->
-        <div id="createTab" class="tab-content active">
+        <div id="create" class="tab-content">
+            <h2 style="font-size: 2.5rem; margin-bottom: 2rem; text-align: center;">
+                🎨 Create New Raffle
+            </h2>
+
             <div class="dashboard-grid">
-                <!-- Raffle Configuration -->
-                <div class="section-card">
-                    <h2 class="section-title">🎯 Raffle Configuration</h2>
+                <!-- Basic Information -->
+                <div class="admin-card">
+                    <div class="card-header">
+                        <div class="card-icon">📝</div>
+                        <div class="card-title">Basic Information</div>
+                    </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Raffle Title</label>
-                        <input type="text" class="form-input" id="raffleTitle" placeholder="BMW 640i M Sport Giveaway">
+                        <label class="form-label">Prize Title</label>
+                        <input type="text" class="form-input" id="prizeTitle" placeholder="BMW 640i M Sport" value="BMW 640i M Sport">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-input form-textarea" id="raffleDescription" placeholder="Luxury sports coupe worth $70,000+ • Winner's choice: Take the BMW or cash equivalent"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Entry Fee (SOL)</label>
-                        <input type="number" class="form-input" id="entryFee" step="0.01" placeholder="0.1">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Maximum Participants</label>
-                        <input type="number" class="form-input" id="maxParticipants" placeholder="50">
+                        <label class="form-label">Prize Description</label>
+                        <textarea class="form-input form-textarea" id="prizeDescription" placeholder="Luxury sports coupe worth $70,000+">Luxury sports coupe worth $70,000+ • Winner's choice: Take the BMW or 33% cash jackpot</textarea>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Prize Value (USD)</label>
-                        <input type="number" class="form-input" id="prizeValue" placeholder="70000">
+                        <input type="number" class="form-input" id="prizeValue" placeholder="70000" value="70000">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">End Date</label>
-                        <input type="datetime-local" class="form-input" id="endDate">
+                        <label class="form-label">Entry Fee (SOL)</label>
+                        <input type="number" step="0.01" class="form-input" id="entryFee" placeholder="0.1" value="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Max Participants</label>
+                        <input type="number" class="form-input" id="maxParticipants" placeholder="50" value="50">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Duration</label>
+                        <select class="form-input form-select" id="duration">
+                            <option value="24">24 Hours</option>
+                            <option value="48" selected>48 Hours</option>
+                            <option value="72">72 Hours</option>
+                            <option value="168">1 Week</option>
+                            <option value="336">2 Weeks</option>
+                        </select>
                     </div>
                 </div>
 
                 <!-- Media Upload -->
-                <div class="section-card">
-                    <h2 class="section-title">🎬 Media Upload</h2>
-                    
-                    <div class="media-selector">
-                        <button class="media-type-btn active" onclick="selectMediaType('image')" id="imageTypeBtn">
+                <div class="admin-card">
+                    <div class="card-header">
+                        <div class="card-icon">🎬</div>
+                        <div class="card-title">Media Upload</div>
+                    </div>
+
+                    <!-- Media Type Selector -->
+                    <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                        <button class="btn btn-secondary active" onclick="selectMediaType('image')" id="imageBtn">
                             🖼️ Image
                         </button>
-                        <button class="media-type-btn" onclick="selectMediaType('video')" id="videoTypeBtn">
+                        <button class="btn btn-secondary" onclick="selectMediaType('video')" id="videoBtn">
                             🎥 Video
                         </button>
-                        <button class="media-type-btn" onclick="selectMediaType('youtube')" id="youtubeTypeBtn">
+                        <button class="btn btn-secondary" onclick="selectMediaType('youtube')" id="youtubeBtn">
                             📺 YouTube
                         </button>
                     </div>
 
-                    <!-- Image Upload -->
-                    <div class="form-group" id="imageInputGroup">
+                    <!-- Image URL -->
+                    <div class="form-group" id="imageUrlGroup">
                         <label class="form-label">Image URL</label>
-                        <input type="url" class="form-input" id="imageUrl" placeholder="https://example.com/image.jpg">
+                        <input type="url" class="form-input" id="imageUrl" placeholder="https://example.com/image.jpg" value="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&h=300&fit=crop">
                     </div>
 
                     <!-- Video Upload -->
-                    <div class="form-group" id="videoInputGroup" style="display: none;">
-                        <label class="form-label">Video File</label>
-                        <input type="file" class="form-input" id="videoFile" accept="video/*" onchange="handleVideoUpload(event)">
-                        <small style="color: #ccc; margin-top: 0.5rem; display: block;">
-                            Supported: MP4, WebM, OGV (Max: 50MB)
-                        </small>
+                    <div class="form-group" id="videoUploadGroup" style="display: none;">
+                        <label class="form-label">Video Upload</label>
+                        <div class="media-upload-area" onclick="document.getElementById('videoFile').click()">
+                            <input type="file" id="videoFile" accept="video/*" style="display: none;" onchange="handleVideoUpload(event)">
+                            <div class="upload-icon">🎥</div>
+                            <div class="upload-text">Click to upload or drag & drop</div>
+                            <div class="upload-subtext">MP4, WebM, OGV up to 50MB</div>
+                        </div>
                     </div>
 
-                    <!-- YouTube Upload -->
-                    <div class="form-group" id="youtubeInputGroup" style="display: none;">
-                        <label class="form-label">YouTube URL</label>
-                        <input type="url" class="form-input" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." onchange="handleYouTubeUrl(event)">
+                    <!-- YouTube URL -->
+                    <div class="form-group" id="youtubeUrlGroup" style="display: none;">
+                        <label class="form-label">YouTube Video URL</label>
+                        <input type="url" class="form-input" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=...">
                     </div>
 
                     <!-- Media Preview -->
                     <div class="media-preview" id="mediaPreview">
-                        <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400&h=200&fit=crop" alt="Preview">
-                    </div>
-
-                    <button class="btn btn-primary" onclick="createRaffle()" style="width: 100%; margin-top: 1rem;">
-                        🚀 Create Raffle
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Manage Raffles Tab -->
-        <div id="manageTab" class="tab-content">
-            <div class="section-card">
-                <h2 class="section-title">🎯 Active Raffles</h2>
-                
-                <div class="raffle-card">
-                    <div class="raffle-header">
-                        <h3>BMW 640i M Sport</h3>
-                        <span class="raffle-status status-active">Active</span>
-                    </div>
-                    <p style="color: #ccc; margin-bottom: 1rem;">23/50 participants • 0.1 SOL entry</p>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 46%;"></div>
-                    </div>
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                        <button class="btn btn-secondary">📊 View Details</button>
-                        <button class="btn btn-primary">🏆 Select Winner</button>
-                        <button class="btn btn-danger">⏹️ End Early</button>
-                    </div>
-                </div>
-
-                <div class="raffle-card">
-                    <div class="raffle-header">
-                        <h3>Rolex Submariner</h3>
-                        <span class="raffle-status status-draft">Draft</span>
-                    </div>
-                    <p style="color: #ccc; margin-bottom: 1rem;">0/100 participants • 0.2 SOL entry</p>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 0%;"></div>
-                    </div>
-                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                        <button class="btn btn-primary">📝 Edit</button>
-                        <button class="btn btn-secondary">🚀 Publish</button>
-                        <button class="btn btn-danger">🗑️ Delete</button>
+                        <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&h=300&fit=crop" alt="Preview">
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Analytics Tab -->
-        <div id="analyticsTab" class="tab-content">
-            <div class="section-card">
-                <h2 class="section-title">📊 Analytics Dashboard</h2>
-                <p style="color: #ccc; margin-bottom: 2rem;">Performance metrics and insights for your raffles.</p>
-                
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number">95.6%</div>
-                        <div class="stat-label">Completion Rate</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">2.3</div>
-                        <div class="stat-label">Avg Entries/User</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">$127K</div>
-                        <div class="stat-label">Total Prize Value</div>
-                    </div>
-                </div>
-                
-                <div style="background: rgba(255, 255, 255, 0.05); padding: 2rem; border-radius: 10px; text-align: center;">
-                    <h3 style="color: #14f195; margin-bottom: 1rem;">📈 Advanced Analytics Coming Soon</h3>
-                    <p style="color: #ccc;">Detailed charts, user demographics, and revenue insights will be available in the next update.</p>
-                </div>
+            <!-- Create Button -->
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn btn-primary" style="font-size: 1.2rem; padding: 1.5rem 3rem;" onclick="createRaffle()">
+                    🚀 Create Raffle
+                </button>
             </div>
         </div>
 
-        <!-- Settings Tab -->
-        <div id="settingsTab" class="tab-content">
-            <div class="section-card">
-                <h2 class="section-title">⚙️ Admin Settings</h2>
-                
-                <div class="form-group">
-                    <label class="form-label">Default Entry Fee (SOL)</label>
-                    <input type="number" class="form-input" step="0.01" value="0.1">
+        <!-- Manage Tab -->
+        <div id="manage" class="tab-content">
+            <h2 style="font-size: 2.5rem; margin-bottom: 2rem; text-align: center;">
+                🛠️ Raffle Management
+            </h2>
+
+            <div class="admin-card">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">Active Raffle Control</div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">Treasury Wallet</label>
-                    <input type="text" class="form-input" value="48mihemhp1UxYjz1UznH4fJ9FnF3AfN3XG18GasPFamU" readonly>
-                </div>
+                <div class="dashboard-grid">
+                    <div>
+                        <h4 style="color: #14f195; margin-bottom: 1rem;">Participant Management</h4>
+                        <div style="margin-bottom: 1rem;">
+                            <button class="btn btn-secondary" onclick="viewParticipants()">
+                                👥 View All Participants
+                            </button>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <button class="btn btn-secondary" onclick="exportParticipants()">
+                                📁 Export Participant List
+                            </button>
+                        </div>
+                        <div style="margin-bottom: 2rem;">
+                            <button class="btn btn-primary" onclick="selectWinner()">
+                                🎯 Select Winner Now
+                            </button>
+                        </div>
 
-                <div class="form-group">
-                    <label class="form-label">Platform Fee (%)</label>
-                    <input type="number" class="form-input" value="5" min="0" max="100">
-                </div>
+                        <h4 style="color: #14f195; margin-bottom: 1rem;">Raffle Settings</h4>
+                        <div style="margin-bottom: 1rem;">
+                            <button class="btn btn-secondary" onclick="pauseRaffle()">
+                                ⏸️ Pause Raffle
+                            </button>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <button class="btn btn-danger" onclick="endRaffle()">
+                                ⏹️ End Raffle Early
+                            </button>
+                        </div>
+                    </div>
 
-                <div class="form-group">
-                    <label class="form-label">Auto-end when full</label>
-                    <select class="form-input">
-                        <option value="true">Yes - End immediately when full</option>
-                        <option value="false">No - Wait for end date</option>
-                    </select>
+                    <div>
+                        <h4 style="color: #14f195; margin-bottom: 1rem;">Financial Overview</h4>
+                        <div style="background: rgba(255, 255, 255, 0.05); padding: 1.5rem; border-radius: 10px;">
+                            <div style="margin-bottom: 1rem;">
+                                <strong>Total Collected:</strong> <span style="color: #14f195;">2.3 SOL</span>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <strong>Platform Fee (5%):</strong> <span style="color: #ff6b7a;">0.115 SOL</span>
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <strong>Prize Pool:</strong> <span style="color: #14f195;">2.185 SOL</span>
+                            </div>
+                            <div style="margin-bottom: 2rem;">
+                                <strong>Cash Option (33%):</strong> <span style="color: #9945FF;">0.721 SOL</span>
+                            </div>
+                            
+                            <button class="btn btn-primary" onclick="withdrawFunds()">
+                                💰 Withdraw Available Funds
+                            </button>
+                        </div>
+                    </div>
                 </div>
-
-                <button class="btn btn-primary">💾 Save Settings</button>
             </div>
         </div>
-    </div>
-
-    <!-- Wallet Selection Modal -->
-    <div id="walletModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8);">
-        <div style="background: rgba(26, 26, 46, 0.95); margin: 15% auto; padding: 2rem; width: 90%; max-width: 400px; border-radius: 15px; backdrop-filter: blur(10px);">
-            <span style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;" onclick="closeWalletModal()">&times;</span>
-            <h2 style="margin-bottom: 1.5rem; color: #fff;">Select Wallet</h2>
-            <div id="walletList">
-                <div onclick="connectWallet('phantom')" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; cursor: pointer; margin-bottom: 1rem; transition: all 0.3s ease;">
-                    <img src="https://phantom.app/img/phantom-icon.svg" alt="Phantom" style="width: 40px; height: 40px;">
-                    <span>Phantom</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    </main>
 
     <!-- Status Message -->
     <div id="statusMessage" class="status-message"></div>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="preview-modal">
+        <div class="preview-content">
+            <button class="preview-close" onclick="closePreview()">✕</button>
+            <div id="previewContent"></div>
+        </div>
+    </div>
 
     <script>
         // Embedded Solana Web3.js functionality
@@ -686,93 +798,112 @@
         const PROGRAM_ID = '48mihemhp1UxYjz1UznH4fJ9FnF3AfN3XG18GasPFamU';
         const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
 
-        // Global variables
+        // Global state
+        let wallet = null;
+        let connected = false;
         let currentMediaType = 'image';
-        let videoFile = null;
-        let walletConnected = false;
-        let userPublicKey = null;
+        let uploadedVideo = null;
 
         // Tab Management
-        function switchTab(tabName) {
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
             
-            // Add active class to selected tab
+            // Remove active from nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Update nav
             event.target.classList.add('active');
-            document.getElementById(tabName + 'Tab').classList.add('active');
+        }
+
+        // Wallet Management
+        async function connectWallet() {
+            try {
+                if (window.phantom?.solana) {
+                    const response = await window.phantom.solana.connect();
+                    wallet = window.phantom.solana;
+                    connected = true;
+                    
+                    const publicKey = response.publicKey.toString();
+                    document.getElementById('walletStatus').textContent = 
+                        `${publicKey.slice(0, 6)}...${publicKey.slice(-4)}`;
+                    
+                    showStatus('Wallet connected successfully!', 'success');
+                } else {
+                    showStatus('Please install Phantom wallet', 'error');
+                    window.open('https://phantom.app/', '_blank');
+                }
+            } catch (error) {
+                showStatus('Failed to connect wallet', 'error');
+            }
         }
 
         // Media Management
         function selectMediaType(type) {
-            // Update active button
-            document.querySelectorAll('.media-type-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(type + 'TypeBtn').classList.add('active');
-            
-            // Show/hide appropriate input groups
-            document.getElementById('imageInputGroup').style.display = type === 'image' ? 'block' : 'none';
-            document.getElementById('videoInputGroup').style.display = type === 'video' ? 'block' : 'none';
-            document.getElementById('youtubeInputGroup').style.display = type === 'youtube' ? 'block' : 'none';
-            
             currentMediaType = type;
+            
+            // Update buttons
+            document.querySelectorAll('#imageBtn, #videoBtn, #youtubeBtn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(type + 'Btn').classList.add('active');
+            
+            // Show/hide inputs
+            document.getElementById('imageUrlGroup').style.display = type === 'image' ? 'block' : 'none';
+            document.getElementById('videoUploadGroup').style.display = type === 'video' ? 'block' : 'none';
+            document.getElementById('youtubeUrlGroup').style.display = type === 'youtube' ? 'block' : 'none';
+            
+            updatePreview();
         }
 
         function handleVideoUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            // Check file size (50MB limit)
             if (file.size > 50 * 1024 * 1024) {
-                showStatus('Video file too large. Please use a file smaller than 50MB.', 'error');
+                showStatus('Video file too large. Maximum size is 50MB.', 'error');
                 return;
             }
 
-            // Check file type
-            if (!file.type.startsWith('video/')) {
-                showStatus('Please select a valid video file.', 'error');
-                return;
-            }
-
-            videoFile = file;
-            
-            // Create preview
+            uploadedVideo = file;
             const url = URL.createObjectURL(file);
-            const preview = document.getElementById('mediaPreview');
-            preview.innerHTML = `
-                <video controls style="width: 100%; height: 200px; border-radius: 10px;">
+            
+            document.getElementById('mediaPreview').innerHTML = `
+                <video controls style="width: 100%; height: auto; max-height: 300px;">
                     <source src="${url}" type="${file.type}">
-                    Your browser does not support the video tag.
                 </video>
             `;
 
             showStatus('Video uploaded successfully!', 'success');
         }
 
-        function handleYouTubeUrl(event) {
-            const url = event.target.value.trim();
-            if (!url) return;
-
-            const videoId = extractYouTubeVideoId(url);
-            if (!videoId) {
-                showStatus('Invalid YouTube URL. Please use a valid YouTube video link.', 'error');
-                return;
-            }
-
-            // Create preview
-            const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        function updatePreview() {
             const preview = document.getElementById('mediaPreview');
-            preview.innerHTML = `
-                <iframe src="${embedUrl}" 
-                        width="100%" 
-                        height="200" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen
-                        style="border-radius: 10px;">
-                </iframe>
-            `;
-
-            showStatus('YouTube video loaded successfully!', 'success');
+            
+            if (currentMediaType === 'image') {
+                const imageUrl = document.getElementById('imageUrl').value || 
+                    'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&h=300&fit=crop';
+                preview.innerHTML = `<img src="${imageUrl}" alt="Preview">`;
+            } else if (currentMediaType === 'youtube') {
+                const youtubeUrl = document.getElementById('youtubeUrl').value;
+                if (youtubeUrl) {
+                    const videoId = extractYouTubeVideoId(youtubeUrl);
+                    if (videoId) {
+                        preview.innerHTML = `
+                            <iframe src="https://www.youtube.com/embed/${videoId}" 
+                                    width="100%" height="300" frameborder="0" allowfullscreen>
+                            </iframe>
+                        `;
+                    }
+                }
+            }
         }
 
         function extractYouTubeVideoId(url) {
@@ -790,119 +921,99 @@
 
         // Raffle Management
         async function createRaffle() {
-            if (!walletConnected) {
+            if (!connected) {
                 showStatus('Please connect your wallet first', 'error');
-                openWalletModal();
                 return;
             }
 
-            const title = document.getElementById('raffleTitle').value.trim();
-            const description = document.getElementById('raffleDescription').value.trim();
-            const entryFee = parseFloat(document.getElementById('entryFee').value);
-            const maxParticipants = parseInt(document.getElementById('maxParticipants').value);
-            const prizeValue = parseFloat(document.getElementById('prizeValue').value);
-            const endDate = document.getElementById('endDate').value;
+            const prizeTitle = document.getElementById('prizeTitle').value;
+            const prizeDescription = document.getElementById('prizeDescription').value;
+            const prizeValue = document.getElementById('prizeValue').value;
+            const entryFee = document.getElementById('entryFee').value;
+            const maxParticipants = document.getElementById('maxParticipants').value;
+            const duration = document.getElementById('duration').value;
 
-            // Validation
-            if (!title || !description || !entryFee || !maxParticipants || !prizeValue || !endDate) {
+            if (!prizeTitle || !prizeDescription || !prizeValue || !entryFee || !maxParticipants) {
                 showStatus('Please fill in all required fields', 'error');
                 return;
             }
 
-            if (entryFee <= 0 || maxParticipants <= 0 || prizeValue <= 0) {
-                showStatus('Please enter valid positive numbers', 'error');
-                return;
-            }
-
             try {
-                showStatus('Creating raffle...', 'info');
-
-                // In a real implementation, you would:
-                // 1. Upload media to IPFS/Arweave
-                // 2. Create raffle account on Solana
-                // 3. Initialize raffle state
+                showStatus('Creating raffle on blockchain...', 'info');
                 
-                // For demo purposes, simulate success
-                setTimeout(() => {
-                    showStatus('Raffle created successfully!', 'success');
-                    
-                    // Switch to manage tab
-                    switchTab('manage');
-                    
-                    // Reset form
-                    document.getElementById('raffleTitle').value = '';
-                    document.getElementById('raffleDescription').value = '';
-                    document.getElementById('entryFee').value = '';
-                    document.getElementById('maxParticipants').value = '';
-                    document.getElementById('prizeValue').value = '';
-                    document.getElementById('endDate').value = '';
-                    
-                    // Update stats
-                    updateStats();
-                }, 2000);
+                // In a real implementation, you'd create the smart contract transaction here
+                // For demo purposes, we'll simulate success
+                
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                showStatus('Raffle created successfully!', 'success');
+                showTab('dashboard');
+                
+                // Update stats
+                document.getElementById('activeRaffles').textContent = '1';
                 
             } catch (error) {
-                console.error('Error creating raffle:', error);
                 showStatus('Failed to create raffle', 'error');
             }
         }
 
-        // Wallet Management
-        function openWalletModal() {
-            document.getElementById('walletModal').style.display = 'block';
-        }
+        async function selectWinner() {
+            if (!connected) {
+                showStatus('Please connect your wallet first', 'error');
+                return;
+            }
 
-        function closeWalletModal() {
-            document.getElementById('walletModal').style.display = 'none';
-        }
-
-        async function connectWallet(walletName) {
-            try {
-                showStatus('Connecting to wallet...', 'info');
-                
-                let provider;
-                switch (walletName) {
-                    case 'phantom':
-                        if (!window.phantom?.solana) {
-                            window.open('https://phantom.app/', '_blank');
-                            throw new Error('Phantom wallet not found');
-                        }
-                        provider = window.phantom.solana;
-                        break;
-                    default:
-                        throw new Error('Unsupported wallet');
+            if (confirm('Are you sure you want to select a winner? This action cannot be undone.')) {
+                try {
+                    showStatus('Selecting winner using VRF...', 'info');
+                    
+                    // Simulate winner selection
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    
+                    const winner = 'AaB2...XyZ9'; // Mock winner address
+                    showStatus(`Winner selected: ${winner}`, 'success');
+                    
+                    // Update stats
+                    document.getElementById('completedRaffles').textContent = '1';
+                    document.getElementById('activeRaffles').textContent = '0';
+                    
+                } catch (error) {
+                    showStatus('Failed to select winner', 'error');
                 }
-
-                const response = await provider.connect();
-                
-                walletConnected = true;
-                userPublicKey = response.publicKey;
-                
-                // Update UI
-                const connectBtn = document.getElementById('connectBtn');
-                connectBtn.textContent = `Connected: ${response.publicKey.toString().slice(0, 4)}...${response.publicKey.toString().slice(-4)}`;
-                connectBtn.classList.add('connected');
-                
-                closeWalletModal();
-                showStatus('Wallet connected successfully!', 'success');
-                
-            } catch (error) {
-                console.error('Connection error:', error);
-                showStatus('Failed to connect wallet', 'error');
             }
         }
 
-        // Update dashboard stats
-        function updateStats() {
-            // In a real app, fetch from blockchain
-            const totalRaffles = parseInt(document.getElementById('totalRaffles').textContent) + 1;
-            const activeRaffles = parseInt(document.getElementById('activeRaffles').textContent) + 1;
-            
-            document.getElementById('totalRaffles').textContent = totalRaffles;
-            document.getElementById('activeRaffles').textContent = activeRaffles;
+        function endRaffle() {
+            if (confirm('Are you sure you want to end this raffle early? This will trigger winner selection.')) {
+                selectWinner();
+            }
         }
 
-        // Show status message
+        function viewLiveSite() {
+            window.open('../index.html', '_blank');
+        }
+
+        function viewParticipants() {
+            showStatus('Participant list feature coming soon', 'info');
+        }
+
+        function exportParticipants() {
+            showStatus('Export feature coming soon', 'info');
+        }
+
+        function pauseRaffle() {
+            showStatus('Raffle paused', 'info');
+        }
+
+        function withdrawFunds() {
+            if (!connected) {
+                showStatus('Please connect your wallet first', 'error');
+                return;
+            }
+            showStatus('Withdrawal feature coming soon', 'info');
+        }
+
+        // Utility Functions
         function showStatus(message, type) {
             const statusDiv = document.getElementById('statusMessage');
             statusDiv.textContent = message;
@@ -913,22 +1024,41 @@
             }, 5000);
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set default end date to 7 days from now
-            const endDate = new Date();
-            endDate.setDate(endDate.getDate() + 7);
-            document.getElementById('endDate').value = endDate.toISOString().slice(0, 16);
+        function closePreview() {
+            document.getElementById('previewModal').style.display = 'none';
+        }
+
+        // Event Listeners
+        document.getElementById('imageUrl').addEventListener('input', updatePreview);
+        document.getElementById('youtubeUrl').addEventListener('input', updatePreview);
+
+        // Drag and drop for video upload
+        const uploadArea = document.querySelector('.media-upload-area');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
             
-            // Update image preview when URL changes
-            document.getElementById('imageUrl').addEventListener('input', function(e) {
-                const url = e.target.value.trim();
-                if (url && currentMediaType === 'image') {
-                    document.getElementById('mediaPreview').innerHTML = `
-                        <img src="${url}" alt="Preview" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px;">
-                    `;
-                }
-            });
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('videoFile').files = files;
+                handleVideoUpload({ target: { files } });
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 GiveFi Admin Panel loaded');
+            updatePreview();
         });
     </script>
 </body>
